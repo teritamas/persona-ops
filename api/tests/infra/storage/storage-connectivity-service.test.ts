@@ -69,7 +69,10 @@ describe('StorageConnectivityService', () => {
 
   describe('createStorageConnectivityService', () => {
     it('サービスインスタンスを生成できる', async () => {
-      const service = createStorageConnectivityService({ bucketName: 'b', projectId: 'p' });
+      const service = createStorageConnectivityService({
+        bucketName: 'b',
+        projectId: 'p',
+      });
       expect(service).toBeInstanceOf(StorageConnectivityService);
 
       // 内部の createObject が呼ばれることを確認してカバレッジを通す

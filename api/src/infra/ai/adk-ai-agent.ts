@@ -28,13 +28,7 @@ export interface AgentRunner {
 export class AdkAiAgent implements AiAgentPort {
   readonly #runner: AgentRunner;
 
-  constructor({
-    model,
-    runner,
-  }: {
-    model: string;
-    runner?: AgentRunner;
-  }) {
+  constructor({ model, runner }: { model: string; runner?: AgentRunner }) {
     this.#runner =
       runner ??
       new InMemoryRunner({
@@ -72,7 +66,10 @@ export class AdkAiAgent implements AiAgentPort {
     });
 
     try {
-      return await Promise.race([this.#consumeResponse(events), timeoutPromise]);
+      return await Promise.race([
+        this.#consumeResponse(events),
+        timeoutPromise,
+      ]);
     } finally {
       if (timeout !== undefined) {
         clearTimeout(timeout);

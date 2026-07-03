@@ -18,9 +18,12 @@ async function verifyVertexAi(): Promise<void> {
   const agent = new AdkAiAgent({
     model: config.VERTEX_AI_MODEL,
   });
-  await agent.invoke('接続確認です。「ok」の2文字だけを小文字で返してください。', {
-    timeoutMs: 15_000,
-  });
+  await agent.invoke(
+    '接続確認です。「ok」の2文字だけを小文字で返してください。',
+    {
+      timeoutMs: 15_000,
+    },
+  );
 }
 
 const checks = [

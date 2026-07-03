@@ -4,7 +4,11 @@ import { buildContainer } from './infra/container.js';
 
 const config = loadConfig();
 const container = buildContainer(config);
-const app = buildApp({ config, container, logger: { level: config.LOG_LEVEL } });
+const app = buildApp({
+  config,
+  container,
+  logger: { level: config.LOG_LEVEL },
+});
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
   app.log.info({ signal }, 'Shutting down API server.');

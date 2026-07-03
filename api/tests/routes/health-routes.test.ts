@@ -80,7 +80,9 @@ describe('health routes', () => {
   });
 
   it('Vertex AI が "ok" 以外のレスポンスを返した場合はエラーとする', async () => {
-    const invoke = vi.fn<() => Promise<string>>().mockResolvedValue('unexpected text');
+    const invoke = vi
+      .fn<() => Promise<string>>()
+      .mockResolvedValue('unexpected text');
     const app = createApp({ invoke });
 
     const response = await app.inject({
@@ -97,4 +99,3 @@ describe('health routes', () => {
     expect(invoke).toHaveBeenCalledOnce();
   });
 });
-

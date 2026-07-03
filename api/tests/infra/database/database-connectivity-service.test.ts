@@ -71,7 +71,7 @@ describe('DatabaseConnectivityService', () => {
     it('サービスインスタンスを生成できる', async () => {
       const service = createDatabaseConnectivityService({ projectId: 'test' });
       expect(service).toBeInstanceOf(DatabaseConnectivityService);
-      
+
       // 内部の createDocument が呼ばれることを確認してカバレッジを通す
       // mock化されたFirestoreインスタンスでは .set() が未定義なため必ずエラーになるが、
       // 途中で createDocument: (id) => ... が実行される。
