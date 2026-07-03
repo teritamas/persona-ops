@@ -3,13 +3,16 @@ const {
   requestPrivateApi: defaultRequestPrivateApi,
 } = require('../clients/private-api');
 
+const PUBLIC_HEALTH_PROXY_PATH = '/api/v1/healthz';
+const PRIVATE_API_HEALTH_PATH = '/healthz';
+
 function isHtmxRequest(req) {
   return req.get('HX-Request') === 'true';
 }
 
 async function fetchPrivateApiHealth(requestPrivateApi) {
   const startedAt = performance.now();
-  const response = await requestPrivateApi('/healthz');
+  const response = await requestPrivateApi(PRIVATE_API_HEALTH_PATH);
 
   return {
     apiUrl: response.url,
@@ -180,7 +183,7 @@ function createHealthRouter(options = {}) {
         </p>
       </div>
       <button
-        hx-get="/healthz"
+        hx-get="${PUBLIC_HEALTH_PROXY_PATH}"
         hx-target="#health-status"
         hx-swap="innerHTML"
         class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-orange-600"
@@ -196,13 +199,13 @@ function createHealthRouter(options = {}) {
           <h1 class="mt-2 text-2xl font-bold text-slate-800">persona-ops-web → persona-ops-private-api</h1>
         </div>
         <div class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-medium text-slate-500">
-          HTMX path: <code>/healthz</code>
+          HTMX path: <code>${PUBLIC_HEALTH_PROXY_PATH}</code>
         </div>
       </div>
 
       <div
         id="health-status"
-        hx-get="/healthz"
+        hx-get="${PUBLIC_HEALTH_PROXY_PATH}"
         hx-trigger="load"
         hx-swap="innerHTML">
         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
@@ -215,7 +218,7 @@ function createHealthRouter(options = {}) {
 </html>`);
   });
 
-  router.get('/healthz', async (req, res) => {
+  router.get(PUBLIC_HEALTH_PROXY_PATH, async (req, res) => {
     return handleHealthRequest(req, res, requestPrivateApi);
   });
 

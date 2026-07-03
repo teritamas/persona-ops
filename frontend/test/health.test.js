@@ -1,6 +1,9 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { handleHealthRequest } = require('../src/routes/health');
+const {
+  createHealthRouter,
+  handleHealthRequest,
+} = require('../src/routes/health');
 
 function createRequest({ htmx = false } = {}) {
   return {
@@ -29,7 +32,7 @@ function createResponse() {
   };
 }
 
-test('returns a successful JSON health response', async () => {
+test('private API が正常なときは成功の JSON ヘルスレスポンスを返す', async () => {
   const response = createResponse();
 
   await handleHealthRequest(createRequest(), response, async (path) => {
@@ -47,7 +50,7 @@ test('returns a successful JSON health response', async () => {
   assert.equal(response.body.statusCode, 200);
 });
 
-test('returns 503 when the private API is unhealthy', async () => {
+test('private API が異常なときは 503 を返す', async () => {
   const response = createResponse();
 
   await handleHealthRequest(createRequest(), response, async () => ({
@@ -61,7 +64,7 @@ test('returns 503 when the private API is unhealthy', async () => {
   assert.equal(response.body.statusCode, 500);
 });
 
-test('returns an HTMX fragment and preserves failure status', async () => {
+test('HTMX リクエストでは失敗時もステータスを維持した断片 HTML を返す', async () => {
   const response = createResponse();
 
   await handleHealthRequest(createRequest({ htmx: true }), response, async () => {
@@ -74,7 +77,7 @@ test('returns an HTMX fragment and preserves failure status', async () => {
   assert.doesNotMatch(response.body, /<!DOCTYPE html>/);
 });
 
-test('escapes private API content rendered in an HTMX fragment', async () => {
+test('HTMX 断片に埋め込む private API の内容をエスケープする', async () => {
   const response = createResponse();
 
   await handleHealthRequest(createRequest({ htmx: true }), response, async () => ({
@@ -86,4 +89,23 @@ test('escapes private API content rendered in an HTMX fragment', async () => {
   assert.equal(response.statusCode, 503);
   assert.doesNotMatch(response.body, /<script>/);
   assert.match(response.body, /&lt;script&gt;/);
+});
+
+test('公開ヘルスチェック画面は api/v1/healthz を HTMX の取得先として使う', () => {
+  const router = createHealthRouter({
+    requestPrivateApi: async () => ({
+      data: { status: 'ok' },
+      statusCode: 200,
+      url: 'http://127.0.0.1:8080/healthz',
+    }),
+  });
+  const healthRouteLayer = router.stack.find(
+    (layer) => layer.route?.path === '/ops/health',
+  );
+  const response = createResponse();
+
+  healthRouteLayer.route.stack[0].handle({}, response);
+
+  assert.match(response.body, /hx-get="\/api\/v1\/healthz"/);
+  assert.doesNotMatch(response.body, /hx-get="\/healthz"/);
 });
