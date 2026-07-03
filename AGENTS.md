@@ -1,4 +1,4 @@
-# Persona　Ops
+# PersonaOps
 
 ## 基本姿勢
 
