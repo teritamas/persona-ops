@@ -14,7 +14,6 @@
   "dependencies": {
     "ejs": "^6.0.1",
     "express": "^4.19.2",
-    "flowbite": "^2.3.0",
     "htmx.org": "^2.0.10"
   },
   "devDependencies": {

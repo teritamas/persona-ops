@@ -5,13 +5,10 @@ module.exports = {
     "./server.js",
     "./src/**/*.js",
     "./public/**/*.html",
-    "./public/**/*.js",
-    "./node_modules/flowbite/**/*.js"
+    "./public/**/*.js"
   ],
   theme: {
     extend: {},
   },
-  plugins: [
-    require('flowbite/plugin')
-  ],
+  plugins: [],
 }
