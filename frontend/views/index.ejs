@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ペルソナOps</title>
+
+  <!-- Google Fonts for logo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Output (compiled locally) -->
+  <link href="/dist/output.css" rel="stylesheet">
+
+  <!-- Local htmx -->
+  <script src="/js/htmx.min.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
+
+  <div class="flex flex-col h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
+    <%- include('partials/topnav') %>
+      <div class="flex-1 flex w-full relative overflow-hidden">
+
+        <!-- ==========================================
+        左サイドバー (グローバルナビ - ミニホバー展開型)
+        ========================================== -->
+        <%- include('partials/sidebar', { activeProject: activeProject }) %>
+
+          <!-- ==========================================
+        メインコンテンツエリア (3カラム構成)
+        ========================================== -->
+          <div class="flex-1 flex w-full h-full overflow-hidden">
+
+            <!-- ==========================================
+          左カラム: エージェントチャット or リソース一覧
+          ========================================== -->
+            <aside id="left-panel-content"
+              class="<%= isInitial ? 'w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out' : 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0' %>"
+              hx-get="/menu/chat" hx-trigger="load" hx-swap="innerHTML">
+              <!-- ロード中に表示されるプレースホルダー -->
+              <div class="h-10 border-b border-slate-100 bg-white shrink-0"></div>
+              <div class="flex-1 flex items-center justify-center bg-slate-50/50">
+                <svg class="w-8 h-8 text-orange-500 animate-spin" fill="none" stroke="currentColor" stroke-width="2.5"
+                  viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 4v4m0 8v4m-8-8h4m8 0h4m-2.828-5.657l-2.829 2.829m-5.656 5.656l-2.829 2.829m14.142 0l-2.829-2.829m-5.656-5.656l-2.829-2.829">
+                  </path>
+                </svg>
+              </div>
+            </aside>
+
+            <!-- ==========================================
+          中央カラム: シミュレーション広場（箱庭）
+          ========================================== -->
+            <main id="simulation-playground"
+              class="flex-1 relative bg-slate-100 flex flex-col overflow-hidden min-w-[500px]" <%- isInitial
+              ? 'style="display: none;"' : '' %>>
+
+              <!-- ヘッダー -->
+              <header
+                class="h-10 bg-white/80 backdrop-blur-sm border-b border-slate-200 z-30 flex items-center justify-between px-6 shrink-0 shadow-sm relative">
+                <div class="flex items-center gap-4">
+                  <h2 class="text-sm font-bold text-slate-800">シミュレーション広場</h2>
+                </div>
+              </header>
+
+              <!-- 箱庭エリア本体 (相対配置用ラッパー) -->
+              <div class="flex-1 relative w-full h-full flex items-center justify-center overflow-hidden">
+
+                <!-- 箱庭の床（グリッド装飾） -->
+                <div class="absolute inset-0 z-0 bg-grid opacity-50 pointer-events-none"></div>
+
+                <!-- シミュレーション中のエフェクト（htmx ローディング表示） -->
+                <div id="loading-overlay"
+                  class="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px] z-20 hidden items-center justify-center transition-all duration-500">
+                  <div class="bg-white px-6 py-4 rounded-full shadow-xl flex items-center animate-pulse">
+                    <svg class="w-6 h-6 text-orange-500 mr-3 animate-bounce" fill="none" stroke="currentColor"
+                      stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                      </path>
+                    </svg>
+                    <span class="font-bold text-slate-700">ペルソナ達の反応を計算中...</span>
+                  </div>
+                </div>
+
+                <!-- ユーザー入力要件のホログラム的表示 -->
+                <div id="simulation-hologram-title"></div>
+
+                <!-- ペルソナのアバター群 (htmx ターゲット) -->
+                <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10">
+
+                  <!-- p1: 鈴木健太 -->
+                  <div hx-get="/api/persona/p1" hx-target="#detail-panel" hx-swap="outerHTML"
+                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
+                    style="left: 20%; top: 30%; transform: translate(-50%, -50%)">
+                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 0s">
+                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+                      <div
+                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f8fafc" alt="鈴木 健太"
+                          class="w-full h-full object-cover scale-110" />
+                      </div>
+                      <div
+                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
+                        現場セールス
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- p2: 佐藤真由美 -->
+                  <div hx-get="/api/persona/p2" hx-target="#detail-panel" hx-swap="outerHTML"
+                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
+                    style="left: 70%; top: 40%; transform: translate(-50%, -50%)">
+                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 0.5s">
+                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+                      <div
+                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f8fafc" alt="佐藤 真由美"
+                          class="w-full h-full object-cover scale-110" />
+                      </div>
+                      <div
+                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
+                        マネージャー
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- p3: 田中宏 -->
+                  <div hx-get="/api/persona/p3" hx-target="#detail-panel" hx-swap="outerHTML"
+                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
+                    style="left: 45%; top: 60%; transform: translate(-50%, -50%)">
+                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 1s">
+                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+                      <div
+                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f8fafc" alt="田中 宏"
+                          class="w-full h-full object-cover scale-110" />
+                      </div>
+                      <div
+                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
+                        内勤営業
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- p4: 高橋涼子 -->
+                  <div hx-get="/api/persona/p4" hx-target="#detail-panel" hx-swap="outerHTML"
+                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
+                    style="left: 80%; top: 70%; transform: translate(-50%, -50%)">
+                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 1.5s">
+                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+                      <div
+                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=f8fafc" alt="高橋 涼子"
+                          class="w-full h-full object-cover scale-110" />
+                      </div>
+                      <div
+                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
+                        営業企画
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- p5: 伊藤健 -->
+                  <div hx-get="/api/persona/p5" hx-target="#detail-panel" hx-swap="outerHTML"
+                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
+                    style="left: 30%; top: 80%; transform: translate(-50%, -50%)">
+                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 2s">
+                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+                      <div
+                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=f8fafc" alt="伊藤 健"
+                          class="w-full h-full object-cover scale-110" />
+                      </div>
+                      <div
+                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
+                        若手セールス
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </main>
+
+            <!-- ==========================================
+          右カラム: 詳細パネル
+          ========================================== -->
+            <aside id="detail-panel"
+              class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" <%-
+              !selectedPersonaId ? 'style="display: none;"' : '' %>>
+              <% if (selectedPersonaId) { %>
+                <!-- This will be populated via HTMX when a persona is clicked -->
+                <% } %>
+            </aside>
+
+          </div>
+      </div>
+
+      <script>
+        // プロジェクトメニューのトグル
+        function toggleProjectMenu() {
+          const menu = document.getElementById('project-dropdown');
+          menu.classList.toggle('hidden');
+        }
+
+        // メニュー外クリックで閉じる
+        document.addEventListener('click', function (event) {
+          const container = document.getElementById('project-menu-container');
+          if (container && !container.contains(event.target)) {
+            document.getElementById('project-dropdown')?.classList.add('hidden');
+          }
+        });
+
+        // プロジェクト切り替え
+        function switchProject(projectId) {
+          fetch('/api/project/switch', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ projectId })
+          }).then(res => {
+            if (res.headers.get('hx-redirect')) {
+              window.location.href = res.headers.get('hx-redirect');
+            } else {
+              window.location.reload();
+            }
+          });
+        }
+
+        // 新規プロジェクト作成
+        function createProject() {
+          fetch('/api/project/create', {
+            method: 'POST'
+          }).then(res => {
+            if (res.headers.get('hx-redirect')) {
+              window.location.href = res.headers.get('hx-redirect');
+            } else {
+              window.location.reload();
+            }
+          });
+        }
+
+        // htmx 送信中のロード画面自動トグル用の追加ロジック
+        document.body.addEventListener('htmx:beforeRequest', function (evt) {
+          if (evt.detail.pathInfo.requestPath === '/api/simulate') {
+            document.getElementById('loading-overlay').style.display = 'flex';
+          }
+        });
+        document.body.addEventListener('htmx:afterRequest', function (evt) {
+          if (evt.detail.pathInfo.requestPath === '/api/simulate') {
+            document.getElementById('loading-overlay').style.display = 'none';
+          }
+        });
+
+        // サイドバーのナビゲーションのアクティブ状態を管理
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
+          if (evt.detail.target.id === 'left-panel-content') {
+            const path = evt.detail.requestConfig ? evt.detail.requestConfig.path : '';
+
+            if (!path) return;
+
+            // すべてリセット
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+              btn.classList.remove('bg-orange-50', 'text-orange-600');
+              btn.classList.add('text-slate-400', 'hover:bg-slate-100', 'hover:text-slate-600');
+              const icon = btn.querySelector('.nav-icon');
+              if (icon) {
+                icon.classList.remove('text-orange-500');
+                icon.classList.add('text-slate-400', 'group-hover/item:text-slate-600');
+              }
+              const span = btn.querySelector('span');
+              if (span) {
+                span.classList.remove('text-orange-600');
+                span.classList.add('text-slate-600');
+              }
+            });
+
+            // 対象のボタンをアクティブ（オレンジ）にする
+            let activeBtnId = null;
+            if (path.startsWith('/menu/chat')) activeBtnId = 'nav-chat';
+            if (path.startsWith('/menu/resources')) activeBtnId = 'nav-resources';
+
+            if (activeBtnId) {
+              const btn = document.getElementById(activeBtnId);
+              if (btn) {
+                btn.classList.remove('text-slate-400', 'hover:bg-slate-100', 'hover:text-slate-600');
+                btn.classList.add('bg-orange-50', 'text-orange-600');
+                const icon = btn.querySelector('.nav-icon');
+                if (icon) {
+                  icon.classList.remove('text-slate-400', 'group-hover/item:text-slate-600');
+                  icon.classList.add('text-orange-500');
+                }
+                const span = btn.querySelector('span');
+                if (span) {
+                  span.classList.remove('text-slate-600');
+                  span.classList.add('text-orange-600');
+                }
+              }
+            }
+          }
+        });
+      </script>
+</body>
+
+</html>
