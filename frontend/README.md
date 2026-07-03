@@ -8,6 +8,7 @@ Express、EJS、HTMXで構築したPersonaOpsのフロントエンド・プロ�
 - UIテンプレート：EJS
 - 部分更新：HTMX
 - スタイル：Tailwind CSS
+- private API接続：共通server-side APIクライアント（ローカルは認証なし、Cloud RunはGoogle ID token）
 - 静的解析：ESLint
 
 ## 事前準備
@@ -34,6 +35,25 @@ pnpm dev
 `3000` が使用中の場合は、開発時に限り `3001` 以降の空きポートへ自動で切り替わる。
 `views/` と生成済み CSS は LiveReload で反映され、`server.js` と `src/` 配下の変更時のみサーバーが再起動する。
 
+ローカルでは先に`api`を起動する。
+
+```sh
+cd api
+pnpm dev
+```
+
+frontendはデフォルトで`http://127.0.0.1:8080`のローカルAPIを認証なしで呼ぶ。変更する場合だけ起動前に環境変数を設定する。
+
+```sh
+export API_BASE_URL=http://127.0.0.1:8080
+export API_AUTH_MODE=none
+pnpm dev
+```
+
+`/ops/health`では、公開frontendの`GET /healthz`を経由してローカルAPIの`GET /healthz`を確認できる。これは削除しやすい暫定画面として、画面・表示処理・route定義を`src/routes/health.js` 1ファイルに集約している。
+
+Cloud RunではTerraformが`API_BASE_URL`と`API_AUTH_MODE=google-id-token`を設定する。API呼び出しと認証は`src/clients/private-api.js`へ集約しており、routeから直接実装しない。
+
 ## コマンド
 
 | コマンド         | 用途                                                                       |
@@ -44,6 +64,7 @@ pnpm dev
 | `pnpm build:css` | Tailwind CSSを一度だけ生成する                                             |
 | `pnpm watch:css` | Tailwind CSSを監視して継続的に生成する                                     |
 | `pnpm lint`      | ESLintでJavaScriptを静的解析する                                           |
+| `pnpm test`      | Node.js標準テストランナーで単体テストを実行する                            |
 
 VS Codeでは「ターミナル: タスクの実行」から、同名の`frontend: ...`タスクを実行できる。
 
@@ -54,6 +75,7 @@ frontend/
 ├── server.js              # Expressサーバーのエントリーポイント
 ├── src/
 │   ├── data/              # モックデータとインメモリ状態
+│   ├── clients/           # private APIへの共通server-side通信
 │   ├── routes/            # HTTPルーティング
 │   └── utils/             # HTMLレンダリング補助
 ├── views/
@@ -62,6 +84,7 @@ frontend/
 ├── public/
 │   ├── src/               # Tailwind CSSの入力
 │   └── dist/              # 生成済みCSS
+├── Dockerfile
 ├── package.json
 ├── pnpm-lock.yaml
 └── pnpm-workspace.yaml

@@ -166,6 +166,16 @@
       },
       "problemMatcher": [],
       "detail": "ESLintでJavaScriptを静的解析します"
+    },
+    {
+      "label": "frontend: test",
+      "type": "shell",
+      "command": "pnpm test",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "Node.js標準テストランナーで単体テストを実行します。lintは静的解析、testは実行時の振る舞いを確認します"
     }
   ]
 }
