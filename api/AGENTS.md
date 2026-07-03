@@ -17,6 +17,7 @@
 
 - **CI (継続的インテグレーション)**: GitHub Actions で `pnpm test` 等を実行し品質を担保する。
 - **CD (継続的デプロイメント)**: Cloud Build 経由で Artifact Registry へのPushとCloud Runへのデプロイを自動で行う。
+- **実装後の検証ルール**: CIでの頻繁な失敗を防ぐため、実装や処理を修正した後は**必ずCIと同じチェック（`pnpm lint`, `pnpm typecheck`, `pnpm test`）を手元で実行**し、全てパスすることを確認してからコミットすること。
 
 ## コーディング・設計指針
 

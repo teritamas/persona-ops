@@ -6,7 +6,7 @@
  */
 
 export class NotFoundError extends Error {
-  readonly name = 'NotFoundError';
+  override readonly name = 'NotFoundError';
 
   constructor(resource: string, id: string) {
     super(`${resource} with id "${id}" was not found.`);
@@ -14,7 +14,7 @@ export class NotFoundError extends Error {
 }
 
 export class ValidationError extends Error {
-  readonly name = 'ValidationError';
+  override readonly name = 'ValidationError';
 
   constructor(message: string) {
     super(message);
