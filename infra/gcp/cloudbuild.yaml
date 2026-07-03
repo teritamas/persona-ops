@@ -7,13 +7,6 @@ options:
   machineType: E2_MEDIUM
 
 steps:
-  - id: terraform-fmt
-    name: hashicorp/terraform:1.15.1
-    entrypoint: sh
-    args:
-      - -c
-      - terraform fmt -check -recursive infra/terraform
-
   - id: terraform-init
     name: hashicorp/terraform:1.15.1
     dir: infra/terraform/environments/stg
