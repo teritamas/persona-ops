@@ -1,0 +1,5 @@
+project_id        = "your-gcp-project-id"
+github_owner      = "your-github-owner"
+github_repository = "persona-ops"
+region            = "asia-northeast1"
+
