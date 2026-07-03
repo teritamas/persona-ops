@@ -1,14 +1,19 @@
 {
   "name": "persona-ops-frontend",
   "version": "1.0.0",
+  "private": true,
   "description": "Frontend environment using htmx, Tailwind CSS, and Flowbite",
   "main": "server.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@11.7.0",
   "scripts": {
-    "build": "npm run build:css",
+    "build": "pnpm build:css",
     "build:css": "tailwindcss -i ./public/src/input.css -o ./public/dist/output.css",
     "watch:css": "tailwindcss -i ./public/src/input.css -o ./public/dist/output.css --watch",
     "start": "node server.js",
-    "dev": "concurrently \"npm run watch:css\" \"nodemon server.js -e js,ejs,html\"",
+    "dev": "concurrently \"pnpm watch:css\" \"nodemon --watch server.js --watch src --ext js server.js\"",
     "lint": "eslint ."
   },
   "dependencies": {
