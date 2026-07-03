@@ -8,7 +8,8 @@
     "build:css": "tailwindcss -i ./public/src/input.css -o ./public/dist/output.css",
     "watch:css": "tailwindcss -i ./public/src/input.css -o ./public/dist/output.css --watch",
     "start": "node server.js",
-    "dev": "concurrently \"npm run watch:css\" \"nodemon server.js -e js,ejs,html\""
+    "dev": "concurrently \"npm run watch:css\" \"nodemon server.js -e js,ejs,html\"",
+    "lint": "eslint ."
   },
   "dependencies": {
     "ejs": "^6.0.1",
@@ -17,9 +18,12 @@
     "htmx.org": "^2.0.10"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "autoprefixer": "^10.4.19",
     "concurrently": "^10.0.3",
     "connect-livereload": "^0.6.1",
+    "eslint": "^10.6.0",
+    "globals": "^17.7.0",
     "livereload": "^0.10.3",
     "nodemon": "^3.1.14",
     "postcss": "^8.4.38",

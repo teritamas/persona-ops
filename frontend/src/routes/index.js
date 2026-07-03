@@ -39,7 +39,7 @@ const { renderChatMessage, renderSandbox } = require('../utils/renderers');
 router.get('/menu/chat', (req, res) => {
   const activeProject = getActiveProject();
 
-  let mainAreaHtml = '';
+  let mainAreaHtml;
 
   if (activeProject.isInitial || !activeProject.activeChat || activeProject.activeChat.messages.length === 0) {
     // 初期状態：ウェルカム画面とサジェストボタンを表示
@@ -668,8 +668,7 @@ router.post('/api/project/create', (req, res) => {
   return res.send();
 });
 
-// メインのレイアウトレンダリング用エンドポイント
-const fs = require('fs');
+
 router.get('/', (req, res) => {
   const activeProject = getActiveProject();
   res.render('index', {

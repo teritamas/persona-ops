@@ -35,7 +35,6 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/js/htmx.min.js', express.static(path.join(__dirname, 'node_modules/htmx.org/dist/htmx.min.js')));
 
 
-const { state, mockProjects, getActiveProject } = require('./src/data/store');
 const routes = require('./src/routes/index');
 
 app.use('/', routes);
