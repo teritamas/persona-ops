@@ -4,7 +4,7 @@
 
 アイドル時の費用を抑えるため、サーバーレスかつ従量課金のGoogle Cloudサービスで構成する。
 
-- Cloud Run：Web/API実行基盤。最小インスタンス数0、最大3
+- Cloud Run：`persona-ops-web` と `persona-ops-private-api` の実行基盤。最小インスタンス数0、上限instanceあり
 - Vertex AI：事前確保されたキャパシティを持たないGemini・Embedding推論
 - Firestore Native：プロジェクト、会話、ペルソナオントロジー、
   シミュレーション履歴、ベクトルを保存
@@ -82,7 +82,7 @@ bootstrap自身がremote state用bucketを作成するため、bootstrapのstate
 1. feature branchをpushし、pull requestを作成する
 2. GitHub ActionsがTerraformの書式と構文を検証する
 3. pull requestを`main`へmergeする
-4. `api/Dockerfile`を使ってCloud Buildがアプリイメージをbuildする
+4. `api/Dockerfile` と `frontend/Dockerfile` を使ってCloud Buildが両イメージをbuildする
 5. Cloud Buildがstg用GCS backendを初期化する
 6. Cloud Buildが`environments/stg`をapplyする
 
@@ -92,14 +92,14 @@ merge後はGoogle Cloud Buildの`persona-ops-main`を確認する。
 Cloud Runのデプロイ先URLは以下で確認できる。
 
 ```sh
-gcloud run services describe persona-ops \
+gcloud run services describe persona-ops-web \
+  --region=asia-northeast1 \
+  --format="value(status.url)"
+
+gcloud run services describe persona-ops-private-api \
   --region=asia-northeast1 \
   --format="value(status.url)"
 ```
-
-`api/Dockerfile`が追加されるまでは、Googleが公開しているhello imageを
-Cloud Runへデプロイする。GitHub ActionsにはGoogle Cloudの認証情報を渡さず、
-`terraform apply`も実行しない。
 
 ## 開発/運用者向け
 
@@ -115,24 +115,27 @@ terraform -chdir=infra/terraform/environments/stg init \
 terraform -chdir=infra/terraform/environments/stg fmt -check
 terraform -chdir=infra/terraform/environments/stg validate
 terraform -chdir=infra/terraform/environments/stg plan \
+  -var="api_container_image=asia-northeast1-docker.pkg.dev/${PROJECT_ID}/persona-ops/private-api:manual" \
+  -var="frontend_container_image=asia-northeast1-docker.pkg.dev/${PROJECT_ID}/persona-ops/frontend:manual" \
   -var="project_id=${PROJECT_ID}" \
   -var="region=asia-northeast1" \
   -out=stg.tfplan
 terraform -chdir=infra/terraform/environments/stg apply stg.tfplan
-terraform -chdir=infra/terraform/environments/stg output cloud_run_service_url
+terraform -chdir=infra/terraform/environments/stg output frontend_service_url
+terraform -chdir=infra/terraform/environments/stg output api_service_url
 ```
 
 どちらも同じGCS backendとTerraform state lockを使用するため、Cloud Buildの実行中に手動applyを実行してはならない。
 
 ### ローカル開発用ADCを作成する
 
-stg apply後に作成されたCloud Runサービスアカウントを、ローカルでもimpersonateする。これによりサービスアカウントキーを発行せず、Cloud Runと同じIAM権限でVertex AI、Firestore、Cloud Storageへ接続できる。
+stg apply後に作成されたprivate API用Cloud Runサービスアカウントを、ローカルでもimpersonateする。これによりサービスアカウントキーを発行せず、Cloud Runと同じIAM権限でVertex AI、Firestore、Cloud Storageへ接続できる。
 
 管理者が開発者へToken Creator権限を付与する。
 
 ```sh
 gcloud iam service-accounts add-iam-policy-binding \
-  persona-ops@${PROJECT_ID}.iam.gserviceaccount.com \
+  persona-ops-private-api@${PROJECT_ID}.iam.gserviceaccount.com \
   --member="user:${USER_EMAIL}" \
   --role="roles/iam.serviceAccountTokenCreator"
 ```
@@ -141,12 +144,12 @@ gcloud iam service-accounts add-iam-policy-binding \
 
 ```sh
 gcloud auth application-default login \
-  --impersonate-service-account=persona-ops@${PROJECT_ID}.iam.gserviceaccount.com
+  --impersonate-service-account=persona-ops-private-api@${PROJECT_ID}.iam.gserviceaccount.com
 ```
 
 Terraform適用前はサービスアカウントやデータリソースが存在しないため、この手順と実GCP疎通確認は実行できない。APIのunit testはGCPをmock化しているため、Terraform適用前でも実行できる。
 
-その後下記のコマンドで接続ができていることを確認する
+その後下記のコマンドで接続ができていることを確認する。
 
 ```
 cd api
@@ -158,6 +161,7 @@ pnpm verify:gcp
 - アップロードファイルとTerraform stateにはpublic access preventionとuniform bucket-level accessを設定する
 - Cloud RunとCloud Buildでサービスアカウントを分離し、鍵を発行しない
 - Firestoreの削除保護を有効化し、Terraformからstgデータを削除しない
-- Cloud Runの未認証アクセスは無効にし、IAM認証を必須とする
+- `persona-ops-web` は未認証公開、`persona-ops-private-api` はIAM認証を必須とする
+- frontendサービスアカウントにだけprivate APIの `roles/run.invoker` を付与し、Vertex AI / Firestore / Storage 権限は付与しない
 - 常時稼働するDB、VM、NAT gateway、load balancer、VPC connectorは作成しない
 - billing accountと通知先の決定後、予算アラートを設定する
