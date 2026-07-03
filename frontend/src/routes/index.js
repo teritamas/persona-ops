@@ -313,7 +313,7 @@ router.get('/api/persona/:id', (req, res) => {
   }
 
   // OOB スワップ用の箱庭再レンダリングを含めることで、選択状態枠線を付与
-  const updatedSandbox = renderSandbox(state.simulationDone);
+  const updatedSandbox = renderSandbox(state.simulationDone, activeProject, state.selectedPersonaId);
 
   res.send(`
     <aside id="detail-panel" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: flex;">
@@ -403,7 +403,8 @@ router.get('/api/persona/:id', (req, res) => {
 // ペルソナ詳細を閉じる
 router.get('/api/persona/close', (req, res) => {
   state.selectedPersonaId = null;
-  const updatedSandbox = renderSandbox(state.simulationDone);
+  const activeProject = getActiveProject();
+  const updatedSandbox = renderSandbox(state.simulationDone, activeProject, state.selectedPersonaId);
   res.send(`
     <aside id="detail-panel" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: none;">
     </aside>
@@ -480,7 +481,7 @@ router.post('/api/simulate', (req, res) => {
     });
 
     // 箱庭（吹き出し付きアバター）を構築
-    const sandboxHtml = renderSandbox(true);
+    const sandboxHtml = renderSandbox(true, activeProject, state.selectedPersonaId);
 
     // チャットの追加メッセージを生成
     const userMsgHtml = renderChatMessage(userMsg);
