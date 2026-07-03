@@ -4,16 +4,27 @@
 
 ```mermaid
 flowchart LR
-    User["PdM / 開発チーム"] --> Run["Cloud Run<br/>Web / API / Agent"]
-    Run --> Vertex["Vertex AI<br/>Gemini / Embeddings"]
-    Run --> Firestore["Firestore<br/>会話・オントロジー・ベクトル"]
-    Run --> Storage["Cloud Storage<br/>アップロード原本"]
+    User["PdM / 開発チーム"] --> Frontend["Cloud Run<br/>persona-ops-web<br/>public"]
+    Frontend --> PrivateAPI["Cloud Run<br/>persona-ops-private-api<br/>IAM required"]
+    PrivateAPI --> Vertex["Vertex AI<br/>Gemini / Embeddings"]
+    PrivateAPI --> Firestore["Firestore<br/>会話・オントロジー・ベクトル"]
+    PrivateAPI --> Storage["Cloud Storage<br/>アップロード原本"]
     GitHub["GitHub main"] --> Build["Cloud Build"]
     Build --> Registry["Artifact Registry"]
     Build --> Terraform["Terraform"]
-    Registry --> Run
-    Terraform --> Run
+    Registry --> Frontend
+    Registry --> PrivateAPI
+    Terraform --> Frontend
+    Terraform --> PrivateAPI
 ```
+
+## 実行境界と責務分解の背景
+
+frontendは未認証公開、private APIはIAM認証必須の境界を維持する。ブラウザからprivate APIを直接呼ばず、`persona-ops-web` のserver-sideだけが `persona-ops-private-api` を呼び出す（BFFパターン）。この2層構成を採用した理由は以下の通りである。
+
+- **セキュリティとインフラ権限の分離**: 未認証アクセスを防ぐため、IAM必須の操作（Vertex AI、Firestore等）は全て内部APIに閉じ込める。frontendのサービスアカウントには「APIを呼ぶ権限」のみを与え、最小権限の原則を適用する。
+- **関心事の分離 (Separation of Concerns)**: frontend（Express+HTMX）はUI提供に特化し、private API（Fastify+DDD）はビジネスロジックに特化することで、各層をシンプルに保つ。
+- **SSR採用の理由**: SPA（Firebase Hosting等）ではなくSSRを採用することで、ブラウザでの複雑なトークン・状態管理を省略し、フロントエンドサーバーのIAM権限で安全かつ透過的にAPIを呼び出す。
 
 ## オントロジーの実装境界
 
@@ -48,7 +59,7 @@ Vertex AI RAG EngineはRAGパイプラインのマネージドサービスであ
 | Google Cloud実行プロダクトを1つ以上利用 | Cloud Run                                                                 |
 | Google Cloud AI技術を1つ以上利用        | Vertex AI上のGemini API / Embeddings                                      |
 | GitHub連携・CI/CD                       | mainへのpushをCloud Build triggerが検知                                   |
-| デプロイ済みURL                         | Terraform output `cloud_run_service_url`                                  |
+| デプロイ済みURL                         | Terraform output `frontend_service_url` / `api_service_url`               |
 | 実運用を見据えたDevOps                  | GitHub Actions CI、remote state、権限分離、immutable image、IaC、validate |
 | システム構成図                          | 本文のMermaidを提出用画像へ書き出す                                       |
 | 公開GitHubリポジトリ                    | リポジトリ公開設定は提出前に手動確認                                      |
@@ -56,7 +67,7 @@ Vertex AI RAG EngineはRAGパイプラインのマネージドサービスであ
 
 ## コスト方針
 
-- Cloud Runはrequest-based、最小0台、最大3台、CPU idleを有効化する。
+- Cloud Runはrequest-based、最小0台、上限instanceあり、CPU idleを有効化する。
 - Firestoreは無料枠対象の`(default)` databaseを利用する。
 - Artifact Registryは直近5イメージを保持し、古いイメージを削除する。
 - Cloud Storageのアップロード原本は30日後にNearlineへ移行する。

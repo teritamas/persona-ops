@@ -4,10 +4,10 @@ FastifyとGoogle Agent Development Kit（ADK）で構築したバックエンド
 
 ## エンドポイント
 
-- `GET /healthz`：外部サービスへ接続しないliveness check
-- `GET /healthz/vertexai`：ADKからVertex AIへ実際に推論を行う手動疎通確認
+- `GET /api/v1/healthz`：外部サービスへ接続しないliveness check
+- `GET /api/v1/healthz/vertexai`：ADKからVertex AIへ実際に推論を行う手動疎通確認
 
-`/healthz/vertexai`は呼び出すたびにVertex AI利用料が発生するため、Cloud Runのstartup probeやreadiness probeには設定しないこと。
+`/api/v1/healthz/vertexai`は呼び出すたびにVertex AI利用料が発生するため、Cloud Runのstartup probeやreadiness probeには設定しないこと。
 
 ## 事前準備
 
@@ -17,7 +17,7 @@ FastifyとGoogle Agent Development Kit（ADK）で構築したバックエンド
 
 ```sh
 gcloud iam service-accounts add-iam-policy-binding \
-  persona-ops@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com \
+  persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com \
   --member="user:YOUR_EMAIL" \
   --role="roles/iam.serviceAccountTokenCreator"
 ```
@@ -28,7 +28,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 gcloud auth login
 gcloud config set project YOUR_STG_PROJECT_ID
 gcloud auth application-default login \
-  --impersonate-service-account=persona-ops@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com
+  --impersonate-service-account=persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com
 ```
 
 ## ローカル起動
@@ -49,8 +49,8 @@ pnpm dev
 下記のコマンドで疎通確認ができる
 
 ```sh
-curl http://127.0.0.1:8080/healthz
-curl http://127.0.0.1:8080/healthz/vertexai
+curl http://127.0.0.1:8080/api/v1/healthz
+curl http://127.0.0.1:8080/api/v1/healthz/vertexai
 ```
 
 ## Cloud Runでの確認
@@ -59,12 +59,12 @@ Cloud Runは外部からの通信を遮断しているため、動作確認に�
 
 ```sh
 SERVICE_URL="$(
-  gcloud run services describe persona-ops \
+  gcloud run services describe persona-ops-private-api \
     --region=asia-northeast1 \
     --format='value(status.url)'
 )"
 
 curl \
   -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
-  "${SERVICE_URL}/healthz/vertexai"
+  "${SERVICE_URL}/api/v1/healthz/vertexai"
 ```

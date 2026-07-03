@@ -38,8 +38,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.use('/js/htmx.min.js', express.static(path.join(__dirname, 'node_modules/htmx.org/dist/htmx.min.js')));
 
 
+const healthRoutes = require('./src/routes/health');
 const routes = require('./src/routes/index');
 
+app.use('/', healthRoutes);
 app.use('/', routes);
 
 function startServer(port, retriesRemaining) {

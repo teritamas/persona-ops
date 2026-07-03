@@ -45,6 +45,13 @@ jobs:
         working-directory: frontend
         run: pnpm lint
 
+      - name: Test
+        working-directory: frontend
+        run: pnpm test
+
       - name: Build
         working-directory: frontend
         run: pnpm build
+
+      - name: Docker build
+        run: docker build --tag persona-ops-frontend-test frontend

@@ -26,13 +26,13 @@ function createApp(aiAgent: AiAgentPort) {
 }
 
 describe('health routes', () => {
-  it('Vertex AI を呼び出さずに Liveness (ヘルスチェック) を返す', async () => {
+  it('api/v1 配下で Vertex AI を呼び出さずに Liveness (ヘルスチェック) を返す', async () => {
     const invoke = vi.fn<() => Promise<string>>();
     const app = createApp({ invoke });
 
     const response = await app.inject({
       method: 'GET',
-      url: '/healthz',
+      url: '/api/v1/healthz',
     });
 
     expect(response.statusCode).toBe(200);
@@ -40,13 +40,13 @@ describe('health routes', () => {
     expect(invoke).not.toHaveBeenCalled();
   });
 
-  it('Vertex AI の接続ステータス詳細を返す', async () => {
+  it('api/v1 配下で Vertex AI の接続ステータス詳細を返す', async () => {
     const invoke = vi.fn<() => Promise<string>>().mockResolvedValue('ok');
     const app = createApp({ invoke });
 
     const response = await app.inject({
       method: 'GET',
-      url: '/healthz/vertexai',
+      url: '/api/v1/healthz/vertexai',
     });
 
     expect(response.statusCode).toBe(200);
@@ -59,7 +59,7 @@ describe('health routes', () => {
     expect(invoke).toHaveBeenCalledOnce();
   });
 
-  it('Vertex AI が利用不可能な場合は安全なエラーを返す', async () => {
+  it('api/v1 配下で Vertex AI が利用不可能な場合は安全なエラーを返す', async () => {
     const invoke = vi
       .fn<() => Promise<string>>()
       .mockRejectedValue(new Error('sensitive credential details'));
@@ -67,7 +67,7 @@ describe('health routes', () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/healthz/vertexai',
+      url: '/api/v1/healthz/vertexai',
     });
 
     expect(response.statusCode).toBe(503);
@@ -79,7 +79,7 @@ describe('health routes', () => {
     expect(response.body).not.toContain('sensitive');
   });
 
-  it('Vertex AI が "ok" 以外のレスポンスを返した場合はエラーとする', async () => {
+  it('api/v1 配下で Vertex AI が "ok" 以外のレスポンスを返した場合はエラーとする', async () => {
     const invoke = vi
       .fn<() => Promise<string>>()
       .mockResolvedValue('unexpected text');
@@ -87,7 +87,7 @@ describe('health routes', () => {
 
     const response = await app.inject({
       method: 'GET',
-      url: '/healthz/vertexai',
+      url: '/api/v1/healthz/vertexai',
     });
 
     expect(response.statusCode).toBe(503);

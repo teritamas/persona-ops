@@ -10,22 +10,37 @@ module "application_data" {
 
   project_id       = var.project_id
   region           = var.region
-  application_name = local.application_name
+  application_name = "persona-ops"
 
   depends_on = [module.google_apis]
 }
 
-module "application_runtime" {
-  source = "../../modules/application_runtime"
+module "frontend_runtime" {
+  source = "../../modules/frontend_runtime"
 
-  project_id            = var.project_id
-  region                = var.region
-  application_name      = local.application_name
-  container_image       = var.container_image
-  uploads_bucket        = module.application_data.uploads_bucket
-  vertex_ai_model       = var.vertex_ai_model
-  allow_unauthenticated = var.allow_unauthenticated
-  max_instances         = var.max_instances
+  project_id       = var.project_id
+  region           = var.region
+  application_name = local.frontend_service_name
+  container_image  = var.frontend_container_image
+  api_base_url     = module.private_api_runtime.service_url
+  max_instances    = var.frontend_max_instances
+
+  depends_on = [module.google_apis]
+}
+
+module "private_api_runtime" {
+  source = "../../modules/private_api_runtime"
+
+  project_id       = var.project_id
+  region           = var.region
+  application_name = local.private_api_service_name
+  container_image  = var.api_container_image
+  uploads_bucket   = module.application_data.uploads_bucket
+  vertex_ai_model  = var.vertex_ai_model
+  invoker_members = toset([
+    "serviceAccount:${module.frontend_runtime.runtime_service_account}",
+  ])
+  max_instances = var.api_max_instances
 
   depends_on = [
     module.application_data,
