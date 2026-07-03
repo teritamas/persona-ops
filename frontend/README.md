@@ -50,10 +50,6 @@ export API_AUTH_MODE=none
 pnpm dev
 ```
 
-`/ops/health`では、公開frontendの`GET /healthz`を経由してローカルAPIの`GET /healthz`を確認できる。これは削除しやすい暫定画面として、画面・表示処理・route定義を`src/routes/health.js` 1ファイルに集約している。
-
-Cloud RunではTerraformが`API_BASE_URL`と`API_AUTH_MODE=google-id-token`を設定する。API呼び出しと認証は`src/clients/private-api.js`へ集約しており、routeから直接実装しない。
-
 ## コマンド
 
 | コマンド         | 用途                                                                       |

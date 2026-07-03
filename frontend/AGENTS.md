@@ -47,6 +47,7 @@
 - route内でGoogle Auth、認証ヘッダ、API base URL、timeoutを個別実装しない。
 - private APIのendpointは共通クライアントへroot-relative pathを渡して呼び出し、絶対URLを直接指定しない。
 - private APIをブラウザから直接呼ばず、公開frontendのserver-side routeを経由させる。
+- 公開する API route は `api/v1` prefix を必須とし、追加・変更時に bare な `/api` や version なし path を新設しない。
 - APIクライアントはプロセス単位で再利用し、リクエストごとに生成しない。
 - 同じUI断片を複数箇所で利用する場合は`views/partials/`へ移す。
 - EJSで表現できるHTMLをJavaScript文字列として新規追加しない。HTMXレスポンスも原則としてEJS partialをrenderする。
