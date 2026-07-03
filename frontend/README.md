@@ -50,6 +50,8 @@ export API_AUTH_MODE=none
 pnpm dev
 ```
 
+`/ops/health`では、公開frontendの`GET /api/v1/healthz`を経由してローカルAPIの`GET /api/v1/healthz`を確認できる。
+
 ## コマンド
 
 | コマンド         | 用途                                                                       |

@@ -36,12 +36,12 @@ test('private API が正常なときは成功の JSON ヘルスレスポンス�
   const response = createResponse();
 
   await handleHealthRequest(createRequest(), response, async (path) => {
-    assert.equal(path, '/healthz');
+    assert.equal(path, '/api/v1/healthz');
 
     return {
       data: { status: 'ok' },
       statusCode: 200,
-      url: 'http://127.0.0.1:8080/healthz',
+      url: 'http://127.0.0.1:8080/api/v1/healthz',
     };
   });
 
@@ -56,7 +56,7 @@ test('private API が異常なときは 503 を返す', async () => {
   await handleHealthRequest(createRequest(), response, async () => ({
     data: { status: 'error' },
     statusCode: 500,
-    url: 'http://127.0.0.1:8080/healthz',
+    url: 'http://127.0.0.1:8080/api/v1/healthz',
   }));
 
   assert.equal(response.statusCode, 503);
@@ -83,7 +83,7 @@ test('HTMX 断片に埋め込む private API の内容をエスケープする',
   await handleHealthRequest(createRequest({ htmx: true }), response, async () => ({
     data: { message: '</pre><script>alert(1)</script>' },
     statusCode: 500,
-    url: 'http://127.0.0.1:8080/healthz',
+    url: 'http://127.0.0.1:8080/api/v1/healthz',
   }));
 
   assert.equal(response.statusCode, 503);
@@ -96,7 +96,7 @@ test('公開ヘルスチェック画面は api/v1/healthz を HTMX の取得先�
     requestPrivateApi: async () => ({
       data: { status: 'ok' },
       statusCode: 200,
-      url: 'http://127.0.0.1:8080/healthz',
+      url: 'http://127.0.0.1:8080/api/v1/healthz',
     }),
   });
   const healthRouteLayer = router.stack.find(

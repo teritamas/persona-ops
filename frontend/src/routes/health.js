@@ -4,7 +4,7 @@ const {
 } = require('../clients/private-api');
 
 const PUBLIC_HEALTH_PROXY_PATH = '/api/v1/healthz';
-const PRIVATE_API_HEALTH_PATH = '/healthz';
+const PRIVATE_API_HEALTH_PATH = '/api/v1/healthz';
 
 function isHtmxRequest(req) {
   return req.get('HX-Request') === 'true';
@@ -29,7 +29,8 @@ function buildHealthViewModel(result) {
     return {
       apiUrl: result.apiUrl,
       checkedAt: result.checkedAt,
-      details: 'frontend の server-side proxy 経由で private API の /healthz を確認しました。',
+      details:
+        'frontend の server-side proxy 経由で private API の /api/v1/healthz を確認しました。',
       latencyMs: result.latencyMs,
       payload: result.payload,
       statusCode: result.statusCode,
@@ -179,7 +180,7 @@ function createHealthRouter(options = {}) {
           <span class="text-slate-700">Persona</span><span class="text-orange-500">Ops</span>
         </div>
         <p class="mt-2 text-sm text-slate-500">
-          公開 frontend から private API の <code>/healthz</code> を server-side で確認します。
+          公開 frontend から private API の <code>/api/v1/healthz</code> を server-side で確認します。
         </p>
       </div>
       <button

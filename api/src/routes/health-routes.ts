@@ -2,6 +2,10 @@ import type { FastifyInstance } from 'fastify';
 
 import type { AiAgentPort } from '../application/ports/ai-agent-port.js';
 
+const HEALTH_ROUTE_PREFIX = '/api/v1';
+const HEALTHZ_PATH = `${HEALTH_ROUTE_PREFIX}/healthz`;
+const VERTEX_AI_HEALTHZ_PATH = `${HEALTHZ_PATH}/vertexai`;
+
 const healthResponseSchema = {
   type: 'object',
   additionalProperties: false,
@@ -50,7 +54,7 @@ export async function healthRoutes(
   const { model, aiAgent } = options;
 
   app.get(
-    '/healthz',
+    HEALTHZ_PATH,
     {
       schema: {
         response: {
@@ -62,7 +66,7 @@ export async function healthRoutes(
   );
 
   app.get(
-    '/healthz/vertexai',
+    VERTEX_AI_HEALTHZ_PATH,
     {
       schema: {
         response: {

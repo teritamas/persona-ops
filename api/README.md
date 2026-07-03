@@ -4,10 +4,10 @@ FastifyとGoogle Agent Development Kit（ADK）で構築したバックエンド
 
 ## エンドポイント
 
-- `GET /healthz`：外部サービスへ接続しないliveness check
-- `GET /healthz/vertexai`：ADKからVertex AIへ実際に推論を行う手動疎通確認
+- `GET /api/v1/healthz`：外部サービスへ接続しないliveness check
+- `GET /api/v1/healthz/vertexai`：ADKからVertex AIへ実際に推論を行う手動疎通確認
 
-`/healthz/vertexai`は呼び出すたびにVertex AI利用料が発生するため、Cloud Runのstartup probeやreadiness probeには設定しないこと。
+`/api/v1/healthz/vertexai`は呼び出すたびにVertex AI利用料が発生するため、Cloud Runのstartup probeやreadiness probeには設定しないこと。
 
 ## 事前準備
 
@@ -49,8 +49,8 @@ pnpm dev
 下記のコマンドで疎通確認ができる
 
 ```sh
-curl http://127.0.0.1:8080/healthz
-curl http://127.0.0.1:8080/healthz/vertexai
+curl http://127.0.0.1:8080/api/v1/healthz
+curl http://127.0.0.1:8080/api/v1/healthz/vertexai
 ```
 
 ## Cloud Runでの確認
@@ -66,5 +66,5 @@ SERVICE_URL="$(
 
 curl \
   -H "Authorization: Bearer $(gcloud auth print-identity-token)" \
-  "${SERVICE_URL}/healthz/vertexai"
+  "${SERVICE_URL}/api/v1/healthz/vertexai"
 ```
