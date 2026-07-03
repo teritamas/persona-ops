@@ -1,8 +1,9 @@
 locals {
-  application_name = "persona-ops"
+  frontend_service_name    = "persona-ops-web"
+  private_api_service_name = "persona-ops-private-api"
 
   labels = {
-    application = local.application_name
+    application = "persona-ops"
     environment = var.environment
     managed-by  = "terraform"
   }

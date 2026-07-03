@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "Google Cloud project ID that runs the application."
+  description = "Google Cloud project ID that runs the frontend."
   type        = string
 }
 
@@ -9,28 +9,18 @@ variable "region" {
 }
 
 variable "application_name" {
-  description = "Application and Cloud Run service name."
+  description = "Frontend Cloud Run service name."
   type        = string
 }
 
 variable "container_image" {
-  description = "Container image URI deployed to Cloud Run."
+  description = "Container image URI deployed to the frontend."
   type        = string
 }
 
-variable "uploads_bucket" {
-  description = "Private bucket used for user-provided source material."
+variable "api_base_url" {
+  description = "Base URL of the private API service that the frontend proxies to."
   type        = string
-}
-
-variable "vertex_ai_model" {
-  description = "Vertex AI Gemini model used by the application."
-  type        = string
-}
-
-variable "allow_unauthenticated" {
-  description = "Whether the Cloud Run service is publicly invokable."
-  type        = bool
 }
 
 variable "max_instances" {

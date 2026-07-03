@@ -1,7 +1,7 @@
 resource "google_service_account" "application" {
   project      = var.project_id
   account_id   = var.application_name
-  display_name = "PersonaOps Cloud Run runtime"
+  display_name = "PersonaOps private API runtime"
 }
 
 resource "google_project_iam_member" "vertex_ai" {
@@ -89,12 +89,12 @@ resource "google_cloud_run_v2_service" "application" {
   ]
 }
 
-resource "google_cloud_run_v2_service_iam_member" "public" {
-  count = var.allow_unauthenticated ? 1 : 0
+resource "google_cloud_run_v2_service_iam_member" "invoker" {
+  for_each = var.invoker_members
 
   project  = google_cloud_run_v2_service.application.project
   location = google_cloud_run_v2_service.application.location
   name     = google_cloud_run_v2_service.application.name
   role     = "roles/run.invoker"
-  member   = "allUsers"
+  member   = each.value
 }

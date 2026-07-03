@@ -17,7 +17,7 @@ FastifyとGoogle Agent Development Kit（ADK）で構築したバックエンド
 
 ```sh
 gcloud iam service-accounts add-iam-policy-binding \
-  persona-ops@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com \
+  persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com \
   --member="user:YOUR_EMAIL" \
   --role="roles/iam.serviceAccountTokenCreator"
 ```
@@ -28,7 +28,7 @@ gcloud iam service-accounts add-iam-policy-binding \
 gcloud auth login
 gcloud config set project YOUR_STG_PROJECT_ID
 gcloud auth application-default login \
-  --impersonate-service-account=persona-ops@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com
+  --impersonate-service-account=persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com
 ```
 
 ## ローカル起動
@@ -59,7 +59,7 @@ Cloud Runは外部からの通信を遮断しているため、動作確認に�
 
 ```sh
 SERVICE_URL="$(
-  gcloud run services describe persona-ops \
+  gcloud run services describe persona-ops-private-api \
     --region=asia-northeast1 \
     --format='value(status.url)'
 )"

@@ -21,20 +21,27 @@ steps:
     args:
       - validate
 
-  - id: build-application
+  - id: build-private-api
     name: gcr.io/cloud-builders/docker
     entrypoint: bash
     args:
       - -euc
       - |
-        if [[ ! -f api/Dockerfile ]]; then
-          echo "api/Dockerfile is not present; keeping the bootstrap Cloud Run image."
-          exit 0
-        fi
-        image="${_REGION}-docker.pkg.dev/$PROJECT_ID/persona-ops/app:$COMMIT_SHA"
+        image="${_REGION}-docker.pkg.dev/$PROJECT_ID/persona-ops/private-api:$COMMIT_SHA"
         docker build --tag "$$image" api
         docker push "$$image"
-        printf '%s' "$$image" > /workspace/.app-image-uri
+        printf '%s' "$$image" > /workspace/.private-api-image-uri
+
+  - id: build-frontend
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -euc
+      - |
+        image="${_REGION}-docker.pkg.dev/$PROJECT_ID/persona-ops/frontend:$COMMIT_SHA"
+        docker build --tag "$$image" frontend
+        docker push "$$image"
+        printf '%s' "$$image" > /workspace/.frontend-image-uri
 
   - id: terraform-apply
     name: hashicorp/terraform:1.15.1
@@ -43,16 +50,13 @@ steps:
     args:
       - -euc
       - |
-        image_argument=""
-        if [ -f /workspace/.app-image-uri ]; then
-          image_argument="-var=container_image=$$(cat /workspace/.app-image-uri)"
-        fi
         terraform apply \
           -auto-approve \
           -input=false \
           -lock-timeout=10m \
+          -var="api_container_image=$$(cat /workspace/.private-api-image-uri)" \
+          -var="frontend_container_image=$$(cat /workspace/.frontend-image-uri)" \
           -var="project_id=$PROJECT_ID" \
-          -var="region=${_REGION}" \
-          $$image_argument
+          -var="region=${_REGION}"
 
 timeout: 1200s
