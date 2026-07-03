@@ -1,17 +1,10 @@
 import { buildApp } from './app.js';
 import { loadConfig } from './config.js';
-import { AdkVertexAiHealthService } from './services/vertex-ai-health-service.js';
+import { buildContainer } from './infra/container.js';
 
 const config = loadConfig();
-const app = buildApp({
-  logger: {
-    level: config.LOG_LEVEL,
-  },
-  model: config.VERTEX_AI_MODEL,
-  vertexAiHealthService: new AdkVertexAiHealthService({
-    model: config.VERTEX_AI_MODEL,
-  }),
-});
+const container = buildContainer(config);
+const app = buildApp({ config, container, logger: { level: config.LOG_LEVEL } });
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
   app.log.info({ signal }, 'Shutting down API server.');

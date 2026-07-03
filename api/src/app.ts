@@ -3,94 +3,32 @@ import Fastify, {
   type FastifyServerOptions,
 } from 'fastify';
 
-import type { VertexAiHealthService } from './services/vertex-ai-health-service.js';
+import type { Container } from './infra/container.js';
+import { healthRoutes } from './routes/health-routes.js';
+import { type AppConfig } from './config.js';
 
-const healthResponseSchema = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['status'],
-  properties: {
-    status: { type: 'string', const: 'ok' },
-  },
-} as const;
-
-const vertexHealthResponseSchema = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['latencyMs', 'model', 'service', 'status'],
-  properties: {
-    latencyMs: { type: 'number', minimum: 0 },
-    model: { type: 'string' },
-    service: { type: 'string', const: 'vertexai' },
-    status: { type: 'string', const: 'ok' },
-  },
-} as const;
-
-const vertexHealthErrorSchema = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['code', 'service', 'status'],
-  properties: {
-    code: { type: 'string', const: 'VERTEX_AI_UNAVAILABLE' },
-    service: { type: 'string', const: 'vertexai' },
-    status: { type: 'string', const: 'error' },
-  },
-} as const;
-
+/**
+ * Fastify アプリケーションを構築する
+ *
+ * Why: app.ts の責務はルートプラグインの登録のみとする。
+ * DI コンテナの構築は infra/container.ts の buildContainer() が担い、
+ * ここでは受け取ったコンテナを各プラグインに注入するだけにする。
+ */
 export function buildApp({
+  config,
+  container,
   logger = true,
-  model,
-  vertexAiHealthService,
 }: {
+  config: AppConfig;
+  container: Container;
   logger?: FastifyServerOptions['logger'];
-  model: string;
-  vertexAiHealthService: VertexAiHealthService;
 }): FastifyInstance {
   const app = Fastify({ logger });
 
-  app.get(
-    '/healthz',
-    {
-      schema: {
-        response: {
-          200: healthResponseSchema,
-        },
-      },
-    },
-    () => ({ status: 'ok' as const }),
-  );
-
-  app.get(
-    '/healthz/vertexai',
-    {
-      schema: {
-        response: {
-          200: vertexHealthResponseSchema,
-          503: vertexHealthErrorSchema,
-        },
-      },
-    },
-    async (request, reply) => {
-      const startedAt = performance.now();
-
-      try {
-        await vertexAiHealthService.check();
-        return {
-          latencyMs: Math.round(performance.now() - startedAt),
-          model,
-          service: 'vertexai' as const,
-          status: 'ok' as const,
-        };
-      } catch (error: unknown) {
-        request.log.error({ err: error }, 'Vertex AI health check failed.');
-        return reply.status(503).send({
-          code: 'VERTEX_AI_UNAVAILABLE' as const,
-          service: 'vertexai' as const,
-          status: 'error' as const,
-        });
-      }
-    },
-  );
+  void app.register(healthRoutes, {
+    aiAgent: container.aiAgent,
+    model: config.VERTEX_AI_MODEL,
+  });
 
   return app;
 }
