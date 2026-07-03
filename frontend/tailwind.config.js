@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./views/**/*.ejs",
     "./server.js",
+    "./src/**/*.js",
     "./public/**/*.html",
     "./public/**/*.js",
     "./node_modules/flowbite/**/*.js"
