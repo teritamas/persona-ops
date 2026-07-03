@@ -1,22 +1,34 @@
 import { loadConfig } from '../src/config.js';
-import { createGcpConnectivityService } from '../src/services/gcp-connectivity-service.js';
-import { AdkVertexAiHealthService } from '../src/services/vertex-ai-health-service.js';
+import { createDatabaseConnectivityService } from '../src/infra/database/database-connectivity-service.js';
+import { createStorageConnectivityService } from '../src/infra/storage/storage-connectivity-service.js';
+import { AdkAiAgent } from '../src/infra/ai/adk-ai-agent.js';
 
 const config = loadConfig();
-const connectivity = createGcpConnectivityService({
+
+const database = createDatabaseConnectivityService({
+  projectId: config.GOOGLE_CLOUD_PROJECT,
+});
+
+const storage = createStorageConnectivityService({
   bucketName: config.UPLOADS_BUCKET,
   projectId: config.GOOGLE_CLOUD_PROJECT,
 });
 
 async function verifyVertexAi(): Promise<void> {
-  await new AdkVertexAiHealthService({
+  const agent = new AdkAiAgent({
     model: config.VERTEX_AI_MODEL,
-  }).check();
+  });
+  await agent.invoke(
+    '接続確認です。「ok」の2文字だけを小文字で返してください。',
+    {
+      timeoutMs: 15_000,
+    },
+  );
 }
 
 const checks = [
-  ['Firestore', () => connectivity.verifyFirestore()],
-  ['Cloud Storage', () => connectivity.verifyStorage()],
+  ['Firestore (Database)', () => database.check()],
+  ['Cloud Storage', () => storage.check()],
   ['Vertex AI', verifyVertexAi],
 ] as const;
 

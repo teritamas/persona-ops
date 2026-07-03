@@ -1,21 +1,24 @@
 const express = require('express');
 const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 3000;
+const DEFAULT_PORT = 3000;
+const MAX_PORT_RETRIES = 10;
+const configuredPort = Number.parseInt(process.env.PORT ?? '', 10);
+const initialPort = Number.isInteger(configuredPort) ? configuredPort : DEFAULT_PORT;
+const allowPortFallback = !Number.isInteger(configuredPort);
 
 // Enable Live Reload in Development
 if (process.env.NODE_ENV !== 'production') {
-  const livereload = require("livereload");
-  const connectLiveReload = require("connect-livereload");
+  const livereload = require('livereload');
+  const connectLiveReload = require('connect-livereload');
 
   const liveReloadServer = livereload.createServer();
   liveReloadServer.watch(path.join(__dirname, 'views'));
-  liveReloadServer.watch(path.join(__dirname, 'public'));
-  liveReloadServer.watch(__dirname); // for server.js changes
+  liveReloadServer.watch(path.join(__dirname, 'public', 'dist'));
 
-  liveReloadServer.server.once("connection", () => {
+  liveReloadServer.server.once('connection', () => {
     setTimeout(() => {
-      liveReloadServer.refresh("/");
+      liveReloadServer.refresh('/');
     }, 100);
   });
 
@@ -39,6 +42,30 @@ const routes = require('./src/routes/index');
 
 app.use('/', routes);
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+function startServer(port, retriesRemaining) {
+  const server = app.listen(port, () => {
+    const address = server.address();
+    const activePort =
+      typeof address === 'object' && address !== null ? address.port : port;
+
+    console.log(`Server is running at http://localhost:${activePort}`);
+  });
+
+  server.once('error', (error) => {
+    if (error.code !== 'EADDRINUSE' || !allowPortFallback || retriesRemaining <= 0) {
+      throw error;
+    }
+
+    const nextPort = port + 1;
+
+    // In development, automatically move to the next port so a stale local
+    // process does not block startup.
+    console.warn(
+      `Port ${port} is already in use. Retrying on http://localhost:${nextPort}`,
+    );
+
+    startServer(nextPort, retriesRemaining - 1);
+  });
+}
+
+startServer(initialPort, MAX_PORT_RETRIES);

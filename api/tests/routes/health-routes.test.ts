@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildApp } from '../src/app.js';
-import type { VertexAiHealthService } from '../src/services/vertex-ai-health-service.js';
+import { buildApp } from '../../src/app.js';
+import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
+import type { AppConfig } from '../../src/config.js';
 
 const apps: Array<ReturnType<typeof buildApp>> = [];
 
@@ -9,11 +10,16 @@ afterEach(async () => {
   await Promise.all(apps.splice(0).map(async (app) => app.close()));
 });
 
-function createApp(vertexAiHealthService: VertexAiHealthService) {
+// テスト用の最小限の config スタブ
+const stubConfig = {
+  VERTEX_AI_MODEL: 'test-model',
+} as unknown as AppConfig;
+
+function createApp(aiAgent: AiAgentPort) {
   const app = buildApp({
+    config: stubConfig,
+    container: { aiAgent },
     logger: false,
-    model: 'test-model',
-    vertexAiHealthService,
   });
   apps.push(app);
   return app;
@@ -21,8 +27,8 @@ function createApp(vertexAiHealthService: VertexAiHealthService) {
 
 describe('health routes', () => {
   it('Vertex AI を呼び出さずに Liveness (ヘルスチェック) を返す', async () => {
-    const check = vi.fn<() => Promise<void>>();
-    const app = createApp({ check });
+    const invoke = vi.fn<() => Promise<string>>();
+    const app = createApp({ invoke });
 
     const response = await app.inject({
       method: 'GET',
@@ -31,12 +37,12 @@ describe('health routes', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: 'ok' });
-    expect(check).not.toHaveBeenCalled();
+    expect(invoke).not.toHaveBeenCalled();
   });
 
   it('Vertex AI の接続ステータス詳細を返す', async () => {
-    const check = vi.fn<() => Promise<void>>().mockResolvedValue();
-    const app = createApp({ check });
+    const invoke = vi.fn<() => Promise<string>>().mockResolvedValue('ok');
+    const app = createApp({ invoke });
 
     const response = await app.inject({
       method: 'GET',
@@ -50,14 +56,14 @@ describe('health routes', () => {
       status: 'ok',
     });
     expect(response.json()).toHaveProperty('latencyMs');
-    expect(check).toHaveBeenCalledOnce();
+    expect(invoke).toHaveBeenCalledOnce();
   });
 
   it('Vertex AI が利用不可能な場合は安全なエラーを返す', async () => {
-    const check = vi
-      .fn<() => Promise<void>>()
+    const invoke = vi
+      .fn<() => Promise<string>>()
       .mockRejectedValue(new Error('sensitive credential details'));
-    const app = createApp({ check });
+    const app = createApp({ invoke });
 
     const response = await app.inject({
       method: 'GET',
@@ -71,5 +77,25 @@ describe('health routes', () => {
       status: 'error',
     });
     expect(response.body).not.toContain('sensitive');
+  });
+
+  it('Vertex AI が "ok" 以外のレスポンスを返した場合はエラーとする', async () => {
+    const invoke = vi
+      .fn<() => Promise<string>>()
+      .mockResolvedValue('unexpected text');
+    const app = createApp({ invoke });
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/healthz/vertexai',
+    });
+
+    expect(response.statusCode).toBe(503);
+    expect(response.json()).toEqual({
+      code: 'VERTEX_AI_UNAVAILABLE',
+      service: 'vertexai',
+      status: 'error',
+    });
+    expect(invoke).toHaveBeenCalledOnce();
   });
 });

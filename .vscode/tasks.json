@@ -98,6 +98,74 @@
       },
       "problemMatcher": [],
       "detail": "Google Cloud環境（FirestoreやGCS等）への接続および認証設定を検証します"
+    },
+    {
+      "label": "frontend: dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "CSSのwatchと開発サーバーを起動します"
+    },
+    {
+      "label": "frontend: start",
+      "type": "shell",
+      "command": "pnpm start",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "Expressサーバーを起動します"
+    },
+    {
+      "label": "frontend: build",
+      "type": "shell",
+      "command": "pnpm build",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "配信用のCSSを一度だけ生成します。frontendでは build と build:css は同義です"
+    },
+    {
+      "label": "frontend: build:css",
+      "type": "shell",
+      "command": "pnpm build:css",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "Tailwind CSSを一度だけ生成して終了します。Hot Reloadはしません"
+    },
+    {
+      "label": "frontend: watch:css",
+      "type": "shell",
+      "command": "pnpm watch:css",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "Tailwind CSSの入力変更を監視し、変更のたびに再生成し続けます"
+    },
+    {
+      "label": "frontend: lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": [],
+      "detail": "ESLintでJavaScriptを静的解析します"
     }
   ]
 }
