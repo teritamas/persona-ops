@@ -1,5 +1,8 @@
 # PersonaOps
 
+[![API CI](https://github.com/teritamas/persona-ops/actions/workflows/api-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/api-ci.yml)
+[![Terraform CI](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml)
+
 > コードレビューの前に、 ユーザー影響をレビューする。  
 > それがペルソナOpsです。
 
@@ -10,16 +13,16 @@
 
 ## ハッカソン規約
 
-- [ハッカソン規約](./docs/hachathon_restriction.md)
+- [ハッカソン規約](./docs/hackathon_rules.md)
 
-## アプリケーション構成
+## フロントエンド・アプリケーション
 
 - **バックエンド/ルーティング**: Node.js + Express.js
 - **フロントエンド（UI構築）**: EJS + Tailwind CSS + Flowbite
 - **フロントエンド（非同期通信）**: HTMX (SPA風の部分更新を実現)
 - **CI/静的解析**: GitHub Actions + ESLint
 
-## ローカル環境の構築手順
+### ローカル環境の構築手順
 
 リポジトリをクローン後、以下の手順で開発サーバーを起動してください。
 
@@ -31,7 +34,7 @@ npm run dev
 
 起動後、ブラウザで [http://localhost:3000](http://localhost:3000) にアクセスすると、PersonaOpsのシミュレーション環境をご利用いただけます。
 
-## ディレクトリ構成
+### ディレクトリ構成
 
 - `frontend/server.js`: Expressサーバーのエントリーポイント
 - `frontend/src/routes/`: APIおよびUIレンダリングのルーティング
@@ -39,3 +42,12 @@ npm run dev
 - `frontend/src/utils/`: HTMLやUIパーツを生成するレンダリングロジック
 - `frontend/views/`: EJSテンプレート（`index.ejs`, `partials/`など）
 - `frontend/public/`: 静的ファイルやTailwindのコンパイル済みCSS
+
+## バックエンド
+
+- [Fastify / ADK API](./api/README.md)
+
+## インフラストラクチャ
+
+- [GCP / Terraform 設計と初期構築手順](./infra/terraform/README.md)
+- [アーキテクチャ・オントロジー・規約対応](./docs/infrastructure_design.md)

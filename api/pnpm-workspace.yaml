@@ -1,0 +1,8 @@
+allowBuilds:
+  '@google/genai': true
+  esbuild: true
+  protobufjs: true
+  sqlite3: set this to true or false
+autoInstallPeers: false
+minimumReleaseAgeExclude:
+  - tsx@4.22.5
