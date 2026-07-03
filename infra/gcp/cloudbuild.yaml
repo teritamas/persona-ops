@@ -1,0 +1,58 @@
+substitutions:
+  _REGION: asia-northeast1
+  _STATE_BUCKET: ""
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_MEDIUM
+
+steps:
+  - id: terraform-init
+    name: hashicorp/terraform:1.15.1
+    dir: infra/terraform/environments/stg
+    args:
+      - init
+      - -input=false
+      - -backend-config=bucket=${_STATE_BUCKET}
+
+  - id: terraform-validate
+    name: hashicorp/terraform:1.15.1
+    dir: infra/terraform/environments/stg
+    args:
+      - validate
+
+  - id: build-application
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -euc
+      - |
+        if [[ ! -f api/Dockerfile ]]; then
+          echo "api/Dockerfile is not present; keeping the bootstrap Cloud Run image."
+          exit 0
+        fi
+        image="${_REGION}-docker.pkg.dev/$PROJECT_ID/persona-ops/app:$COMMIT_SHA"
+        docker build --tag "$$image" api
+        docker push "$$image"
+        printf '%s' "$$image" > /workspace/.app-image-uri
+
+  - id: terraform-apply
+    name: hashicorp/terraform:1.15.1
+    dir: infra/terraform/environments/stg
+    entrypoint: sh
+    args:
+      - -euc
+      - |
+        image_argument=""
+        if [ -f /workspace/.app-image-uri ]; then
+          image_argument="-var=container_image=$$(cat /workspace/.app-image-uri)"
+        fi
+        terraform apply \
+          -auto-approve \
+          -input=false \
+          -lock-timeout=10m \
+          -var="project_id=$PROJECT_ID" \
+          -var="region=${_REGION}" \
+          $$image_argument
+
+timeout: 1200s

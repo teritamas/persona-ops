@@ -1,0 +1,63 @@
+name: API CI
+
+on:
+  pull_request:
+    paths:
+      - "api/**"
+      - ".github/workflows/api-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "api/**"
+      - ".github/workflows/api-ci.yml"
+
+permissions:
+  contents: read
+
+# すでにJobが実行中に新しいJobが始まった場合、古いジョブを自動的にキャンセルする
+concurrency:
+  group: api-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.13.0
+
+      - name: Set up pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.7.0 --activate
+
+      - name: Install dependencies
+        working-directory: api
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        working-directory: api
+        run: pnpm format:check
+
+      - name: Lint
+        working-directory: api
+        run: pnpm lint
+
+      - name: Typecheck
+        working-directory: api
+        run: pnpm typecheck
+
+      - name: Test
+        working-directory: api
+        run: pnpm test
+
+      - name: Build
+        working-directory: api
+        run: pnpm build

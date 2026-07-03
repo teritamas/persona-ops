@@ -1,0 +1,103 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "api: dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "開発用サーバーを起動します (ホットリロード有効)"
+    },
+    {
+      "label": "api: build",
+      "type": "shell",
+      "command": "pnpm build",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "detail": "TypeScriptコードをビルド（コンパイル）します"
+    },
+    {
+      "label": "api: start",
+      "type": "shell",
+      "command": "pnpm start",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "ビルドされたプロダクション用サーバーを起動します"
+    },
+    {
+      "label": "api: test",
+      "type": "shell",
+      "command": "pnpm test",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "vitestを使用してテストを実行し、カバレッジを測定します"
+    },
+    {
+      "label": "api: typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "detail": "TypeScriptの型チェックを実行します (ファイル出力なし)"
+    },
+    {
+      "label": "api: lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "ESLintを使用してソースコードの静的解析を実行します"
+    },
+    {
+      "label": "api: format",
+      "type": "shell",
+      "command": "pnpm format",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "Prettierを使用してプロジェクト全体のコードを自動整形します"
+    },
+    {
+      "label": "api: format:check",
+      "type": "shell",
+      "command": "pnpm format:check",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "Prettierを使用してコードが整形ルールに準拠しているか確認します"
+    },
+    {
+      "label": "api: verify:gcp",
+      "type": "shell",
+      "command": "pnpm verify:gcp",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "Google Cloud環境（FirestoreやGCS等）への接続および認証設定を検証します"
+    }
+  ]
+}
