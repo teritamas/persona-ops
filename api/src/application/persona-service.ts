@@ -9,7 +9,7 @@ export interface SavePersonaInput {
   role: string;
   traits: string[];
   background: string;
-  avatarSeed?: string;
+  avatarSeed?: string | undefined;
 }
 
 const AVATARS = ['Felix', 'Aneka', 'Jasper', 'Avery', 'Leo'] as const;
