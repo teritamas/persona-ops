@@ -60,14 +60,14 @@
       "detail": "TypeScriptの型チェックを実行します (ファイル出力なし)"
     },
     {
-      "label": "api: lint",
+      "label": "api: lint:fix",
       "type": "shell",
-      "command": "pnpm lint",
+      "command": "pnpm lint:fix",
       "options": {
         "cwd": "${workspaceFolder}/api"
       },
       "problemMatcher": [],
-      "detail": "ESLintを使用してソースコードの静的解析を実行します"
+      "detail": "ESLintを使用してソースコードの静的解析をして修正します"
     },
     {
       "label": "api: format",
@@ -158,14 +158,14 @@
       "detail": "Tailwind CSSの入力変更を監視し、変更のたびに再生成し続けます"
     },
     {
-      "label": "frontend: lint",
+      "label": "frontend: lint:fix",
       "type": "shell",
-      "command": "pnpm lint",
+      "command": "pnpm lint:fix",
       "options": {
         "cwd": "${workspaceFolder}/frontend"
       },
       "problemMatcher": [],
-      "detail": "ESLintでJavaScriptを静的解析します"
+      "detail": "ESLintでJavaScriptを静的解析して修正します。"
     },
     {
       "label": "frontend: test",
@@ -176,6 +176,57 @@
       },
       "problemMatcher": [],
       "detail": "Node.js標準テストランナーで単体テストを実行します。lintは静的解析、testは実行時の振る舞いを確認します"
+    },
+    {
+      "label": "dev: all",
+      "dependsOn": [
+        "api: dev",
+        "frontend: dev"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "detail": "APIとフロントエンドの両方の開発サーバーを起動します"
+    },
+    {
+      "label": "format: all",
+      "type": "shell",
+      "command": "pnpm format",
+      "options": {
+        "cwd": "${workspaceFolder}/api"
+      },
+      "problemMatcher": [],
+      "detail": "APIのPrettierを実行します"
+    },
+    {
+      "label": "test: all",
+      "dependsOn": [
+        "api: test",
+        "frontend: test"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "detail": "APIとフロントエンドの両方のテストを実行します"
+    },
+    {
+      "label": "lint:fix: all",
+      "dependsOn": [
+        "api: lint:fix",
+        "frontend: lint:fix"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "detail": "ESLintで両方のコードを修正します。"
+    },
+    {
+      "label": "full-ci-cycle: all",
+      "dependsOn": [
+        "format: all",
+        "test: all",
+        "lint:fix: all"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": [],
+      "detail": "リントの修正、フォーマット適応、テスト実行、両サーバー起動を順番に行います"
     }
   ]
 }
