@@ -11,8 +11,10 @@ import type { RequirementService } from '../../application/requirement-service.j
 import type { SimulationService } from '../../application/simulation-service.js';
 import { PERSONA_OPS_AGENT_INSTRUCTION } from './instructions.js';
 import { createApproveRequirementAndRequestSimulationTool } from './tools/approve-requirement-and-request-simulation-tool.js';
+import { createFetchDocumentTool } from './tools/fetch-document-tool.js';
 import { createSavePersonasTool } from './tools/save-personas-tool.js';
 import { createSaveRequirementTool } from './tools/save-requirement-tool.js';
+import type { SourceDocumentService } from '../../application/source-document/source-document-service.js';
 
 export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
   constructor(
@@ -20,6 +22,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
     private readonly personaService: PersonaService,
     private readonly requirementService: RequirementService,
     private readonly simulationService: SimulationService,
+    private readonly sourceDocumentService: SourceDocumentService,
   ) {}
 
   async *stream(input: PersonaOpsAgentInput): AsyncIterable<string> {
@@ -36,6 +39,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
           input.projectId,
           this.simulationService,
         ),
+        createFetchDocumentTool(this.sourceDocumentService),
       ],
     });
     const runner = new InMemoryRunner({

@@ -97,6 +97,38 @@ async function submitStreamChat(event) {
   input.value = '';
   input.style.height = 'auto';
 
+  // Trigger mock persona reaction loading (Hourglass)
+  fetch('/action/simulate/reset-reactions', { method: 'POST' })
+    .then(res => res.text())
+    .then(html => {
+      const sandbox = document.getElementById('sandbox-characters');
+      if (sandbox && html) {
+        sandbox.innerHTML = html;
+        if (typeof htmx !== 'undefined') {
+          htmx.process(sandbox); // Ensure htmx processes the new sandbox elements
+        }
+      }
+    })
+    .catch(err => console.error('Failed to trigger reset reactions:', err));
+
+  // Check if text contains a URL and add system message
+  const hasUrl = /(https?:\/\/[^\s]+)/g.test(text);
+  if (hasUrl) {
+    const systemHtml = `
+      <div class="flex w-full justify-center mb-4 animate-fade-in">
+        <div class="bg-slate-50 text-slate-500 text-xs px-4 py-1.5 rounded-full flex items-center shadow-sm border border-slate-200">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+          リソースに登録しました
+        </div>
+      </div>
+    `;
+    container.insertAdjacentHTML('beforeend', systemHtml);
+    
+    // Show notification badge
+    const badge = document.getElementById('resource-notification-badge');
+    if (badge) badge.classList.remove('hidden');
+  }
+
   // 2. Add empty Agent message bubble with loader
   const agentMsgId = 'agent-msg-' + Date.now();
   const agentHtml = `

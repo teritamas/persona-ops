@@ -1,4 +1,5 @@
 const chatService = require('../services/chatService');
+const projectService = require('../services/projectService');
 const { requestPrivateApi, requestPrivateApiStream } = require('../clients/private-api');
 const { marked } = require('marked');
 
@@ -67,6 +68,19 @@ exports.streamChat = async (req, res) => {
     time: userTime
   };
   activeChat.messages.push(userMsg);
+
+  // Check if text contains a URL and add system message to history
+  const hasUrl = /(https?:\/\/[^\s]+)/g.test(inputText);
+  if (hasUrl) {
+    activeChat.messages.push({
+      id: 'msg_' + (Date.now() + 1),
+      role: 'system',
+      text: 'リソースに登録しました',
+      time: userTime
+    });
+  }
+
+
 
   await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(req.activeProject.id)}`, {
     method: 'PUT',

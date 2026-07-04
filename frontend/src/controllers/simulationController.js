@@ -50,3 +50,9 @@ exports.getSimulationSquare = async (req, res) => {
     return res.status(500).send('Internal Server Error');
   }
 };
+
+exports.resetReactions = async (req, res) => {
+  return res.render('partials/sandbox-characters-with-oob', {
+    selectedSimulation: { status: 'running', reactions: [] },
+  });
+};

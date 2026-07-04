@@ -11,6 +11,7 @@ import { chatRoutes } from './routes/chat-routes.js';
 import { requirementRoutes } from './routes/requirement-routes.js';
 import { simulationRoutes } from './routes/simulation-routes.js';
 import { internalSimulationRoutes } from './routes/internal/simulation-routes.js';
+import { sourceDocumentRoutes } from './routes/source-document-routes.js';
 import { type AppConfig } from './config.js';
 
 /**
@@ -58,6 +59,10 @@ export function buildApp({
 
   void app.register(internalSimulationRoutes, {
     simulationService: container.simulationService,
+  });
+
+  void app.register(sourceDocumentRoutes, {
+    sourceDocumentService: container.sourceDocumentService,
   });
 
   return app;
