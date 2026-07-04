@@ -5,9 +5,9 @@
 アイドル時の費用を抑えるため、サーバーレスかつ従量課金のGoogle Cloudサービスで構成する。
 
 - Cloud Run：`persona-ops-web` と `persona-ops-private-api` の実行基盤。最小インスタンス数0、上限instanceあり
+- Cloud Tasks：ペルソナのシミュレーション処理を`persona-ops-private-api`へOIDC認証付きで非同期配送
 - Vertex AI：事前確保されたキャパシティを持たないGemini・Embedding推論
-- Firestore Native：プロジェクト、会話、ペルソナオントロジー、
-  シミュレーション履歴、ベクトルを保存
+- Firestore Native：プロジェクト、会話、ペルソナオントロジー、シミュレーション履歴、ベクトルを保存
 - Cloud Storage：アップロード原本を非公開で保存し、30日後にNearlineへ移行
 - Artifact Registry：コンテナイメージを保存し、古いイメージを自動削除
 - Cloud Build：`main`へのpush後にアプリケーションとインフラをデプロイ
@@ -28,7 +28,7 @@ Terraformリソースは`modules/`配下で責務ごとに分割する。`bootst
 
 ```sh
 export PROJECT_ID="persona-ops"
-export USER_EMAIL="sayako.o21@gmail.com"
+export USER_EMAIL="YOUR_EMAL"
 ```
 
 Google Cloudへログインし、対象プロジェクトを選択する。
@@ -121,8 +121,6 @@ terraform -chdir=infra/terraform/environments/stg plan \
   -var="region=asia-northeast1" \
   -out=stg.tfplan
 terraform -chdir=infra/terraform/environments/stg apply stg.tfplan
-terraform -chdir=infra/terraform/environments/stg output frontend_service_url
-terraform -chdir=infra/terraform/environments/stg output api_service_url
 ```
 
 どちらも同じGCS backendとTerraform state lockを使用するため、Cloud Buildの実行中に手動applyを実行してはならない。

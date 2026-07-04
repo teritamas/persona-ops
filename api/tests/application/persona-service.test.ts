@@ -1,15 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { PersonaService } from '../../src/application/persona-service.js';
-import type { PersonaRepositoryPort } from '../../src/application/ports/persona-repository-port.js';
-import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
+import type { PersonaStorePort } from '../../src/application/ports/infra/database/persona-store-port.js';
 import type { Persona } from '../../src/domain/persona.js';
 
-class MockPersonaRepository implements PersonaRepositoryPort {
+class MockPersonaRepository implements PersonaStorePort {
   private personas: Persona[] = [];
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async save(persona: Persona): Promise<void> {
-    this.personas.push(persona);
+    const index = this.personas.findIndex((item) => item.id === persona.id);
+    if (index >= 0) {
+      this.personas[index] = persona;
+    } else {
+      this.personas.push(persona);
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -26,8 +30,7 @@ class MockPersonaRepository implements PersonaRepositoryPort {
 describe('PersonaService (ペルソナサービス)', () => {
   it('プロジェクトIDに紐づくペルソナ一覧を取得できる', async () => {
     const repository = new MockPersonaRepository();
-    const aiAgent = { invoke: vi.fn() } as unknown as AiAgentPort;
-    const service = new PersonaService(repository, aiAgent);
+    const service = new PersonaService(repository);
 
     await repository.save({
       id: 'pers_1',
@@ -46,5 +49,44 @@ describe('PersonaService (ペルソナサービス)', () => {
     const personas = await service.getPersonasByProjectId('proj_test');
     expect(personas.length).toBe(1);
     expect(personas[0]?.name).toBe('テスト 太郎');
+  });
+
+  it('IDを指定した更新では同じ役割の別ペルソナを変更しない', async () => {
+    const repository = new MockPersonaRepository();
+    const service = new PersonaService(repository);
+    await service.savePersonas('proj_test', [
+      {
+        name: '山田',
+        role: '営業',
+        traits: ['外勤'],
+        background: '新規営業',
+      },
+      {
+        name: '佐藤',
+        role: '営業',
+        traits: ['内勤'],
+        background: '既存顧客担当',
+      },
+    ]);
+    const before = await service.getPersonasByProjectId('proj_test');
+
+    await service.savePersonas('proj_test', [
+      {
+        id: before[0]!.id,
+        name: '山田',
+        role: '営業',
+        traits: ['モバイル重視'],
+        background: '新規営業',
+      },
+    ]);
+
+    const after = await service.getPersonasByProjectId('proj_test');
+    expect(after).toHaveLength(2);
+    expect(after.find((persona) => persona.name === '山田')?.traits).toEqual([
+      'モバイル重視',
+    ]);
+    expect(after.find((persona) => persona.name === '佐藤')?.traits).toEqual([
+      '内勤',
+    ]);
   });
 });

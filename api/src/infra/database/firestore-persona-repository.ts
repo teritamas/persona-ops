@@ -1,17 +1,13 @@
 import type { Firestore } from '@google-cloud/firestore';
+
 import type { Persona } from '../../domain/persona.js';
-import type { PersonaRepositoryPort } from '../../application/ports/persona-repository-port.js';
+import type { PersonaStorePort } from '../../application/ports/infra/database/persona-store-port.js';
 
-export class FirestorePersonaRepository implements PersonaRepositoryPort {
-  private readonly collectionName = 'personas';
-
+export class FirestorePersonaRepository implements PersonaStorePort {
   constructor(private readonly firestore: Firestore) {}
 
   async save(persona: Persona): Promise<void> {
-    const docRef = this.firestore
-      .collection(this.collectionName)
-      .doc(persona.id);
-    await docRef.set({
+    await this.firestore.collection('personas').doc(persona.id).set({
       projectId: persona.projectId,
       name: persona.name,
       role: persona.role,
@@ -27,53 +23,38 @@ export class FirestorePersonaRepository implements PersonaRepositoryPort {
 
   async findByProjectId(projectId: string): Promise<Persona[]> {
     const snapshot = await this.firestore
-      .collection(this.collectionName)
+      .collection('personas')
       .where('projectId', '==', projectId)
       .get();
-
-    return snapshot.docs.map((doc) => {
-      const data = doc.data() as {
-        projectId: string;
-        name: string;
-        role: string;
-        traits: string[];
-        background: string;
-        avatarSeed: string;
-        x: number;
-        y: number;
-        createdAt: string;
-        updatedAt: string;
-      };
+    return snapshot.docs.map((document) => {
+      const data = document.data();
       return {
-        id: doc.id,
-        projectId: data.projectId,
-        name: data.name,
-        role: data.role,
-        traits: data.traits,
-        background: data.background,
-        avatarSeed: data.avatarSeed,
-        x: data.x,
-        y: data.y,
-        createdAt: new Date(data.createdAt),
-        updatedAt: new Date(data.updatedAt),
+        id: document.id,
+        projectId: String(data.projectId),
+        name: String(data.name),
+        role: String(data.role),
+        traits: Array.isArray(data.traits)
+          ? data.traits.map((value) => String(value))
+          : [],
+        background: String(data.background ?? ''),
+        avatarSeed: String(data.avatarSeed),
+        x: Number(data.x),
+        y: Number(data.y),
+        createdAt: new Date(String(data.createdAt)),
+        updatedAt: new Date(String(data.updatedAt)),
       };
     });
   }
 
   async deleteByProjectId(projectId: string): Promise<void> {
     const snapshot = await this.firestore
-      .collection(this.collectionName)
+      .collection('personas')
       .where('projectId', '==', projectId)
       .get();
-
-    if (snapshot.empty) {
-      return;
-    }
-
     const batch = this.firestore.batch();
-    snapshot.docs.forEach((doc) => {
-      batch.delete(doc.ref);
-    });
+    for (const document of snapshot.docs) {
+      batch.delete(document.ref);
+    }
     await batch.commit();
   }
 }

@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { InMemoryRunner, LlmAgent } from '@google/adk';
 
-import { type AiAgentPort } from '../../application/ports/ai-agent-port.js';
+import { type AiAgentPort } from '../../application/ports/infra/ai/ai-agent-port.js';
 
 type AgentEvent = {
   content?: {

@@ -1,27 +1,17 @@
-const { state, getActiveProject } = require('./dummy_data/store');
-
 class PersonaService {
-  getPersonaDetail(pId) {
-    const activeProject = getActiveProject();
+  getPersonaDetail(activeProject, pId) {
     const p = activeProject.personas.find(persona => persona.id === pId);
-    if (p) {
-      state.selectedPersonaId = pId;
-    }
     return {
       p,
       activeProject,
-      simulationDone: state.simulationDone,
-      selectedPersonaId: state.selectedPersonaId
+      selectedPersonaId: p ? pId : null
     };
   }
 
-  closePersonaDetail() {
-    state.selectedPersonaId = null;
-    const activeProject = getActiveProject();
+  closePersonaDetail(activeProject) {
     return {
       activeProject,
-      simulationDone: state.simulationDone,
-      selectedPersonaId: state.selectedPersonaId
+      selectedPersonaId: null
     };
   }
 }

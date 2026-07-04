@@ -31,12 +31,13 @@ module "frontend_runtime" {
 module "private_api_runtime" {
   source = "../../modules/private_api_runtime"
 
-  project_id       = var.project_id
-  region           = var.region
-  application_name = local.private_api_service_name
-  container_image  = var.api_container_image
-  uploads_bucket   = module.application_data.uploads_bucket
-  vertex_ai_model  = var.vertex_ai_model
+  project_id            = var.project_id
+  region                = var.region
+  application_name      = local.private_api_service_name
+  container_image       = var.api_container_image
+  uploads_bucket        = module.application_data.uploads_bucket
+  vertex_ai_model       = var.vertex_ai_model
+  simulation_queue_name = local.simulation_queue_name
   invoker_members = toset([
     "serviceAccount:${module.frontend_runtime.runtime_service_account}",
   ])
@@ -45,5 +46,21 @@ module "private_api_runtime" {
   depends_on = [
     module.application_data,
     module.google_apis,
+  ]
+}
+
+module "simulation_tasks" {
+  source = "../../modules/simulation_tasks"
+
+  project_id               = var.project_id
+  region                   = var.region
+  queue_name               = local.simulation_queue_name
+  target_service_name      = local.private_api_service_name
+  target_service_url       = module.private_api_runtime.service_url
+  enqueuer_service_account = module.private_api_runtime.runtime_service_account
+
+  depends_on = [
+    module.google_apis,
+    module.private_api_runtime,
   ]
 }

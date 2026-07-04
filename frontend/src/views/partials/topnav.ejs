@@ -21,7 +21,7 @@
           <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col max-h-[70vh]">
             <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Projects</div>
             <div class="overflow-y-auto">
-              <% mockProjects.forEach(function(p) { %>
+              <% projects.forEach(function(p) { %>
                 <div class="flex items-center group/item hover:bg-slate-50 <%= p.id === activeProjectId ? 'bg-orange-50/50' : '' %>">
                   <button 
                     type="button"

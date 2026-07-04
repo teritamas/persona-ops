@@ -3,7 +3,7 @@
   <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
     <h2 class="text-sm font-bold text-slate-800 flex items-center">ペルソナ詳細</h2>
     <button 
-      hx-get="/action/persona/close" 
+      hx-get="/action/persona/close?simulationId=<%= typeof selectedSimulation !== 'undefined' && selectedSimulation ? selectedSimulation.id : '' %>" 
       hx-target="#detail-panel" 
       hx-swap="outerHTML"
       class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1.5 transition-colors"
@@ -49,30 +49,63 @@
         <p class="text-xs text-slate-600 leading-relaxed ml-2 whitespace-pre-wrap"><%= p.background %></p>
       </div>
 
-      <div class="mb-6">
-        <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-wider">
-          <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> オントロジーリソース
-        </h3>
-        <div class="text-xs text-slate-600 leading-relaxed ml-2 space-y-1">
-          <p class="flex items-center"><span class="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>2023_ユーザーインタビュー_営業部.pdf</p>
-          <p class="flex items-center"><span class="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>GitHub Issue #241 要望一覧</p>
-        </div>
-      </div>
-
-      <% if (simulationDone) { %>
-        <div>
-          <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center tracking-wider">
-            <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> リサーチインサイト
+      <% if (typeof reaction !== 'undefined' && reaction && reaction.status === 'completed') { %>
+        <!-- シミュレーション結果セクション -->
+        <div class="mt-6 border-t border-slate-100 pt-6 animate-fade-in">
+          <h3 class="text-xs font-bold text-slate-700 mb-4 flex items-center uppercase tracking-wider">
+            <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            シミュレーション反応
           </h3>
-          <div class="ml-2">
-            <p class="text-sm text-slate-700 italic font-medium leading-relaxed">「<%= p.reaction.text %>」</p>
-            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center text-[10px] text-slate-500">
-              <svg class="w-[0.875rem] h-[0.875rem] text-orange-400 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-              AI推論元: 2023年下期ヒアリングログ
-            </div>
+
+          <!-- スコア表示 -->
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <% [
+              ['価値', reaction.valueScore, 'bg-emerald-50 text-emerald-700 border-emerald-200'],
+              ['採用', reaction.adoptionIntentScore, 'bg-blue-50 text-blue-700 border-blue-200'],
+              ['適合', reaction.workflowFitScore, 'bg-orange-50 text-orange-700 border-orange-200']
+            ].forEach(([label, score, classes]) => { %>
+              <div class="rounded-xl border p-2 text-center <%= classes %>">
+                <div class="text-[9px] font-bold opacity-80"><%= label %></div>
+                <div class="text-base font-extrabold mt-0.5"><%= score %><span class="text-[10px] font-normal opacity-70">/5</span></div>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- 全体フィードバック -->
+          <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">総評</div>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium"><%= reaction.feedback %></p>
+          </div>
+
+          <!-- 期待・懸念・改善案のリスト -->
+          <div class="space-y-3">
+            <% [
+              ['期待する効果', reaction.benefits, 'text-emerald-600', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'],
+              ['懸念点', reaction.concerns, 'text-red-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'],
+              ['改善案', reaction.suggestedChanges, 'text-blue-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>']
+            ].forEach(([title, items, iconColor, pathSvg]) => { %>
+              <% if (items && items.length > 0) { %>
+                <div>
+                  <div class="flex items-center gap-1.5 mb-1.5">
+                    <svg class="w-3.5 h-3.5 <%= iconColor %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <%- pathSvg %>
+                    </svg>
+                    <h4 class="text-[10px] font-bold text-slate-700 uppercase tracking-wide"><%= title %></h4>
+                  </div>
+                  <ul class="space-y-1 pl-5 list-disc text-slate-600">
+                    <% items.forEach(item => { %>
+                      <li class="text-[11px] leading-relaxed"><%= item %></li>
+                    <% }) %>
+                  </ul>
+                </div>
+              <% } %>
+            <% }) %>
           </div>
         </div>
       <% } %>
+
     </div>
   </div>
 

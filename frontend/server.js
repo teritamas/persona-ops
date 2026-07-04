@@ -1,5 +1,7 @@
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const projectContext = require('./src/middlewares/projectContext');
 const app = express();
 const DEFAULT_PORT = 3000;
 const MAX_PORT_RETRIES = 10;
@@ -29,6 +31,7 @@ if (process.env.NODE_ENV !== 'production') {
 app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // EJS Setup
 app.set('view engine', 'ejs');
@@ -42,6 +45,7 @@ const healthRoutes = require('./src/routes/health');
 const routes = require('./src/routes/index');
 
 app.use('/', healthRoutes);
+app.use(projectContext);
 app.use('/', routes);
 
 function startServer(port, retriesRemaining) {

@@ -1,60 +1,36 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import Fastify from 'fastify';
 
+import type { PersonaOpsChatService } from '../../src/application/persona-ops-chat-service.js';
 import { chatRoutes } from '../../src/routes/chat-routes.js';
 
-// Mock the @google/adk library
-vi.mock('@google/adk', () => {
+function createChatService(): PersonaOpsChatService {
   return {
-    LlmAgent: class {},
-    InMemoryRunner: class {
-      runEphemeral(input: { newMessage: { parts: Array<{ text: string }> } }) {
-        const text = input.newMessage.parts[0]?.text || '';
-        if (text.includes('fail')) {
-          throw new Error('LLM Error');
-        }
-        return (async function* () {
-          yield await Promise.resolve({
-            content: { parts: [{ text: 'こんにちは！' }] },
-          });
-          yield await Promise.resolve({
-            content: { parts: [{ text: 'どのような要件ですか？' }] },
-          });
-        })();
-      }
-    },
-  };
-});
-
-describe('チャットストリーミングルーター', () => {
-  const mockPersonaOpsAgent = {
-    runEphemeral: (input: { newMessage: { parts: { text?: string }[] } }) => {
-      const text = input.newMessage.parts[0]?.text || '';
-      if (text.includes('fail')) {
+    stream: async ({ message }: { message: string }) => {
+      await Promise.resolve();
+      if (message === 'fail') {
         throw new Error('LLM Error');
       }
       return (async function* () {
-        yield await Promise.resolve({
-          content: { parts: [{ text: 'こんにちは！' }] },
-        });
-        yield await Promise.resolve({
-          content: { parts: [{ text: 'どのような要件ですか？' }] },
-        });
+        yield await Promise.resolve('こんにちは！');
+        yield await Promise.resolve('どのような要件ですか？');
       })();
     },
-  };
+  } as unknown as PersonaOpsChatService;
+}
 
+describe('チャットストリーミングルーター', () => {
   const app = Fastify();
-  app.register(chatRoutes, {
-    defaultModel: 'gemini-2.5-flash',
-    personaOpsAgent: mockPersonaOpsAgent,
+  void app.register(chatRoutes, {
+    personaOpsChatService: createChatService(),
   });
 
-  it('POST /api/v1/chat/stream でLLMのテキストストリームを応答する', async () => {
+  it('プロジェクトのContextを使ってテキストストリームを応答する', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/chat/stream',
       payload: {
+        projectId: 'project-1',
         message: 'こんにちは',
         history: [],
       },
@@ -62,40 +38,31 @@ describe('チャットストリーミングルーター', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.headers['content-type']).toContain('text/plain');
-    expect(response.headers['transfer-encoding']).toBe('chunked');
     expect(response.body).toBe('こんにちは！どのような要件ですか？');
   });
 
-  it('POST /api/v1/chat/stream で対話履歴を含めて送信する', async () => {
+  it('プロジェクトIDがないリクエストを拒否する', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/chat/stream',
-      payload: {
-        message: '次の要件について教えて',
-        history: [
-          { role: 'user', text: 'こんにちは' },
-          { role: 'agent', text: 'どのような要件ですか？' },
-        ],
-      },
+      payload: { message: 'こんにちは', history: [] },
     });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toBe('こんにちは！どのような要件ですか？');
+    expect(response.statusCode).toBe(400);
   });
 
-  it('POST /api/v1/chat/stream でエラーが発生した場合はエラーメッセージを返す', async () => {
+  it('Agentでエラーが発生した場合は安全なメッセージを返す', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/chat/stream',
       payload: {
+        projectId: 'project-1',
         message: 'fail',
         history: [],
       },
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toContain(
-      '[Error] I apologize, but an error occurred while processing your request.',
-    );
+    expect(response.body).toContain('[ERROR: Failed to generate response]');
   });
 });

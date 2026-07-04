@@ -1,9 +1,15 @@
-const { getActiveProject } = require('./dummy_data/store');
-const projectService = require('./projectService');
+const { requestPrivateApi } = require('../clients/private-api');
 
 class ChatService {
-  getActiveChatContext() {
-    const activeProject = getActiveProject();
+  getActiveChatContext(activeProject) {
+    if (!activeProject) {
+      return {
+        activeProject: null,
+        isInitial: true,
+        activeChat: null,
+        hasMessages: false
+      };
+    }
     return {
       activeProject,
       isInitial: activeProject.isInitial,
@@ -12,33 +18,55 @@ class ChatService {
     };
   }
 
-  createNewChat() {
-    const activeProject = getActiveProject();
+  async createNewChat(activeProject) {
+    if (!activeProject || !activeProject.id) return null;
+
     const newId = 'chat_' + Date.now();
-    activeProject.chats.push({
+    const newChat = {
       id: newId,
       title: '新しいチャット',
       messages: []
+    };
+
+    const updatedChats = [...activeProject.chats, newChat];
+
+    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
+      method: 'PUT',
+      body: {
+        chats: updatedChats,
+        activeChatId: newId
+      }
     });
-    activeProject.activeChatId = newId;
-    projectService.syncProject(activeProject);
-    return activeProject;
-  }
 
-  switchChat(chatId) {
-    const activeProject = getActiveProject();
-    const chat = activeProject.chats.find(c => c.id === chatId);
-    if (chat) {
-      activeProject.activeChatId = chat.id;
-      projectService.syncProject(activeProject);
+    if (response.ok && response.data) {
+      return response.data;
     }
-    return activeProject;
+    return null;
   }
 
-  startPersonaChat(personaId) {
-    const activeProject = getActiveProject();
+  async switchChat(activeProject, chatId) {
+    if (!activeProject || !activeProject.id) return null;
+
+    const chat = activeProject.chats.find(c => c.id === chatId);
+    if (!chat) return activeProject;
+
+    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
+      method: 'PUT',
+      body: {
+        activeChatId: chatId
+      }
+    });
+
+    if (response.ok && response.data) {
+      return response.data;
+    }
+    return null;
+  }
+
+  async startPersonaChat(activeProject, personaId) {
+    if (!activeProject || !activeProject.id) return null;
+
     const persona = activeProject.personas.find(p => p.id === personaId);
-    
     if (!persona) return null;
 
     const newChatId = 'chat_' + Date.now();
@@ -50,16 +78,24 @@ class ChatService {
       personaId: persona.id,
       title: persona.name + 'との個別チャット',
       messages: [
-        { id: 1, role: 'agent', text: `こんにちは。${persona.role}の${persona.name}です。どのようなことについてお話ししましょうか？`, time: nowStr }
+        { id: 'msg_init', role: 'agent', text: `こんにちは。${persona.role}の${persona.name}です。どのようなことについてお話ししましょうか？`, time: nowStr }
       ]
     };
 
-    activeProject.chats.push(newChat);
-    activeProject.activeChatId = newChatId;
-    activeProject.isInitial = false;
+    const updatedChats = [...activeProject.chats, newChat];
 
-    projectService.syncProject(activeProject);
-    return activeProject;
+    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
+      method: 'PUT',
+      body: {
+        chats: updatedChats,
+        activeChatId: newChatId
+      }
+    });
+
+    if (response.ok && response.data) {
+      return response.data;
+    }
+    return null;
   }
 }
 

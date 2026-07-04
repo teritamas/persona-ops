@@ -6,6 +6,8 @@
 flowchart LR
     User["PdM / 開発チーム"] --> Frontend["Cloud Run<br/>persona-ops-web<br/>public"]
     Frontend --> PrivateAPI["Cloud Run<br/>persona-ops-private-api<br/>IAM required"]
+　    PrivateAPI --> Tasks["Cloud Tasks<br/>persona-simulations"]
+    Tasks --> PrivateAPI
     PrivateAPI --> Vertex["Vertex AI<br/>Gemini / Embeddings"]
     PrivateAPI --> Firestore["Firestore<br/>会話・オントロジー・ベクトル"]
     PrivateAPI --> Storage["Cloud Storage<br/>アップロード原本"]
@@ -68,6 +70,7 @@ Vertex AI RAG EngineはRAGパイプラインのマネージドサービスであ
 ## コスト方針
 
 - Cloud Runはrequest-based、最小0台、上限instanceあり、CPU idleを有効化する。
+- ペルソナシミュレーションはCloud Tasksから同じprivate APIへOIDC認証付きで配送し、常駐Workerを持たない。
 - Firestoreは無料枠対象の`(default)` databaseを利用する。
 - Artifact Registryは直近5イメージを保持し、古いイメージを削除する。
 - Cloud Storageのアップロード原本は30日後にNearlineへ移行する。

@@ -1,57 +1,100 @@
-<% activeProject.personas.forEach((p, idx) => { %>
-  <% 
-    let reactionHtml = '';
-    if (simulationDone && p.reaction) {
-      let iconColor = 'text-slate-500 bg-slate-100 border-slate-200';
-      let iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>';
-      if (p.reaction.type === 'positive') {
-        iconColor = 'text-green-600 bg-green-100 border-green-200';
-        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-      } else if (p.reaction.type === 'negative') {
-        iconColor = 'text-red-600 bg-red-100 border-red-200';
-        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-      } else if (p.reaction.type === 'neutral') {
-        iconColor = 'text-slate-600 bg-slate-100 border-slate-200';
-        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-      }
+<%
+  const selectedId = selectedSimulation?.id;
+  const isPolling = selectedSimulation && ['queued', 'running'].includes(selectedSimulation.status);
+  const pollingAttrs = isPolling
+    ? `hx-get="/view/simulation-square?simulationId=${encodeURIComponent(selectedId)}"` +
+      ` hx-trigger="every 5s"` +
+      ` hx-target="#sandbox-characters"` +
+      ` hx-swap="outerHTML"`
+    : '';
+%>
+<div id="sandbox-characters"
+     class="relative w-full h-full max-w-5xl max-h-[800px] z-10"
+     <%- pollingAttrs %>
+     <%= (typeof isOob !== 'undefined' && isOob) ? 'hx-swap-oob="outerHTML"' : '' %>
+>
 
-      reactionHtml = `
-        <div class="absolute bottom-[90px] left-1/2 -translate-x-1/2 w-56 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 animate-pop-in z-20 flex flex-col" style="animation-delay: ${idx * 0.2}s">
-          <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-slate-100 transform rotate-45"></div>
-          <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-50">
-            <div class="shrink-0 p-1.5 rounded-full ${iconColor}">
-              ${iconSvg}
-            </div>
-            <span class="text-xs font-bold text-slate-700 truncate">${p.name}</span>
+  <!-- シミュレーション中のエフェクト（htmx ローディング表示） -->
+  <% if (isPolling) { %>
+    <div id="loading-overlay"
+      class="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px] z-20 flex items-center justify-center transition-all duration-500 animate-fade-in">
+      <div class="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-white flex flex-col items-center animate-pop-in">
+        <div class="relative mb-3">
+          <div class="absolute inset-0 bg-orange-400 blur-md opacity-50 animate-pulse-glow rounded-full"></div>
+          <div class="w-12 h-12 bg-white rounded-full border border-orange-100 flex items-center justify-center relative z-10 shadow-inner">
+            <svg class="w-6 h-6 text-orange-500 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
           </div>
-          <p class="text-xs text-slate-600 leading-relaxed font-medium">${p.reaction.text}</p>
         </div>
-      `;
-    }
-
-    const isSelected = selectedPersonaId === p.id;
-  %>
-  <div 
-    hx-get="/view/persona/<%= p.id %>" 
-    hx-target="#detail-panel" 
-    hx-swap="outerHTML"
-    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"
-    style="left: <%= p.x %>%; top: <%= p.y %>%; transform: translate(-50%, -50%)"
-  >
-    <%- reactionHtml %>
-    <div class="relative animate-float flex flex-col items-center transition-all duration-300 group-hover:-translate-y-2" style="animation-delay: <%= idx * 0.5 %>s">
-      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm transition-all duration-300 group-hover:w-8 group-hover:opacity-50"></div>
-      <div class="relative w-14 h-14">
-        <% if (isSelected) { %>
-          <div class="absolute inset-0 rounded-full border-2 border-orange-400 animate-ping-slow z-0"></div>
-        <% } %>
-        <div class="w-14 h-14 bg-white rounded-full border-4 shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-all duration-300 <%= isSelected ? 'border-orange-400 shadow-orange-500/50 shadow-lg' : 'border-white group-hover:border-orange-200 group-hover:shadow-orange-500/30' %>">
-          <img src="https://api.dicebear.com/7.x/micah/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" alt="avatar" class="w-full h-full object-cover scale-110" />
-        </div>
-      </div>
-      <div class="mt-2 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all duration-300 shadow-sm border border-transparent <%= isSelected ? 'bg-orange-500 text-white opacity-100 border-orange-400 shadow-orange-500/40' : 'bg-slate-800/80 text-white opacity-70 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:opacity-100 group-hover:border-orange-200' %>">
-        <%= p.role %>
+        <span class="font-bold text-slate-700 text-sm font-mono">Thinking...</span>
+        <span class="text-[10px] text-slate-400 mt-1">ペルソナの反応を推論中</span>
       </div>
     </div>
-  </div>
-<% }) %>
+  <% } %>
+
+  <% activeProject.personas.forEach((p, idx) => { %>
+    <%
+      const isSelected = selectedPersonaId === p.id;
+      
+      // selectedSimulation からこのペルソナに対する reaction を探す
+      let reaction = null;
+      if (typeof selectedSimulation !== 'undefined' && selectedSimulation && selectedSimulation.reactions) {
+        reaction = selectedSimulation.reactions.find(r => r.personaId === p.id);
+      }
+
+      let reactionHtml = '';
+      if (reaction && reaction.status === 'completed') {
+        let iconColor = 'text-slate-500 bg-slate-100 border-slate-200';
+        let iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>';
+        if (reaction.sentiment === 'positive') {
+          iconColor = 'text-green-600 bg-green-100 border-green-200';
+          iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+        } else if (reaction.sentiment === 'negative') {
+          iconColor = 'text-red-600 bg-red-100 border-red-200';
+          iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+        } else if (reaction.sentiment === 'neutral') {
+          iconColor = 'text-slate-600 bg-slate-100 border-slate-200';
+          iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+        }
+
+        reactionHtml = `
+          <div class="absolute bottom-[90px] left-1/2 -translate-x-1/2 w-56 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 animate-pop-in z-20 flex flex-col" style="animation-delay: ${idx * 0.2}s">
+            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-slate-100 transform rotate-45"></div>
+            <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-50">
+              <div class="shrink-0 p-1.5 rounded-full ${iconColor}">
+                ${iconSvg}
+              </div>
+              <span class="text-xs font-bold text-slate-700 truncate">${p.name}</span>
+            </div>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium">${reaction.feedback}</p>
+          </div>
+        `;
+      }
+    %>
+    <div
+      hx-get="/view/persona/<%= p.id %>?simulationId=<%= selectedId || '' %>"
+      hx-target="#detail-panel"
+      hx-swap="outerHTML"
+      class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"
+      style="left: <%= p.x %>%; top: <%= p.y %>%; transform: translate(-50%, -50%)"
+    >
+      <%- reactionHtml %>
+      <div class="relative animate-float flex flex-col items-center transition-all duration-300 group-hover:-translate-y-2" style="animation-delay: <%= idx * 0.5 %>s">
+        <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm transition-all duration-300 group-hover:w-8 group-hover:opacity-50"></div>
+        <div class="relative w-14 h-14">
+          <% if (isSelected) { %>
+            <div class="absolute inset-0 rounded-full border-2 border-orange-400 animate-ping-slow z-0"></div>
+          <% } %>
+          <div class="w-14 h-14 bg-white rounded-full border-4 shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-all duration-300 <%= isSelected ? 'border-orange-400 shadow-orange-500/50 shadow-lg' : 'border-white group-hover:border-orange-200 group-hover:shadow-orange-500/30' %>">
+            <img src="https://api.dicebear.com/7.x/micah/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" alt="avatar" class="w-full h-full object-cover scale-110" />
+          </div>
+        </div>
+        <div class="mt-2 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all duration-300 shadow-sm border border-transparent <%= isSelected ? 'bg-orange-500 text-white opacity-100 border-orange-400 shadow-orange-500/40' : 'bg-slate-800/80 text-white opacity-70 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:opacity-100 group-hover:border-orange-200' %>">
+          <%= p.role %>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+
+</div>

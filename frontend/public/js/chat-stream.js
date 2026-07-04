@@ -192,23 +192,9 @@ async function submitStreamChat(event) {
       } else if (isStreamDone) {
         clearInterval(typeInterval);
         timeLabel.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        // Trigger reactions update after streaming completely ends
-        fetch('/action/simulate/reactions', { method: 'POST' })
-          .then(res => {
-            if (res.ok) return res.text();
-          })
-          .then(html => {
-            const sandbox = document.getElementById('sandbox-characters');
-            if (sandbox && html) {
-              sandbox.innerHTML = html;
-              // 新しく追加されたDOM要素を HTMX に認識させ、クリックできるようにする
-              if (window.htmx) {
-                window.htmx.process(sandbox);
-              }
-            }
-          })
-          .catch(err => console.error('Failed to trigger reactions:', err));
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       }
     }, 20);
 
