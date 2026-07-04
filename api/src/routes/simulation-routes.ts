@@ -21,6 +21,15 @@ const simulationParamsSchema = {
   },
 } as const;
 
+const createSimulationBodySchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['requirementId'],
+  properties: {
+    requirementId: { type: 'string', minLength: 1 },
+  },
+} as const;
+
 function toSimulationResponse(simulation: Simulation) {
   return {
     ...simulation,
@@ -90,6 +99,33 @@ export async function simulationRoutes(
           return reply.status(404).send({ error: 'Simulation not found' });
         }
         request.log.error({ err: error }, 'Failed to get simulation');
+        return reply.status(500).send({ error: 'Internal Server Error' });
+      }
+    },
+  );
+
+  app.post(
+    '/api/v1/projects/:projectId/simulations',
+    {
+      schema: {
+        params: projectParamsSchema,
+        body: createSimulationBodySchema,
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { projectId } = request.params as { projectId: string };
+        const { requirementId } = request.body as { requirementId: string };
+        const simulation = await options.simulationService.request(
+          projectId,
+          requirementId,
+        );
+        return reply.status(201).send(toSimulationResponse(simulation));
+      } catch (error) {
+        request.log.error({ err: error }, 'Failed to create simulation');
+        if (error instanceof NotFoundError) {
+          return reply.status(404).send({ error: error.message });
+        }
         return reply.status(500).send({ error: 'Internal Server Error' });
       }
     },

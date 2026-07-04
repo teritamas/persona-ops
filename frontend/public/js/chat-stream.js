@@ -131,19 +131,11 @@ async function submitStreamChat(event) {
 
   // メッセージ送信の瞬間に、箱庭（中央パネル）に「Thinking...」のローディング表示を出すための処理
   // これにより、AIが推論中であることを視覚的にユーザーにフィードバックします
-  if (projectId) {
-    fetch(`/${projectId}/action/simulate/reset-reactions`, { method: 'POST' })
-      .then(res => res.text())
-      .then(html => {
-        const sandbox = document.getElementById('sandbox-characters');
-        if (sandbox && html) {
-          sandbox.innerHTML = html;
-          if (typeof htmx !== 'undefined') {
-            htmx.process(sandbox); // Ensure htmx processes the new sandbox elements
-          }
-        }
-      })
-      .catch(err => console.error('Failed to trigger reset reactions:', err));
+  if (projectId && typeof htmx !== 'undefined') {
+    htmx.ajax('POST', `/${projectId}/action/simulate/reset-reactions`, {
+      target: '#sandbox-characters',
+      swap: 'outerHTML'
+    });
   }
 
   // Check if text contains a URL and add system message

@@ -1,3 +1,21 @@
-<%- include('sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation }) %>
-<aside id="detail-panel" hx-swap-oob="true" style="display: none;">
-</aside>
+<%- include('sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation, requirements, simulations }) %>
+<% if (selectedPersonaId) { %>
+  <%
+    const p = activeProject.personas.find(pers => pers.id === selectedPersonaId);
+    let reaction = null;
+    if (p && selectedSimulation && selectedSimulation.reactions) {
+      reaction = selectedSimulation.reactions.find(r => r.personaId === selectedPersonaId);
+    }
+  %>
+  <% if (p) { %>
+    <aside id="detail-panel" hx-swap-oob="true" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto animate-fade-in">
+      <%- include('persona-detail', { p, reaction, selectedSimulation }) %>
+    </aside>
+  <% } else { %>
+    <aside id="detail-panel" hx-swap-oob="true" style="display: none;">
+    </aside>
+  <% } %>
+<% } else { %>
+  <aside id="detail-panel" hx-swap-oob="true" style="display: none;">
+  </aside>
+<% } %>
