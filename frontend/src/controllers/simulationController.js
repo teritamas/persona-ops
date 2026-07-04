@@ -80,6 +80,7 @@ exports.deleteSimulation = async (req, res) => {
     const context = await simulationService.getDashboard(req.activeProject, undefined);
     return res.render('partials/simulation-dashboard', context);
   } catch (error) {
+    console.error('Failed to reload dashboard after delete', error);
     return res.status(500).render('partials/simulation-dashboard-error', {
       message: 'シミュレーション一覧の再取得に失敗しました。',
     });

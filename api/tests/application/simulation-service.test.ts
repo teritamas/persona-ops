@@ -66,7 +66,7 @@ class MemorySimulationStore implements SimulationStorePort {
     },
   );
   findReactions = vi.fn(async () => [...this.reactions.values()]);
-  delete = vi.fn(async (_projectId: string, _simulationId: string) => {
+  delete = vi.fn(async () => {
     this.simulation = null;
   });
 }

@@ -6,11 +6,9 @@ import type {
   ListSessionsRequest,
   ListSessionsResponse,
   Session,
-  Event} from '@google/adk';
-import {
-  BaseSessionService,
-  createSession,
+  Event,
 } from '@google/adk';
+import { BaseSessionService, createSession } from '@google/adk';
 
 export class FirestoreSessionService extends BaseSessionService {
   constructor(private readonly firestore: Firestore) {
@@ -50,7 +48,16 @@ export class FirestoreSessionService extends BaseSessionService {
       return undefined;
     }
 
-    const data = sessionDoc.data()!;
+    const rawData = sessionDoc.data();
+    if (!rawData) {
+      return undefined;
+    }
+    const data = rawData as {
+      appName: string;
+      userId: string;
+      state?: Record<string, unknown>;
+      lastUpdateTime?: number;
+    };
     if (data.userId !== request.userId || data.appName !== request.appName) {
       return undefined;
     }
@@ -89,7 +96,12 @@ export class FirestoreSessionService extends BaseSessionService {
 
     const sessions: Session[] = [];
     snapshot.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() as {
+        appName: string;
+        userId: string;
+        state?: Record<string, unknown>;
+        lastUpdateTime?: number;
+      };
       sessions.push(
         createSession({
           id: doc.id,
@@ -145,7 +157,10 @@ export class FirestoreSessionService extends BaseSessionService {
       .doc(request.session.id);
 
     // Event オブジェクトを JSON シリアライズ可能なオブジェクトにして保存
-    const eventJson = JSON.parse(JSON.stringify(event));
+    const eventJson = JSON.parse(JSON.stringify(event)) as Record<
+      string,
+      unknown
+    >;
 
     await sessionRef.collection('events').doc(eventId).set(eventJson);
 
