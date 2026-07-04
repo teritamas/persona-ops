@@ -78,4 +78,8 @@ export class FirestoreRequirementRepository implements RequirementStorePort {
       updatedAt: new Date(String(data.updatedAt)),
     };
   }
+
+  async delete(projectId: string, requirementId: string): Promise<void> {
+    await this.collection(projectId).doc(requirementId).delete();
+  }
 }

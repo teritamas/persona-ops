@@ -6,6 +6,7 @@ const chatRoutes = require('./chatRoutes');
 const personaRoutes = require('./personaRoutes');
 const simulationRoutes = require('./simulationRoutes');
 const resourceRoutes = require('./resourceRoutes');
+const requirementRoutes = require('./requirementRoutes');
 const projectRoutes = require('./projectRoutes');
 
 // プロジェクトIDを持たないルート（ウェルカム画面、プロジェクト新規作成、プロジェクト削除等）
@@ -19,6 +20,7 @@ projectSpecificRouter.use('/', chatRoutes);
 projectSpecificRouter.use('/', personaRoutes);
 projectSpecificRouter.use('/', simulationRoutes);
 projectSpecificRouter.use('/', resourceRoutes);
+projectSpecificRouter.use('/', requirementRoutes);
 
 // プロジェクトID直下のルート（例: GET /:projectId）でダッシュボードを表示
 const projectController = require('../controllers/projectController');
@@ -27,3 +29,4 @@ projectSpecificRouter.get('/', projectController.getDashboard);
 router.use('/:projectId', projectSpecificRouter);
 
 module.exports = router;
+

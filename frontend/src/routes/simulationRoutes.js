@@ -9,5 +9,6 @@ router.get(
 router.get('/view/simulations', simulationController.getSimulationDashboard);
 router.get('/view/simulation-square', simulationController.getSimulationSquare);
 router.post('/action/simulate/reset-reactions', simulationController.resetReactions);
+router.delete('/simulations/:simulationId', simulationController.deleteSimulation);
 
 module.exports = router;

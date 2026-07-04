@@ -210,10 +210,12 @@ async function submitStreamChat(event) {
 
     // Typewriter loop for smooth streaming rendering and automatic scrolling
     const typeInterval = setInterval(() => {
-      if (displayedText.length < incomingText.length) {
-        const diff = incomingText.length - displayedText.length;
+      let textToRender = incomingText;
+
+      if (displayedText.length < textToRender.length) {
+        const diff = textToRender.length - displayedText.length;
         const charsToAppend = diff > 15 ? 4 : (diff > 5 ? 2 : 1);
-        displayedText += incomingText.substr(displayedText.length, charsToAppend);
+        displayedText += textToRender.substr(displayedText.length, charsToAppend);
 
         if (window.marked && typeof window.marked.parse === 'function') {
           contentDiv.innerHTML = window.marked.parse(displayedText);

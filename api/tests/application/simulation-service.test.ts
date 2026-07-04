@@ -66,6 +66,9 @@ class MemorySimulationStore implements SimulationStorePort {
     },
   );
   findReactions = vi.fn(async () => [...this.reactions.values()]);
+  delete = vi.fn(async (_projectId: string, _simulationId: string) => {
+    this.simulation = null;
+  });
 }
 
 const requirement: Requirement = {
@@ -288,5 +291,16 @@ describe('SimulationService', () => {
       simulation.id,
       'TASK_EXECUTION_INTERRUPTED',
     );
+  });
+
+  it('シミュレーションを削除する', async () => {
+    const { service, simulationStore } = createService();
+    const simulation = await service.request('project-1', 'requirement-1');
+    expect(simulationStore.simulation).not.toBeNull();
+
+    await service.delete('project-1', simulation.id);
+
+    expect(simulationStore.delete).toHaveBeenCalledWith('project-1', simulation.id);
+    expect(simulationStore.simulation).toBeNull();
   });
 });

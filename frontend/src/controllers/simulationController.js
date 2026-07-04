@@ -56,3 +56,27 @@ exports.resetReactions = async (req, res) => {
     selectedSimulation: { status: 'running', reactions: [] },
   });
 };
+
+exports.deleteSimulation = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  const { simulationId } = req.params;
+  const success = await simulationService.deleteSimulation(
+    req.activeProject.id,
+    simulationId,
+  );
+  if (!success) {
+    return res.status(500).send('Failed to delete simulation');
+  }
+
+  // 再取得して再描画
+  try {
+    const context = await simulationService.getDashboard(req.activeProject, undefined);
+    return res.render('partials/simulation-dashboard', context);
+  } catch (error) {
+    return res.status(500).render('partials/simulation-dashboard-error', {
+      message: 'シミュレーション一覧の再取得に失敗しました。',
+    });
+  }
+};

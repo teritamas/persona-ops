@@ -113,6 +113,21 @@ class SimulationService {
       simulations,
     };
   }
+
+  async deleteSimulation(projectId, simulationId) {
+    try {
+      const response = await this.requestPrivateApi(
+        `/api/v1/projects/${encodeURIComponent(projectId)}/simulations/${encodeURIComponent(simulationId)}`,
+        {
+          method: 'DELETE',
+        },
+      );
+      return response.ok;
+    } catch (err) {
+      console.error(`Failed to delete simulation ${simulationId} for project ${projectId}`, err);
+      return false;
+    }
+  }
 }
 
 module.exports = {

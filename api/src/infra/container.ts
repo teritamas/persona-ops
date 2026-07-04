@@ -19,6 +19,7 @@ import { FirestoreRequirementRepository } from './database/firestore-requirement
 import { FirestoreSimulationRepository } from './database/firestore-simulation-repository.js';
 import { createCloudTasksSimulationQueue } from './queue/cloud-tasks-simulation-queue.js';
 import { LocalSimulationQueue } from './queue/local-simulation-queue.js';
+import { FirestoreSessionService } from './database/firestore-session-service.js';
 
 export type Container = {
   aiAgent: AiAgentPort;
@@ -36,6 +37,7 @@ export function buildContainer(config: AppConfig): Container {
   const personaRepository = new FirestorePersonaRepository(firestore);
   const requirementRepository = new FirestoreRequirementRepository(firestore);
   const simulationRepository = new FirestoreSimulationRepository(firestore);
+  const firestoreSessionService = new FirestoreSessionService(firestore);
 
   const sourceDocumentRepository = new FirestoreSourceDocumentRepository(
     firestore,
@@ -97,3 +99,4 @@ export function buildContainer(config: AppConfig): Container {
     sourceDocumentService,
   };
 }
+

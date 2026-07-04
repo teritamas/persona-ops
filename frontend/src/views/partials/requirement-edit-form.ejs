@@ -1,0 +1,73 @@
+<%
+  const formId = requirement.id ? `requirement-card-${requirement.id}` : 'new-requirement-form';
+%>
+<div id="<%= formId %>" class="bg-white border border-orange-200 rounded-2xl p-6 shadow-md animate-fade-in w-full text-slate-700">
+  <div class="flex items-center gap-2 mb-3 text-xs font-bold text-orange-600">
+    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+    </svg>
+    <span><%= requirement.id ? '要件を編集' : '新規要件を作成' %></span>
+  </div>
+
+  <form 
+    hx-post="/<%= activeProject.id %>/requirements/save" 
+    hx-target="#requirement-dashboard" 
+    hx-swap="outerHTML" 
+    class="space-y-4"
+  >
+    <input type="hidden" name="id" value="<%= requirement.id || '' %>" />
+
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">タイトル</label>
+      <input 
+        type="text" 
+        name="title" 
+        value="<%= requirement.title || '' %>" 
+        required 
+        placeholder="例: SFAログイン機能"
+        class="w-full text-xs font-semibold px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" 
+      />
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">要件の説明</label>
+      <textarea 
+        name="description" 
+        rows="3" 
+        required 
+        placeholder="要件の背景や具体的な動作内容を入力..."
+        class="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+      ><%= requirement.description || '' %></textarea>
+    </div>
+
+    <div>
+      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">受入基準 (改行区切り)</label>
+      <textarea 
+        name="acceptanceCriteriaText" 
+        rows="4" 
+        required 
+        placeholder="例:&#10;IDとパスワードが一致した時のみダッシュボードへ遷移する&#10;無効なアカウントの場合はエラーメッセージが表示される"
+        class="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white resize-none font-sans focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+      ><%= (requirement.acceptanceCriteria || []).join('\n') %></textarea>
+    </div>
+
+    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+      <button 
+        type="button"
+        hx-get="/<%= activeProject.id %>/view/requirements<%= requirement.id ? '/' + requirement.id : '' %>"
+        hx-target="#requirement-dashboard"
+        hx-swap="outerHTML"
+        class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95"
+      >
+        キャンセル
+      </button>
+      
+      <button 
+        type="submit" 
+        class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-md shadow-orange-500/10 active:scale-95"
+      >
+        保存して適用
+      </button>
+    </div>
+  </form>
+</div>
