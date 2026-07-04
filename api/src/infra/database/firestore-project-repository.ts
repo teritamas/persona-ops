@@ -1,5 +1,5 @@
 import type { Firestore } from '@google-cloud/firestore';
-import type { Project } from '../../domain/project.js';
+import type { Project, Chat } from '../../domain/project.js';
 import type { ProjectRepositoryPort } from '../../application/ports/project-repository-port.js';
 
 export class FirestoreProjectRepository implements ProjectRepositoryPort {
@@ -15,6 +15,8 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
       name: project.name,
       createdAt: project.createdAt.toISOString(),
       updatedAt: project.updatedAt.toISOString(),
+      chats: project.chats || [],
+      activeChatId: project.activeChatId || null,
     });
   }
 
@@ -25,12 +27,16 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
         name: string;
         createdAt: string;
         updatedAt: string;
+        chats?: Chat[];
+        activeChatId?: string | null;
       };
       return {
         id: doc.id,
         name: data.name,
         createdAt: new Date(data.createdAt),
         updatedAt: new Date(data.updatedAt),
+        chats: data.chats || [],
+        activeChatId: data.activeChatId || null,
       };
     });
   }
@@ -47,12 +53,16 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
       name: string;
       createdAt: string;
       updatedAt: string;
+      chats?: Chat[];
+      activeChatId?: string | null;
     };
     return {
       id: snapshot.id,
       name: data.name,
       createdAt: new Date(data.createdAt),
       updatedAt: new Date(data.updatedAt),
+      chats: data.chats || [],
+      activeChatId: data.activeChatId || null,
     };
   }
 }
