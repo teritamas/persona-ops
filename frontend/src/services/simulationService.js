@@ -1,5 +1,5 @@
 const { requestPrivateApi } = require('../clients/private-api');
-const { state, getActiveProject, initialPersonas } = require('./dummy_data/store');
+const { state, getActiveProject } = require('./dummy_data/store');
 
 class SimulationService {
 

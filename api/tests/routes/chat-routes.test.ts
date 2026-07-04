@@ -41,13 +41,13 @@ describe('チャットストリーミングルーター', () => {
           content: { parts: [{ text: 'どのような要件ですか？' }] },
         });
       })();
-    }
+    },
   };
 
   const app = Fastify();
-  app.register(chatRoutes, { 
+  app.register(chatRoutes, {
     defaultModel: 'gemini-2.5-flash',
-    personaOpsAgent: mockPersonaOpsAgent
+    personaOpsAgent: mockPersonaOpsAgent,
   });
 
   it('POST /api/v1/chat/stream でLLMのテキストストリームを応答する', async () => {
@@ -94,6 +94,8 @@ describe('チャットストリーミングルーター', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body).toContain('[Error] I apologize, but an error occurred while processing your request.');
+    expect(response.body).toContain(
+      '[Error] I apologize, but an error occurred while processing your request.',
+    );
   });
 });

@@ -8,7 +8,8 @@ export function createPersonaOpsAgent(options: {
 }) {
   const agent = new LlmAgent({
     name: 'persona_ops_agent',
-    description: 'PersonaOps Assistant Agent that helps users define and update personas.',
+    description:
+      'PersonaOps Assistant Agent that helps users define and update personas.',
     instruction: PERSONA_OPS_AGENT_INSTRUCTION,
     model: options.model,
     tools: options.tools,

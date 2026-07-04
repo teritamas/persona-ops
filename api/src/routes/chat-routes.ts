@@ -26,11 +26,12 @@ export async function chatRoutes(
     const sessionId = projectId || 'default-chat-session';
 
     // ツール呼び出し時のコンテキストとして、エージェントのプロンプト（System Note）に projectId と既存のペルソナ情報を追加する
-    const existingPersonasContext = existingPersonas && existingPersonas.length > 0 
-      ? `\n\n[Current Personas]: ${JSON.stringify(existingPersonas.map(p => ({ name: p.name, role: p.role })))}`
-      : '';
-      
-    const fullPrompt = projectId 
+    const existingPersonasContext =
+      existingPersonas && existingPersonas.length > 0
+        ? `\n\n[Current Personas]: ${JSON.stringify(existingPersonas.map((p) => ({ name: p.name, role: p.role })))}`
+        : '';
+
+    const fullPrompt = projectId
       ? `[System Note: The current projectId is "${projectId}". Use this ID implicitly when saving personas.${existingPersonasContext}]\n\n${message}`
       : message;
 

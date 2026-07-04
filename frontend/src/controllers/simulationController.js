@@ -13,7 +13,7 @@ exports.getSuggestSim = (req, res) => {
 };
 
 exports.resetReactions = (req, res) => {
-  const { state, getActiveProject, initialPersonas } = require('../services/dummy_data/store');
+  const { state, getActiveProject } = require('../services/dummy_data/store');
   const activeProject = getActiveProject();
 
   state.simulationDone = false;

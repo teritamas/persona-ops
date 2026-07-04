@@ -4,26 +4,43 @@ import { randomUUID } from 'node:crypto';
 import type { PersonaRepositoryPort } from '../../../application/ports/persona-repository-port.js';
 import type { Persona } from '../../../domain/persona.js';
 
-export function createSavePersonasTool(personaRepository: PersonaRepositoryPort) {
+export function createSavePersonasTool(
+  personaRepository: PersonaRepositoryPort,
+) {
   return new FunctionTool({
     name: 'save_personas_tool',
-    description: 'Saves or updates virtual personas to the database for a given project. Use this tool when you have finalized the list of personas based on user requirements.',
+    description:
+      'Saves or updates virtual personas to the database for a given project. Use this tool when you have finalized the list of personas based on user requirements.',
     parameters: z.object({
-      projectId: z.string().describe('The ID of the project to save the personas for.'),
-      personas: z.array(z.object({
-        name: z.string(),
-        role: z.string(),
-        traits: z.array(z.string()),
-        background: z.string(),
-      })).describe('The list of personas to save or update. Name or role will be used to identify existing personas for upsert.'),
+      projectId: z
+        .string()
+        .describe('The ID of the project to save the personas for.'),
+      personas: z
+        .array(
+          z.object({
+            name: z.string(),
+            role: z.string(),
+            traits: z.array(z.string()),
+            background: z.string(),
+          }),
+        )
+        .describe(
+          'The list of personas to save or update. Name or role will be used to identify existing personas for upsert.',
+        ),
     }),
     execute: async (input) => {
       const { projectId, personas } = input;
-      const existingPersonas = await personaRepository.findByProjectId(projectId);
+      const existingPersonas =
+        await personaRepository.findByProjectId(projectId);
       const avatars = ['Felix', 'Aneka', 'Jasper', 'Avery', 'Leo'];
       const coordinates = [
-        { x: 20, y: 30 }, { x: 70, y: 40 }, { x: 45, y: 60 }, { x: 80, y: 70 },
-        { x: 30, y: 80 }, { x: 55, y: 25 }, { x: 15, y: 60 },
+        { x: 20, y: 30 },
+        { x: 70, y: 40 },
+        { x: 45, y: 60 },
+        { x: 80, y: 70 },
+        { x: 30, y: 80 },
+        { x: 55, y: 25 },
+        { x: 15, y: 60 },
       ];
       const now = new Date();
       let addedCount = 0;
@@ -32,7 +49,9 @@ export function createSavePersonasTool(personaRepository: PersonaRepositoryPort)
       for (let i = 0; i < personas.length; i++) {
         const pData = personas[i]!;
         // Match by name or role for upsert logic
-        const existing = existingPersonas.find(ep => ep.name === pData.name || ep.role === pData.role);
+        const existing = existingPersonas.find(
+          (ep) => ep.name === pData.name || ep.role === pData.role,
+        );
 
         if (existing) {
           // Update
@@ -69,6 +88,6 @@ export function createSavePersonasTool(personaRepository: PersonaRepositoryPort)
       }
 
       return `Successfully added ${addedCount} and updated ${updatedCount} personas.`;
-    }
+    },
   });
 }
