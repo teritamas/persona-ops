@@ -12,7 +12,7 @@
         <div class="relative flex-1" id="project-menu-container">
           <button 
             onclick="toggleProjectMenu()"
-            class="flex items-center gap-1.5 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors group"
+            class="flex items-center gap-1.5 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-all active:scale-95 group"
           >
             <span class="font-bold text-sm text-slate-700"><%= activeProject.name %></span>
             <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
@@ -23,7 +23,7 @@
             <% mockProjects.forEach(function(p) { %>
               <button 
                 onclick="switchProject('<%= p.id %>')"
-                class="w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-slate-50 transition-colors <%= p.id === activeProjectId ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-slate-700' %>"
+                class="w-full text-left px-4 py-2 text-sm flex items-center justify-between hover:bg-slate-50 transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-slate-700' %>"
               >
                 <span class="truncate"><%= p.name %></span>
                 <% if(p.id === activeProjectId) { %>
@@ -34,7 +34,7 @@
             <div class="border-t border-slate-100 mt-2 pt-2">
               <button 
                 onclick="createProject()"
-                class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:text-orange-600 hover:bg-slate-50 flex items-center transition-colors font-medium"
+                class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:text-orange-600 hover:bg-slate-50 flex items-center transition-all active:scale-95 font-medium"
               >
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg> 新規プロジェクト作成
               </button>

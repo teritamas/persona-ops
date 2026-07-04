@@ -4,8 +4,11 @@
   </div>
   <div class="flex-1 flex flex-col items-center justify-center bg-slate-50/30 p-6 overflow-y-auto">
      <div class="max-w-3xl mx-auto w-full flex flex-col items-center animate-fade-in">
-       <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-[2rem] flex items-center justify-center text-white font-bold mb-8 shadow-xl shadow-orange-500/30">
-          <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+       <div class="relative mb-8 group cursor-pointer active:scale-95 transition-all">
+         <div class="absolute inset-0 bg-orange-400 blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-500 rounded-[2rem]"></div>
+         <div class="relative w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-[2rem] flex items-center justify-center text-white font-bold shadow-xl shadow-orange-500/30 transform group-hover:-translate-y-2 group-hover:rotate-3 transition-all duration-300">
+            <svg class="w-10 h-10 drop-shadow-md" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+         </div>
        </div>
        <h2 class="text-3xl font-extrabold text-slate-800 mb-4 tracking-tight">PersonaOps へようこそ</h2>
        <p class="text-slate-500 text-center mb-10 max-w-lg leading-relaxed font-medium">
@@ -13,7 +16,7 @@
        </p>
        
        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-          <button hx-post="/action/simulate" hx-vals='{"inputText": "先週のユーザーインタビュー議事録と、既存SFAの仕様書をアップロードします。これをもとにペルソナを作成してください。"}' hx-target="#sandbox-characters" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm group">
+          <button hx-post="/action/simulate" hx-vals='{"inputText": "先週のユーザーインタビュー議事録と、既存SFAの仕様書をアップロードします。これをもとにペルソナを作成してください。"}' hx-target="#sandbox-characters" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-95 group">
             <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-2 rounded-lg border border-slate-100 transition-colors">
               <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
             </div>
@@ -21,7 +24,7 @@
               先週のユーザーインタビュー議事録と、既存仕様書からペルソナを作成する
             </span>
           </button>
-          <button hx-post="/action/simulate" hx-vals='{"inputText": "GitHubのIssue URLを共有します。これをもとにエンジニアペルソナを作成してください。"}' hx-target="#sandbox-characters" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm group">
+          <button hx-post="/action/simulate" hx-vals='{"inputText": "GitHubのIssue URLを共有します。これをもとにエンジニアペルソナを作成してください。"}' hx-target="#sandbox-characters" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-95 group">
             <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-2 rounded-lg border border-slate-100 transition-colors">
               <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
             </div>
@@ -37,11 +40,11 @@
   <div class="p-4 bg-white border-t border-slate-100 shrink-0">
     <div class="max-w-3xl mx-auto w-full">
       <form hx-post="/action/simulate" hx-target="#sandbox-characters" class="relative flex items-center">
-        <button type="button" class="absolute left-4 p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors">
+        <button type="button" class="absolute left-4 p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-all active:scale-90">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
         </button>
         <input name="inputText" type="text" placeholder="機能アイデアやAIへの相談を入力..." class="w-full bg-slate-100 text-slate-800 text-sm rounded-2xl py-4 pl-14 pr-14 border border-transparent focus:outline-none focus:border-orange-200 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all shadow-inner shadow-slate-200/50" required />
-        <button type="submit" class="absolute right-3 bg-orange-500 text-white p-2.5 rounded-xl hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all active:scale-95">
+        <button type="submit" class="absolute right-3 bg-gradient-to-br from-orange-400 to-orange-500 text-white p-2.5 rounded-xl hover:from-orange-500 hover:to-orange-600 hover:shadow-lg shadow-md shadow-orange-500/40 hover:shadow-orange-500/50 transition-all active:scale-90 disabled:opacity-50 disabled:active:scale-100">
           <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path></svg>
         </button>
       </form>
