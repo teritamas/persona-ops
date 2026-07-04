@@ -8,7 +8,9 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
   constructor(private readonly firestore: Firestore) {}
 
   async save(project: Project): Promise<void> {
-    const docRef = this.firestore.collection(this.collectionName).doc(project.id);
+    const docRef = this.firestore
+      .collection(this.collectionName)
+      .doc(project.id);
     await docRef.set({
       name: project.name,
       createdAt: project.createdAt.toISOString(),
@@ -32,7 +34,7 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
   async findById(id: string): Promise<Project | null> {
     const docRef = this.firestore.collection(this.collectionName).doc(id);
     const snapshot = await docRef.get();
-    
+
     if (!snapshot.exists) {
       return null;
     }
