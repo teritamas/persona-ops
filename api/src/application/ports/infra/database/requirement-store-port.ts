@@ -7,4 +7,5 @@ export interface RequirementStorePort {
     requirementId: string,
   ): Promise<Requirement | null>;
   findByProjectId(projectId: string): Promise<Requirement[]>;
+  delete(projectId: string, requirementId: string): Promise<void>;
 }

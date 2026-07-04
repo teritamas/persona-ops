@@ -15,6 +15,16 @@ if (process.env.NODE_ENV !== 'production') {
   const connectLiveReload = require('connect-livereload');
 
   const liveReloadServer = livereload.createServer();
+  
+  // Handle port conflict gracefully without crashing the app
+  liveReloadServer.server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn('LiveReload port 35729 is already in use. LiveReload is disabled for this session.');
+    } else {
+      console.error('LiveReload server error:', err);
+    }
+  });
+
   liveReloadServer.watch(path.join(__dirname, 'src', 'views'));
   liveReloadServer.watch(path.join(__dirname, 'public', 'dist'));
 

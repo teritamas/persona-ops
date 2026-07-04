@@ -79,8 +79,6 @@ exports.streamChat = async (req, res) => {
     });
   }
 
-
-
   await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(req.activeProject.id)}`, {
     method: 'PUT',
     body: {
@@ -126,13 +124,32 @@ exports.streamChat = async (req, res) => {
       res.write(value);
     }
 
+    // ストリームから受信したフルテキストからマーカーを分離
+    let textToSave = fullText;
+    let extractedFunctionCall = null;
+    
+    const marker = '__ADK_CONFIRMATION__:';
+    const markerIdx = fullText.indexOf(marker);
+    if (markerIdx !== -1) {
+      textToSave = fullText.substring(0, markerIdx).trim();
+      const jsonStr = fullText.substring(markerIdx + marker.length).trim();
+      try {
+        extractedFunctionCall = JSON.parse(jsonStr);
+      } catch (err) {
+        console.error('Failed to parse ADK confirmation JSON:', err);
+      }
+    }
+
     // Save agent message
     const agentMsg = {
       id: 'msg_' + (Date.now() + 1),
       role: 'agent',
-      text: fullText,
+      text: textToSave,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
+    if (extractedFunctionCall) {
+      agentMsg.functionCall = extractedFunctionCall;
+    }
     activeChat.messages.push(agentMsg);
 
     await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(req.activeProject.id)}`, {

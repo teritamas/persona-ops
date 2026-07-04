@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
+import { NotFoundError } from '../domain/errors.js';
 import type { Persona } from '../domain/persona.js';
 import type { PersonaStorePort } from './ports/infra/database/persona-store-port.js';
 
@@ -77,5 +78,26 @@ export class PersonaService {
     }
 
     return { addedCount, updatedCount };
+  }
+
+  async updatePersonaPosition(
+    projectId: string,
+    personaId: string,
+    x: number,
+    y: number,
+  ): Promise<Persona> {
+    const personas = await this.personaRepository.findByProjectId(projectId);
+    const persona = personas.find((p) => p.id === personaId);
+    if (!persona) {
+      throw new NotFoundError('Persona', personaId);
+    }
+    const updated = {
+      ...persona,
+      x,
+      y,
+      updatedAt: new Date(),
+    };
+    await this.personaRepository.save(updated);
+    return updated;
   }
 }

@@ -94,4 +94,17 @@ export class RequirementService {
   async list(projectId: string): Promise<Requirement[]> {
     return this.requirementRepository.findByProjectId(projectId);
   }
+
+  async delete(projectId: string, requirementId: string): Promise<void> {
+    const simulations = await this.simulationStore.findByProjectId(projectId);
+    const relatedSimulations = simulations.filter(
+      (sim) => sim.requirementId === requirementId,
+    );
+
+    for (const sim of relatedSimulations) {
+      await this.simulationStore.delete(projectId, sim.id);
+    }
+
+    await this.requirementRepository.delete(projectId, requirementId);
+  }
 }

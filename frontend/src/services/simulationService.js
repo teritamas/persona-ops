@@ -113,6 +113,46 @@ class SimulationService {
       simulations,
     };
   }
+
+  async deleteSimulation(projectId, simulationId) {
+    try {
+      const response = await this.requestPrivateApi(
+        `/api/v1/projects/${encodeURIComponent(projectId)}/simulations/${encodeURIComponent(simulationId)}`,
+        {
+          method: 'DELETE',
+        },
+      );
+      return response.ok;
+    } catch (err) {
+      console.error(`Failed to delete simulation ${simulationId} for project ${projectId}`, err);
+      return false;
+    }
+  }
+
+  async runSimulation(projectId, requirementId) {
+    const response = await this.requestPrivateApi(
+      `/api/v1/projects/${encodeURIComponent(projectId)}/simulations`,
+      {
+        method: 'POST',
+        body: { requirementId }
+      }
+    );
+    if (!response.ok || !response.data) {
+      throw new Error(response.message || 'Failed to start simulation');
+    }
+    return presentSimulation(response.data);
+  }
+
+  async getSandboxContext(activeProject, simulationId) {
+    const dashboard = await this.getDashboard(activeProject, simulationId);
+    const requirementService = require('./requirementService');
+    const requirements = await requirementService.fetchRequirements(activeProject.id);
+    return {
+      selectedSimulation: dashboard.selectedSimulation,
+      simulations: dashboard.simulations,
+      requirements
+    };
+  }
 }
 
 module.exports = {

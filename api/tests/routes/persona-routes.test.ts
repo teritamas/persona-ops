@@ -77,4 +77,27 @@ describe('ペルソナ ルーター', () => {
     expect(response.statusCode).toBe(500);
     expect(response.json()).toEqual({ error: 'Internal Server Error' });
   });
+
+  it('POST /api/v1/projects/:projectId/personas/:personaId/position で位置座標を更新する', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/proj_123/personas/test_id/position',
+      payload: { x: 55, y: 66 },
+    });
+
+    expect(response.statusCode).toBe(200);
+    const body = response.json<Persona>();
+    expect(body.x).toBe(55);
+    expect(body.y).toBe(66);
+  });
+
+  it('POST /api/v1/projects/:projectId/personas/:personaId/position で見つからない場合404を返す', async () => {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/proj_123/personas/nonexistent/position',
+      payload: { x: 55, y: 66 },
+    });
+
+    expect(response.statusCode).toBe(404);
+  });
 });

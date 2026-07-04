@@ -27,6 +27,11 @@ class MemoryRequirementStore implements RequirementStorePort {
       [...this.items.values()].filter((item) => item.projectId === projectId),
     );
   }
+
+  delete(projectId: string, requirementId: string): Promise<void> {
+    this.items.delete(requirementId);
+    return Promise.resolve();
+  }
 }
 
 describe('RequirementService', () => {
@@ -129,5 +134,43 @@ describe('RequirementService', () => {
     ).resolves.toMatchObject({
       sourceSimulationIds: ['completed-simulation'],
     });
+  });
+
+  it('要件を削除し、紐づくシミュレーション結果も一緒に削除する', async () => {
+    const store = new MemoryRequirementStore();
+    const deletedSimIds: string[] = [];
+    const mockSimulationStore = {
+      findByProjectId: () =>
+        Promise.resolve([
+          { id: 'sim-1', requirementId: 'req-1' },
+          { id: 'sim-2', requirementId: 'req-2' },
+          { id: 'sim-3', requirementId: 'req-1' },
+        ] as Simulation[]),
+      delete: (_projectId: string, simulationId: string) => {
+        deletedSimIds.push(simulationId);
+        return Promise.resolve();
+      },
+    } as unknown as SimulationStorePort;
+
+    const service = new RequirementService(store, mockSimulationStore);
+    await store.save({
+      id: 'req-1',
+      projectId: 'project-1',
+      title: '要件1',
+      description: '',
+      acceptanceCriteria: [],
+      sourceSimulationIds: [],
+      status: 'draft',
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await service.delete('project-1', 'req-1');
+
+    expect(deletedSimIds).toContain('sim-1');
+    expect(deletedSimIds).toContain('sim-3');
+    expect(deletedSimIds).not.toContain('sim-2');
+    await expect(store.findById('project-1', 'req-1')).resolves.toBeNull();
   });
 });

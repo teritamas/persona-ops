@@ -1,32 +1,17 @@
 <%
   const selectedId = selectedSimulation?.id;
-  const isPolling = false; // 自動ポーリング更新を無効化
-  const pollingAttrs = '';
+  const isPolling = selectedSimulation && (selectedSimulation.status === 'running' || selectedSimulation.status === 'queued');
+  const pollingAttrs = isPolling
+    ? `hx-get="/${activeProject.id}/view/simulation-square?simulationId=${encodeURIComponent(selectedId)}"` +
+      ` hx-trigger="every 3s"` +
+      ` hx-swap="outerHTML"`
+    : '';
 %>
 <div id="sandbox-characters"
      class="relative w-full h-full max-w-5xl max-h-[800px] z-10"
      <%- pollingAttrs %>
      <%= (typeof isOob !== 'undefined' && isOob) ? 'hx-swap-oob="outerHTML"' : '' %>
 >
-
-  <!-- シミュレーション中のエフェクト（htmx ローディング表示） -->
-  <% if (isPolling) { %>
-    <div id="loading-overlay"
-      class="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px] z-20 flex items-center justify-center transition-all duration-500 animate-fade-in">
-      <div class="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-white flex flex-col items-center animate-pop-in">
-        <div class="relative mb-3">
-          <div class="absolute inset-0 bg-orange-400 blur-md opacity-50 animate-pulse-glow rounded-full"></div>
-          <div class="w-12 h-12 bg-white rounded-full border border-orange-100 flex items-center justify-center relative z-10 shadow-inner">
-            <svg class="w-6 h-6 text-orange-500 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-            </svg>
-          </div>
-        </div>
-        <span class="font-bold text-slate-700 text-sm font-mono">Thinking...</span>
-        <span class="text-[10px] text-slate-400 mt-1">ペルソナの反応を推論中</span>
-      </div>
-    </div>
-  <% } %>
 
   <% activeProject.personas.forEach((p, idx) => { %>
     <%
@@ -68,11 +53,11 @@
       }
     %>
     <div
-      hx-get="/<%= activeProject.id %>/view/persona/<%= p.id %>?simulationId=<%= selectedId || '' %>"
-      hx-target="#detail-panel"
-      hx-swap="outerHTML"
-      class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"
+      class="draggable-node absolute cursor-grab active:cursor-grabbing group flex flex-col items-center transition-[transform] duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"
       style="left: <%= p.x %>%; top: <%= p.y %>%; transform: translate(-50%, -50%)"
+      data-node-id="persona-<%= p.id %>"
+      data-project-id="<%= activeProject.id %>"
+      data-simulation-id="<%= selectedId || '' %>"
     >
       <%- reactionHtml %>
       <div class="relative animate-float flex flex-col items-center transition-all duration-300 group-hover:-translate-y-2" style="animation-delay: <%= idx * 0.5 %>s">
@@ -92,4 +77,320 @@
     </div>
   <% }) %>
 
+  <!-- 箱庭上の機能要件カードの配置 -->
+  <% if (typeof requirements !== 'undefined' && requirements && requirements.length > 0) { %>
+    <% requirements.forEach((req, idx) => { %>
+      <%
+        // 初期位置: ペルソナと重なりにくく、斜めに綺麗に整列するように散らす
+        const initX = 35 + (idx % 3) * 16;
+        const initY = 30 + Math.floor(idx / 3) * 18;
+        
+        // この要件に紐づくシミュレーション結果があるか確認
+        let matchingSim = null;
+        if (typeof simulations !== 'undefined' && simulations) {
+          matchingSim = simulations.find(sim => sim.requirementId === req.id);
+        }
+        
+        const isSelectedRequirement = selectedSimulation?.requirementId === req.id;
+        const isThisRunning = isPolling && isSelectedRequirement;
+        
+        let cardBorderClass = 'border-slate-200/80 hover:shadow-xl bg-white/95';
+        if (isThisRunning) {
+          cardBorderClass = 'border-orange-500/85 shadow-lg shadow-orange-500/15 bg-orange-50/90 animate-pulse';
+        } else if (isSelectedRequirement) {
+          cardBorderClass = 'border-orange-300 bg-white/95 shadow-md shadow-orange-500/5';
+        }
+      %>
+      <div
+        class="draggable-node absolute z-30 select-none cursor-grab active:cursor-grabbing border p-3.5 rounded-2xl shadow-lg w-56 flex flex-col text-slate-800 transition-all duration-200 <%= cardBorderClass %>"
+        style="left: <%= initX %>%; top: <%= initY %>%;"
+        data-node-id="req-<%= req.id %>"
+      >
+        <!-- ヘッダー -->
+        <div class="flex items-center justify-between gap-1.5 mb-2">
+          <div class="flex items-center gap-1 text-[9px] font-bold text-orange-500 uppercase tracking-wider">
+            <svg class="w-3.5 h-3.5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>機能要件</span>
+          </div>
+          <% if (isSelectedRequirement || isThisRunning) { %>
+            <span class="flex h-2 w-2 relative shrink-0">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+            </span>
+          <% } %>
+        </div>
+
+        <!-- タイトル -->
+        <h4 class="text-xs font-extrabold text-slate-800 tracking-tight leading-tight mb-2.5 truncate" title="<%= req.title %>">
+          <%= req.title %>
+        </h4>
+
+        <!-- 詳細アコーディオンエリア (普段は縮小) -->
+        <div id="req-detail-<%= req.id %>" class="transition-all duration-300 max-h-0 opacity-0 overflow-y-auto text-[10px] text-slate-500 border-slate-100 flex flex-col gap-2.5" style="max-height: 0px; opacity: 0; border-top-width: 0px; margin-top: 0px; padding-top: 0px;">
+          <div class="font-medium leading-relaxed whitespace-pre-wrap"><%= req.description %></div>
+          <% if (req.acceptanceCriteria && req.acceptanceCriteria.length > 0) { %>
+            <div class="border-t border-slate-50 pt-2">
+              <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">受け入れ基準</span>
+              <ul class="space-y-1">
+                <% req.acceptanceCriteria.forEach((crit) => { %>
+                  <li class="flex gap-1.5 leading-normal">
+                    <span class="text-orange-500 font-bold">•</span>
+                    <span><%= crit %></span>
+                  </li>
+                <% }) %>
+              </ul>
+            </div>
+          <% } %>
+        </div>
+
+        <!-- アコーディオン切り替えボタン -->
+        <button
+          type="button"
+          onclick="toggleReqCardDetail(this, 'req-detail-<%= req.id %>')"
+          class="w-full text-slate-400 hover:text-slate-600 text-[8.5px] font-bold py-1.5 text-center border-t border-slate-100 hover:bg-slate-50 rounded-lg transition-colors mt-2 mb-2 flex items-center justify-center gap-0.5"
+        >
+          <span>詳細を表示</span>
+          <svg class="w-2.5 h-2.5 transition-transform duration-300 transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
+          </svg>
+        </button>
+
+        <!-- アクション -->
+        <div class="mt-auto space-y-1.5">
+          <% if (isThisRunning) { %>
+            <!-- 実行中のインラインローディング表示 -->
+            <div class="w-full bg-orange-100 text-orange-700 text-[10px] font-bold py-1.5 px-2.5 rounded-xl flex items-center justify-center gap-1.5 border border-orange-200">
+              <svg class="animate-spin h-3.5 w-3.5 text-orange-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>検証を実行中...</span>
+            </div>
+          <% } else if (matchingSim) { %>
+            <button
+              hx-get="/<%= activeProject.id %>/view/simulation-square?simulationId=<%= encodeURIComponent(matchingSim.id) %>"
+              hx-target="#sandbox-characters"
+              hx-swap="outerHTML"
+              class="w-full text-[10px] font-bold text-center py-1.5 px-2.5 rounded-xl border transition-all active:scale-95 flex items-center justify-center gap-1
+                <%= isSelectedRequirement ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/20' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50' %>"
+            >
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+              <span><%= isSelectedRequirement ? '結果を表示中' : '結果を表示' %></span>
+            </button>
+          <% } else { %>
+            <button
+              hx-post="/<%= activeProject.id %>/action/simulate/run"
+              hx-vals='{"requirementId": "<%= req.id %>"}'
+              hx-target="#sandbox-characters"
+              hx-swap="outerHTML"
+              class="w-full bg-slate-800 hover:bg-slate-900 text-white text-[10px] font-bold text-center py-1.5 px-2.5 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-1 shadow-sm"
+            >
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span>シミュレーション実行</span>
+            </button>
+          <% } %>
+        </div>
+      </div>
+    <% }) %>
+  <% } %>
+
 </div>
+
+<script>
+  (function() {
+    function initializeDraggableNodes() {
+      const dragNodes = document.querySelectorAll('.draggable-node');
+      dragNodes.forEach(node => {
+        // 二重登録を防止
+        if (node.dataset.draggableInitialized) {
+          // すでに初期化済みで、要件カードの位置が書き変わったかもしれないので位置のみ再復元
+          const nodeId = node.dataset.nodeId;
+          if (nodeId.startsWith('req-')) {
+            const savedPos = sessionStorage.getItem('pos_' + nodeId);
+            if (savedPos) {
+              const { left, top } = JSON.parse(savedPos);
+              node.style.left = left;
+              node.style.top = top;
+            }
+          }
+          return;
+        }
+        node.dataset.draggableInitialized = "true";
+
+        let isDragging = false;
+        let startX, startY, initLeft, initTop;
+        let hasMoved = false;
+
+        // セッションストレージなどから、ドラッグ位置を復元する（要件カードのみ）
+        const nodeId = node.dataset.nodeId;
+        if (nodeId.startsWith('req-')) {
+          const savedPos = sessionStorage.getItem('pos_' + nodeId);
+          if (savedPos) {
+            const { left, top } = JSON.parse(savedPos);
+            node.style.left = left;
+            node.style.top = top;
+          }
+        }
+
+        node.addEventListener('mousedown', (e) => {
+          // ボタンのクリック時はドラッグしない
+          if (e.target.closest('button, input, a, textarea')) return;
+          
+          isDragging = true;
+          hasMoved = false;
+          node.style.transition = 'none'; // ドラッグ中はトランジションを切る
+          startX = e.clientX;
+          startY = e.clientY;
+          
+          const rect = node.getBoundingClientRect();
+          const parentRect = node.parentElement.getBoundingClientRect();
+          initLeft = rect.left - parentRect.left;
+          initTop = rect.top - parentRect.top;
+          
+          node.classList.remove('cursor-grab');
+          node.classList.add('cursor-grabbing');
+          
+          // ドラッグ開始時にのみ window イベントを登録
+          window.addEventListener('mousemove', onMouseMove);
+          window.addEventListener('mouseup', onMouseUp);
+          
+          e.preventDefault();
+        });
+
+        function onMouseMove(e) {
+          if (!isDragging) return;
+          
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          
+          if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
+            hasMoved = true;
+          }
+          
+          const parentRect = node.parentElement.getBoundingClientRect();
+          let newLeft = initLeft + dx;
+          let newTop = initTop + dy;
+          
+          let leftPercent, topPercent;
+          if (nodeId.startsWith('persona-')) {
+            // ペルソナは translate(-50%, -50%) がかかっているため、中心位置を基準に計算する
+            const halfWidth = node.offsetWidth / 2;
+            const halfHeight = node.offsetHeight / 2;
+            newLeft = Math.max(-halfWidth, Math.min(newLeft, parentRect.width - halfWidth));
+            newTop = Math.max(-halfHeight, Math.min(newTop, parentRect.height - halfHeight));
+            leftPercent = ((newLeft + halfWidth) / parentRect.width) * 100 + '%';
+            topPercent = ((newTop + halfHeight) / parentRect.height) * 100 + '%';
+          } else {
+            // 要件カードは translate がかかっていないため、左端を基準に計算する（右下のズレを防ぐ）
+            newLeft = Math.max(0, Math.min(newLeft, parentRect.width - node.offsetWidth));
+            newTop = Math.max(0, Math.min(newTop, parentRect.height - node.offsetHeight));
+            leftPercent = (newLeft / parentRect.width) * 100 + '%';
+            topPercent = (newTop / parentRect.height) * 100 + '%';
+          }
+          
+          node.style.left = leftPercent;
+          node.style.top = topPercent;
+        }
+
+        async function onMouseUp() {
+          if (!isDragging) return;
+          isDragging = false;
+          
+          node.style.transition = 'shadow 0.2s duration';
+          node.classList.remove('cursor-grabbing');
+          node.classList.add('cursor-grab');
+
+          // イベントのクリーンアップ
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+
+          if (!hasMoved) {
+            // 純粋なクリック (ペルソナのみ詳細パネルを表示)
+            if (nodeId.startsWith('persona-')) {
+              const personaId = nodeId.replace('persona-', '');
+              const projectId = node.dataset.projectId;
+              const simulationId = node.dataset.simulationId;
+              
+              if (typeof htmx !== 'undefined') {
+                htmx.ajax('GET', `/${projectId}/view/persona/${personaId}?simulationId=${encodeURIComponent(simulationId)}`, {
+                  target: '#detail-panel',
+                  swap: 'outerHTML'
+                });
+              }
+            }
+          } else {
+            // ドラッグ完了
+            const xVal = Math.round(parseFloat(node.style.left));
+            const yVal = Math.round(parseFloat(node.style.top));
+            
+            if (nodeId.startsWith('persona-')) {
+              // ペルソナの位置を DB に保存
+              const personaId = nodeId.replace('persona-', '');
+              const projectId = node.dataset.projectId;
+              
+              try {
+                const res = await fetch(`/action/persona/${personaId}/position`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ x: xVal, y: yVal })
+                });
+                if (!res.ok) {
+                  console.error('Failed to update persona position in DB');
+                }
+              } catch (err) {
+                console.error('Error updating persona position:', err);
+              }
+            } else if (nodeId.startsWith('req-')) {
+              // 要件の位置をセッションに一時保存
+              sessionStorage.setItem('pos_' + nodeId, JSON.stringify({ left: node.style.left, top: node.style.top }));
+            }
+          }
+        }
+      });
+    }
+
+    // アコーディオン開閉トグル用グローバル関数
+    window.toggleReqCardDetail = function(btn, detailId) {
+      const detail = document.getElementById(detailId);
+      const icon = btn.querySelector('svg');
+      const textSpan = btn.querySelector('span');
+      
+      if (detail.style.maxHeight === '240px') {
+        detail.style.maxHeight = '0px';
+        detail.style.opacity = '0';
+        detail.style.marginTop = '0px';
+        detail.style.paddingTop = '0px';
+        detail.style.borderTopWidth = '0px';
+        textSpan.textContent = '詳細を表示';
+        icon.style.transform = 'rotate(0deg)';
+      } else {
+        detail.style.maxHeight = '240px';
+        detail.style.opacity = '1';
+        detail.style.marginTop = '8px';
+        detail.style.paddingTop = '8px';
+        detail.style.borderTopWidth = '1px';
+        textSpan.textContent = '詳細を閉じる';
+        icon.style.transform = 'rotate(180deg)';
+      }
+    };
+
+    // 初回初期化
+    initializeDraggableNodes();
+
+    // HTMX による DOM 置換や OOB swap 後に自動で再アタッチする
+    if (typeof htmx !== 'undefined') {
+      document.body.addEventListener('htmx:afterSettle', initializeDraggableNodes);
+      document.body.addEventListener('htmx:load', initializeDraggableNodes);
+    }
+  })();
+</script>

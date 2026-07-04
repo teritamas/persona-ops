@@ -42,4 +42,5 @@ export interface SimulationStorePort {
     projectId: string,
     simulationId: string,
   ): Promise<PersonaReaction[]>;
+  delete(projectId: string, simulationId: string): Promise<void>;
 }

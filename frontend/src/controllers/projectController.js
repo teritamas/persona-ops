@@ -1,5 +1,6 @@
 const projectService = require('../services/projectService');
 const { simulationService } = require('../services/simulationService');
+const requirementService = require('../services/requirementService');
 const { marked } = require('marked');
 
 exports.getWelcomePage = async (req, res) => {
@@ -33,20 +34,23 @@ exports.createProject = async (req, res) => {
 exports.getDashboard = async (req, res) => {
   let simulations = [];
   let selectedSimulation = null;
+  let requirements = [];
   
   if (req.activeProject && req.activeProject.id) {
     try {
       const simContext = await simulationService.getDashboard(req.activeProject, req.query.simulationId);
       simulations = simContext.simulations;
       selectedSimulation = simContext.selectedSimulation;
+      requirements = await requirementService.fetchRequirements(req.activeProject.id);
     } catch (err) {
-      console.error('Failed to fetch simulations for dashboard', err);
+      console.error('Failed to fetch simulations or requirements for dashboard', err);
     }
   }
 
   res.render('index', {
     simulations,
     selectedSimulation,
+    requirements,
     isInitial: req.activeProject ? req.activeProject.isInitial : true,
     marked: marked.parse
   });

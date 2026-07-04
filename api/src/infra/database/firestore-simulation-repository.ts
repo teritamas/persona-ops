@@ -277,4 +277,15 @@ export class FirestoreSimulationRepository implements SimulationStorePort {
   private stringArray(value: unknown): string[] {
     return Array.isArray(value) ? value.map((item) => String(item)) : [];
   }
+
+  async delete(projectId: string, simulationId: string): Promise<void> {
+    const simulationRef = this.simulationDocument(projectId, simulationId);
+    const snapshot = await this.reactions(projectId, simulationId).get();
+    const batch = this.firestore.batch();
+    snapshot.docs.forEach((doc) => {
+      batch.delete(doc.ref);
+    });
+    batch.delete(simulationRef);
+    await batch.commit();
+  }
 }

@@ -70,27 +70,7 @@
                   <h2 class="text-sm font-bold text-slate-800 whitespace-nowrap">シミュレーション広場</h2>
                 </div>
 
-                <% if (typeof simulations !== 'undefined' && simulations && simulations.length > 0) { %>
-                  <div class="flex items-center gap-2 min-w-0">
-                    <label for="simulation-select" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 whitespace-nowrap">結果切替:</label>
-                    <select
-                      id="simulation-select"
-                      class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium text-slate-700 shadow-sm max-w-[200px] md:max-w-[320px] truncate"
-                      style="text-overflow: ellipsis;"
-                      hx-get="/<%= activeProject.id %>/view/simulation-square"
-                      hx-target="#sandbox-characters"
-                      hx-swap="outerHTML"
-                      name="simulationId"
-                    >
-                      <option value="">なし（初期状態）</option>
-                      <% simulations.forEach((sim, idx) => { %>
-                        <option value="<%= sim.id %>" <%= selectedSimulation?.id === sim.id ? 'selected' : '' %>>
-                          <%= idx === 0 ? '最新: ' : '' %><%= sim.requirementSnapshot.title %>
-                        </option>
-                      <% }) %>
-                    </select>
-                  </div>
-                <% } %>
+
               </header>
 
               <!-- 箱庭エリア本体 (相対配置用ラッパー) -->
@@ -102,7 +82,7 @@
                 <!-- ユーザー入力要件のホログラム的表示 -->
                 <div id="simulation-hologram-title"></div>
 
-                <%- include('partials/sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation }) %>
+                <%- include('partials/sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation, requirements: typeof requirements !== 'undefined' ? requirements : [], simulations: typeof simulations !== 'undefined' ? simulations : [] }) %>
               </div>
             </main>
 
@@ -248,6 +228,7 @@
             if (path.includes('/view/chat')) activeBtnId = 'nav-chat';
             if (path.includes('/view/resources')) activeBtnId = 'nav-resources';
             if (path.includes('/view/simulations')) activeBtnId = 'nav-simulations';
+            if (path.includes('/view/requirements')) activeBtnId = 'nav-requirements';
 
             if (activeBtnId) {
               const btn = document.getElementById(activeBtnId);

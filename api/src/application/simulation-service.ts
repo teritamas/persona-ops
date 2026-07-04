@@ -201,6 +201,10 @@ export class SimulationService {
     return this.simulationRepository.findByProjectId(projectId);
   }
 
+  async delete(projectId: string, simulationId: string): Promise<void> {
+    await this.simulationRepository.delete(projectId, simulationId);
+  }
+
   async getDetail(
     projectId: string,
     simulationId: string,
