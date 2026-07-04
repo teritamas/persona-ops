@@ -163,6 +163,33 @@
           });
         }
 
+        // プロジェクト名変更
+        function renameProject(event, projectId, currentName) {
+          event.preventDefault();
+          event.stopPropagation();
+          const newName = window.prompt('新しいプロジェクト名を入力してください', currentName);
+          if (newName && newName.trim() !== '' && newName !== currentName) {
+            fetch('/action/project/rename', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId, name: newName.trim() })
+            }).then(() => window.location.reload());
+          }
+        }
+
+        // プロジェクト削除
+        function deleteProject(event, projectId) {
+          event.preventDefault();
+          event.stopPropagation();
+          if (window.confirm('このプロジェクトを削除しますか？\n（復元できません）')) {
+            fetch('/action/project/delete', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ projectId })
+            }).then(() => window.location.reload());
+          }
+        }
+
         // htmx 送信中のロード画面自動トグル用の追加ロジック
         document.body.addEventListener('htmx:beforeRequest', function (evt) {
           if (evt.detail.pathInfo.requestPath === '/action/simulate') {
