@@ -22,14 +22,14 @@ class MockProjectRepository implements ProjectRepositoryPort {
   }
 }
 
-describe('Project Routes', () => {
+describe('プロジェクトルーター', () => {
   const app = Fastify();
   const repository = new MockProjectRepository();
   const projectService = new ProjectService(repository);
 
   app.register(projectRoutes, { projectService });
 
-  it('POST /api/v1/projects creates a new project', async () => {
+  it('POST /api/v1/projects で新しいプロジェクトを作成する', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/projects',
@@ -44,7 +44,7 @@ describe('Project Routes', () => {
     expect(body.updatedAt).toBeTruthy();
   });
 
-  it('GET /api/v1/projects returns list of projects', async () => {
+  it('GET /api/v1/projects でプロジェクトのリストを返す', async () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/v1/projects',

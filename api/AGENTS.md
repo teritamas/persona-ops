@@ -16,11 +16,6 @@
 
 - **技術選定**: Fastify と Google Agent Development Kit (ADK) を標準とする。
 
-## コーディング・設計指針
-
-- ルートディレクトリの `AGENTS.md` に記載されている基本指針とMVPスコープを意識して開発する。
-- SOLID原則、YAGNI、DRY、KISS などのベストプラクティスを遵守し、クリーンな設計を維持する。
-
 ## アーキテクチャ: DDD + Ports & Adapters（Hexagonal Architecture）
 
 本プロジェクトの API は **DDD（Domain-Driven Design）** をベースに **Ports & Adapters（Hexagonal Architecture）** の考え方を採用する。
