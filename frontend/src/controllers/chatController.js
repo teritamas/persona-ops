@@ -5,17 +5,13 @@ const projectService = require('../services/projectService');
 const { marked } = require('marked');
 
 exports.getChatMenu = (req, res) => {
-  const { activeProject, isInitial, activeChat, hasMessages } = chatService.getActiveChatContext();
+  const { activeProject, activeChat } = chatService.getActiveChatContext();
 
-  if (isInitial || !activeChat || !hasMessages) {
-    res.render('partials/chat-menu-empty', { activeProject });
-  } else {
-    res.render('partials/chat-menu-active', {
-      activeProject,
-      activeChat,
-      marked: marked.parse
-    });
-  }
+  res.render('partials/chat-menu-active', {
+    activeProject,
+    activeChat,
+    marked: marked.parse
+  });
 };
 
 exports.newChat = (req, res) => {
@@ -43,10 +39,13 @@ exports.startPersonaChat = (req, res) => {
 exports.streamChat = async (req, res) => {
   const { inputText, model } = req.body;
   const activeProject = getActiveProject();
-  const activeChat = activeProject.chats.find(c => c.id === activeProject.activeChatId);
-
+  let activeChat = activeProject.chats.find(c => c.id === activeProject.activeChatId);
+  
   if (!activeChat) {
-    return res.status(400).send('No active chat session found');
+    activeChat = { id: 'chat_' + Date.now(), title: 'New Chat', messages: [], type: 'general' };
+    activeProject.chats.push(activeChat);
+    activeProject.activeChatId = activeChat.id;
+    activeProject.isInitial = false;
   }
 
   const userTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });

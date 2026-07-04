@@ -1,7 +1,7 @@
 <div class="flex-1 flex flex-col h-full bg-white relative">
   <!-- Header -->
   <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
-    <% if (activeChat.type === 'persona') { %>
+    <% if (activeChat && activeChat.type === 'persona') { %>
       <% const p = activeProject.personas.find(p => p.id === activeChat.personaId); %>
       <% if (p) { %>
         <div class="flex items-center gap-3">
@@ -17,24 +17,57 @@
       <% } else { %>
         <h1 class="text-sm font-bold text-slate-800 flex items-center"><%= activeChat.title %></h1>
       <% } %>
-    <% } else { %>
+    <% } else if (activeChat) { %>
       <h1 class="text-sm font-bold text-slate-800 flex items-center"><%= activeChat.title %></h1>
+    <% } else { %>
+      <h1 class="text-sm font-bold text-slate-800 flex items-center">新しいチャット</h1>
     <% } %>
     <button hx-post="/action/chat/new" hx-target="#left-panel-content" hx-swap="innerHTML" class="text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg flex items-center transition-colors">
       <svg class="w-[0.875rem] h-[0.875rem] mr-1 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg> 新しいチャット
     </button>
   </div>
   
-  <div class="flex-1 bg-slate-50/30 p-6 overflow-y-auto flex flex-col">
-    <div id="chat-messages-container" class="space-y-6">
-      <div class="text-center text-xs text-slate-400 font-medium my-4">Today</div>
-      <% (activeChat.messages || []).forEach(msg => { %>
-        <%- include('chat-message', { msg, activeProject }) %>
-      <% }) %>
+  <div class="flex-1 bg-slate-50/30 p-6 overflow-y-auto flex flex-col relative">
+    <div id="chat-messages-container" class="space-y-6 w-full h-full flex flex-col">
+      <% if (!activeChat || !activeChat.messages || activeChat.messages.length === 0) { %>
+        <div id="welcome-message-wrapper" class="max-w-3xl mx-auto w-full flex flex-col items-center animate-fade-in py-10 mt-auto mb-auto">
+          <div class="w-20 h-20 bg-gradient-to-br from-orange-400 to-orange-500 rounded-[2rem] flex items-center justify-center text-white font-bold mb-8 shadow-xl shadow-orange-500/30">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </div>
+          <h2 class="text-3xl font-extrabold text-slate-800 mb-4 tracking-tight">PersonaOps へようこそ</h2>
+          <p class="text-slate-500 text-center mb-10 max-w-lg leading-relaxed font-medium">
+            ユーザーインタビューや要件定義書などのドキュメントを共有して、あなたのプロダクトを利用する「仮想ペルソナ群」を構築しましょう。
+          </p>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <button onclick="submitSuggestion(this)" data-text="先週のユーザーインタビュー議事録と、既存SFAの仕様書をアップロードします。これをもとにペルソナを作成してください。" type="button" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm group">
+              <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-2 rounded-lg border border-slate-100 transition-colors">
+                <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+              </div>
+              <span class="text-sm text-slate-600 font-medium leading-relaxed group-hover:text-orange-700 transition-colors">
+                先週のユーザーインタビュー議事録と、既存仕様書からペルソナを作成する
+              </span>
+            </button>
+            <button onclick="submitSuggestion(this)" data-text="GitHubのIssue URLを共有します。これをもとにエンジニアペルソナを作成してください。" type="button" class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-4 rounded-xl transition-all shadow-sm group">
+              <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-2 rounded-lg border border-slate-100 transition-colors">
+                <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+              </div>
+              <span class="text-sm text-slate-600 font-medium leading-relaxed group-hover:text-orange-700 transition-colors">
+                GitHubのIssue URLを読み込んで、エンジニアペルソナを生成する
+              </span>
+            </button>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="text-center text-xs text-slate-400 font-medium my-4 shrink-0">Today</div>
+        <% (activeChat.messages || []).forEach(msg => { %>
+          <%- include('chat-message', { msg, activeProject }) %>
+        <% }) %>
+        
+        <!-- Suggestions inside chat messages container -->
+        <%- include('chat-suggestions') %>
+      <% } %>
     </div>
-    
-    <!-- Suggestions -->
-    <%- include('chat-suggestions') %>
   </div>
     
   <!-- Input Form -->

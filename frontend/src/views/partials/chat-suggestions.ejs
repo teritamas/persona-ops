@@ -4,9 +4,9 @@
     次のアクション提案
   </p>
   <button 
-    hx-get="/view/suggest/res" 
-    hx-target="#inputText" 
-    hx-swap="outerHTML"
+    onclick="submitSuggestion(this)" 
+    data-text="先週実施したユーザーインタビューの議事録をアップロードします。これをもとにペルソナをアップデートしてください。"
+    type="button"
     class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm group"
   >
     <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-1.5 rounded-lg border border-slate-100 transition-colors">
@@ -17,9 +17,9 @@
     </span>
   </button>
   <button 
-    hx-get="/view/suggest/sim" 
-    hx-target="#inputText" 
-    hx-swap="outerHTML"
+    onclick="submitSuggestion(this)" 
+    data-text="新機能「SFAモバイル音声入力」の要件定義を行いたいです。シミュレーションをお願いします。"
+    type="button"
     class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm group"
   >
     <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-1.5 rounded-lg border border-slate-100 transition-colors">

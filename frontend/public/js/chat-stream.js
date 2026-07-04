@@ -10,6 +10,37 @@ function escapeHtml(string) {
   });
 }
 
+function submitSuggestion(element) {
+  const text = element.getAttribute('data-text');
+  const input = document.getElementById('inputText');
+  if (input && text) {
+    input.value = text;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const pendingText = sessionStorage.getItem('pendingStreamText');
+  const pendingModel = sessionStorage.getItem('pendingStreamModel');
+  if (pendingText) {
+    sessionStorage.removeItem('pendingStreamText');
+    sessionStorage.removeItem('pendingStreamModel');
+    setTimeout(() => {
+      const input = document.getElementById('inputText');
+      const modelSelect = document.getElementById('modelSelect');
+      if (input) {
+        input.value = pendingText;
+        if (modelSelect && pendingModel) modelSelect.value = pendingModel;
+        const form = input.closest('form');
+        if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    }, 100);
+  }
+});
+
 async function submitStreamChat(event) {
   event.preventDefault();
 
@@ -23,6 +54,11 @@ async function submitStreamChat(event) {
 
   const container = document.getElementById('chat-messages-container');
   if (!container) return;
+
+  const welcomeMessage = document.getElementById('welcome-message-wrapper');
+  if (welcomeMessage) {
+    welcomeMessage.remove();
+  }
 
   // 1. Add User message bubble
   const userHtml = `
@@ -49,6 +85,20 @@ async function submitStreamChat(event) {
   // Clear input and reset height
   input.value = '';
   input.style.height = 'auto';
+
+  // Trigger mock persona reaction loading (Hourglass)
+  fetch('/action/simulate/reset-reactions', { method: 'POST' })
+    .then(res => res.text())
+    .then(html => {
+      const sandbox = document.getElementById('sandbox-characters');
+      if (sandbox && html) {
+        sandbox.innerHTML = html;
+        if (typeof htmx !== 'undefined') {
+          htmx.process(sandbox); // Ensure htmx processes the new sandbox elements
+        }
+      }
+    })
+    .catch(err => console.error('Failed to trigger reset reactions:', err));
 
   // 2. Add empty Agent message bubble with loader
   const agentMsgId = 'agent-msg-' + Date.now();
