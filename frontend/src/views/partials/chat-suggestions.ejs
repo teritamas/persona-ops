@@ -1,0 +1,32 @@
+<div id="suggestions-box" class="mt-4 flex flex-col gap-2">
+  <p class="text-[10px] font-bold text-slate-400 ml-1 mb-1 flex items-center">
+    <svg class="w-[0.875rem] h-[0.875rem] text-orange-400 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+    次のアクション提案
+  </p>
+  <button 
+    hx-get="/view/suggest/res" 
+    hx-target="#inputText" 
+    hx-swap="outerHTML"
+    class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm group"
+  >
+    <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-1.5 rounded-lg border border-slate-100 transition-colors">
+      <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+    </div>
+    <span class="text-xs text-slate-600 font-medium leading-relaxed group-hover:text-orange-700 transition-colors">
+      最新のユーザーリサーチ結果をアップロードしてペルソナを更新する
+    </span>
+  </button>
+  <button 
+    hx-get="/view/suggest/sim" 
+    hx-target="#inputText" 
+    hx-swap="outerHTML"
+    class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm group"
+  >
+    <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-1.5 rounded-lg border border-slate-100 transition-colors">
+      <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 01-2 2h0a2 2 0 01-2 2v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+    </div>
+    <span class="text-xs text-slate-600 font-medium leading-relaxed group-hover:text-orange-700 transition-colors">
+      新機能「SFAモバイル音声入力」の要件定義とシミュレーションを開始する
+    </span>
+  </button>
+</div>

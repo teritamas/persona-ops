@@ -1,0 +1,44 @@
+<div class="flex-1 flex flex-col h-full bg-white relative">
+  <!-- Header -->
+  <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
+    <%- chatHeaderTitleHtml %>
+    <button hx-post="/action/chat/new" hx-target="#left-panel-content" hx-swap="innerHTML" class="text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg flex items-center transition-colors">
+      <svg class="w-[0.875rem] h-[0.875rem] mr-1 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg> 新しいチャット
+    </button>
+  </div>
+  
+  <div class="flex-1 bg-slate-50/30 p-6 overflow-y-auto flex flex-col">
+    <div id="chat-messages-container" class="space-y-6">
+      <div class="text-center text-xs text-slate-400 font-medium my-4">Today</div>
+      <%- renderedMessages %>
+    </div>
+    
+    <!-- Suggestions -->
+    <%- include('chat-suggestions') %>
+  </div>
+    
+  <!-- Input Form -->
+  <div class="p-4 bg-white border-t border-slate-100 shrink-0">
+    <form 
+      hx-post="/action/simulate" 
+      hx-target="#sandbox-characters" 
+      hx-swap="innerHTML" 
+      class="relative flex items-center"
+    >
+      <button type="button" class="absolute left-4 p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+      </button>
+      <input 
+        id="inputText"
+        name="inputText"
+        type="text" 
+        placeholder="AIへの指示を入力..." 
+        class="w-full bg-slate-100 text-slate-800 text-sm rounded-2xl py-4 pl-14 pr-14 border border-transparent focus:outline-none focus:border-orange-200 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all shadow-inner shadow-slate-200/50" 
+        required 
+      />
+      <button type="submit" class="absolute right-3 bg-orange-500 text-white p-2.5 rounded-xl hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all active:scale-95">
+        <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path></svg>
+      </button>
+    </form>
+  </div>
+</div>

@@ -83,7 +83,7 @@ function renderSandbox(done, activeProject, selectedPersonaId) {
     const isSelected = selectedPersonaId === p.id;
     return `
       <div 
-        hx-get="/api/persona/${p.id}" 
+        hx-get="/view/persona/${p.id}" 
         hx-target="#detail-panel" 
         hx-swap="outerHTML"
         class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 ${isSelected ? 'z-50 scale-110' : 'z-10'}"

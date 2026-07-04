@@ -1,0 +1,78 @@
+<aside id="detail-panel" hx-swap-oob="true" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: flex;">
+  <!-- Detail Panel Header -->
+  <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
+    <h2 class="text-sm font-bold text-slate-800 flex items-center">ペルソナ詳細</h2>
+    <button 
+      hx-get="/action/persona/close" 
+      hx-target="#detail-panel" 
+      hx-swap="outerHTML"
+      class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1.5 transition-colors"
+    >
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+  </div>
+
+  <!-- Detail Content -->
+  <div class="p-6">
+    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
+      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-100/60 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-110"></div>
+      
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md"><%= p.role %></span>
+      </div>
+
+      <div class="flex flex-col items-center mb-6 mt-2">
+        <div class="relative mb-4">
+          <div class="w-14 h-14 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 relative z-10 flex items-center justify-center">
+            <img src="https://api.dicebear.com/7.x/micah/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" alt="<%= p.name %>" class="w-full h-full object-cover scale-110" />
+          </div>
+          <div class="absolute inset-0 rounded-full border border-orange-200 scale-110 -z-0"></div>
+        </div>
+        <h2 class="text-lg font-bold text-slate-800"><%= p.name %></h2>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-wider">
+          <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> 特徴
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <% p.traits.forEach(t => { %>
+            <span class="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-full text-[10px] font-medium border border-slate-200"><%= t %></span>
+          <% }) %>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-wider">
+          <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg> オントロジーリソース
+        </h3>
+        <div class="text-xs text-slate-600 leading-relaxed ml-2 space-y-1">
+          <p class="flex items-center"><span class="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>2023_ユーザーインタビュー_営業部.pdf</p>
+          <p class="flex items-center"><span class="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>GitHub Issue #241 要望一覧</p>
+        </div>
+      </div>
+
+      <% if (simulationDone) { %>
+        <div>
+          <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center tracking-wider">
+            <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> リサーチインサイト
+          </h3>
+          <div class="ml-2">
+            <p class="text-sm text-slate-700 italic font-medium leading-relaxed">「<%= p.reaction.text %>」</p>
+            <div class="mt-2 pt-2 border-t border-slate-100 flex items-center text-[10px] text-slate-500">
+              <svg class="w-[0.875rem] h-[0.875rem] text-orange-400 mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              AI推論元: 2023年下期ヒアリングログ
+            </div>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Action -->
+  <div class="mt-auto p-6 bg-white border-t border-slate-100">
+    <button hx-post="/action/chat/persona/<%= p.id %>" class="w-full flex items-center justify-center text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 py-3 rounded-xl shadow-sm transition-colors group">
+      このペルソナと個別にチャット
+    </button>
+  </div>
+</aside>

@@ -10,19 +10,7 @@ function isHtmxRequest(req) {
   return req.get('HX-Request') === 'true';
 }
 
-async function fetchPrivateApiHealth(requestPrivateApi) {
-  const startedAt = performance.now();
-  const response = await requestPrivateApi(PRIVATE_API_HEALTH_PATH);
-
-  return {
-    apiUrl: response.url,
-    checkedAt: new Date().toISOString(),
-    latencyMs: Math.round(performance.now() - startedAt),
-    ok: response.statusCode === 200 && response.data?.status === 'ok',
-    payload: response.data,
-    statusCode: response.statusCode,
-  };
-}
+const healthService = require('../services/healthService');
 
 function buildHealthViewModel(result) {
   if (result.ok) {
@@ -123,7 +111,7 @@ function renderHealthStatus(viewModel) {
 
 async function handleHealthRequest(req, res, requestPrivateApi) {
   try {
-    const result = await fetchPrivateApiHealth(requestPrivateApi);
+    const result = await healthService.fetchPrivateApiHealth(requestPrivateApi, PRIVATE_API_HEALTH_PATH);
     const viewModel = buildHealthViewModel(result);
 
     if (isHtmxRequest(req)) {
