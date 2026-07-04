@@ -40,7 +40,7 @@ function triggerPendingStreamChat() {
       if (form) {
         // HTMXやカスタムイベントに対応するため、少し遅延させてサブミット
         setTimeout(() => {
-          form.requestSubmit();
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
         }, 100);
       }
     }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 非同期でチャット画面がロードされた際（HTMX swap完了時）にトリガー
-document.body.addEventListener('htmx:afterSwap', (evt) => {
+document.addEventListener('htmx:afterSwap', (evt) => {
   if (evt.detail.target && evt.detail.target.id === 'left-panel-content') {
     triggerPendingStreamChat();
   }
@@ -60,6 +60,9 @@ document.body.addEventListener('htmx:afterSwap', (evt) => {
 
 async function submitStreamChat(event) {
   event.preventDefault();
+
+  const pathParts = window.location.pathname.split('/');
+  const projectId = pathParts[1];
 
   const input = document.getElementById('inputText');
   if (!input) return;
@@ -116,7 +119,6 @@ async function submitStreamChat(event) {
 
   // メッセージ送信の瞬間に、箱庭（中央パネル）に「Thinking...」のローディング表示を出すための処理
   // これにより、AIが推論中であることを視覚的にユーザーにフィードバックします
-  const projectId = window.currentProjectId;
   if (projectId) {
     fetch(`/${projectId}/action/simulate/reset-reactions`, { method: 'POST' })
       .then(res => res.text())
