@@ -36,14 +36,43 @@
   <!-- Input Form (Full width version) -->
   <div class="p-4 bg-white border-t border-slate-100 shrink-0">
     <div class="max-w-3xl mx-auto w-full">
-      <form hx-post="/action/simulate" hx-target="#sandbox-characters" class="relative flex items-center">
-        <button type="button" class="absolute left-4 p-2 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-        </button>
-        <input name="inputText" type="text" placeholder="機能アイデアやAIへの相談を入力..." class="w-full bg-slate-100 text-slate-800 text-sm rounded-2xl py-4 pl-14 pr-14 border border-transparent focus:outline-none focus:border-orange-200 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all shadow-inner shadow-slate-200/50" required />
-        <button type="submit" class="absolute right-3 bg-orange-500 text-white p-2.5 rounded-xl hover:bg-orange-600 hover:shadow-lg hover:shadow-orange-500/30 transition-all active:scale-95">
-          <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path></svg>
-        </button>
+      <form hx-post="/action/simulate" hx-target="#sandbox-characters" class="w-full flex flex-col bg-slate-100 rounded-3xl border border-transparent focus-within:border-orange-200 focus-within:bg-white focus-within:ring-4 focus-within:ring-orange-500/10 transition-all shadow-inner shadow-slate-200/50 p-2">
+        <!-- Textarea Area -->
+        <div class="w-full relative">
+          <textarea 
+            id="inputText"
+            name="inputText"
+            rows="1"
+            placeholder="新機能の仕様や質問を入力..."
+            class="w-full bg-transparent text-slate-800 text-sm py-2 px-3 resize-none overflow-hidden block min-h-[40px] max-h-[200px] focus:outline-none"
+            required
+            oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';"
+            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form.requestSubmit(); }"
+          ></textarea>
+        </div>
+
+        <!-- Bottom Toolbar Area -->
+        <div class="flex items-center justify-between mt-1 px-1">
+          <!-- Left side: Attach & Model Select -->
+          <div class="flex items-center gap-1">
+            <button type="button" class="p-1.5 text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-full transition-colors flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+            </button>
+            
+            <div class="relative flex items-center">
+              <select name="model" class="bg-transparent text-slate-500 hover:text-slate-700 text-xs font-semibold py-1 pl-2 pr-6 focus:outline-none cursor-pointer appearance-none">
+                <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash</option>
+                <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              </select>
+              <svg class="w-3.5 h-3.5 text-slate-400 absolute right-1 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+
+          <!-- Right side: Send button -->
+          <button type="submit" class="bg-orange-500 text-white p-2 rounded-full hover:bg-orange-600 hover:shadow-md transition-all active:scale-95 flex items-center justify-center h-8 w-8">
+            <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path></svg>
+          </button>
+        </div>
       </form>
     </div>
   </div>

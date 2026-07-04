@@ -1,4 +1,5 @@
 const { getActiveProject } = require('./dummy_data/store');
+const projectService = require('./projectService');
 
 class ChatService {
   getActiveChatContext() {
@@ -6,8 +7,8 @@ class ChatService {
     return {
       activeProject,
       isInitial: activeProject.isInitial,
-      activeChat: activeProject.activeChat,
-      hasMessages: activeProject.activeChat && activeProject.activeChat.messages && activeProject.activeChat.messages.length > 0
+      activeChat: activeProject.chats.find(c => c.id === activeProject.activeChatId) || null,
+      hasMessages: activeProject.activeChatId && activeProject.chats.find(c => c.id === activeProject.activeChatId)?.messages?.length > 0
     };
   }
 
@@ -20,6 +21,7 @@ class ChatService {
       messages: []
     });
     activeProject.activeChatId = newId;
+    projectService.syncProject(activeProject);
     return activeProject;
   }
 
@@ -28,6 +30,7 @@ class ChatService {
     const chat = activeProject.chats.find(c => c.id === chatId);
     if (chat) {
       activeProject.activeChatId = chat.id;
+      projectService.syncProject(activeProject);
     }
     return activeProject;
   }
@@ -55,6 +58,7 @@ class ChatService {
     activeProject.activeChatId = newChatId;
     activeProject.isInitial = false;
 
+    projectService.syncProject(activeProject);
     return activeProject;
   }
 }

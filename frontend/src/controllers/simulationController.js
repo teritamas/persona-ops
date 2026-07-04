@@ -33,3 +33,12 @@ exports.simulate = async (req, res) => {
     simulationDone
   });
 };
+
+exports.simulateReactions = async (req, res) => {
+  const activeProject = await simulationService.simulateReactions();
+  res.render('partials/sandbox-characters', {
+    activeProject,
+    simulationDone: true,
+    selectedPersonaId: null
+  });
+};
