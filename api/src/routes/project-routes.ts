@@ -157,4 +157,26 @@ export async function projectRoutes(
       }
     },
   );
+
+  app.delete(
+    `${PROJECT_ROUTE_PREFIX}/:id`,
+    {
+      schema: {
+        response: {
+          204: { type: 'null' },
+          500: errorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        await projectService.deleteProject(id);
+        return reply.status(204).send();
+      } catch (error: unknown) {
+        request.log.error({ err: error }, 'Failed to delete project');
+        return reply.status(500).send({ error: 'Internal Server Error' });
+      }
+    },
+  );
 }
