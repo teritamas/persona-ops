@@ -1,5 +1,4 @@
 const chatService = require('../services/chatService');
-const projectService = require('../services/projectService');
 const { requestPrivateApi, requestPrivateApiStream } = require('../clients/private-api');
 const { marked } = require('marked');
 
@@ -16,7 +15,7 @@ exports.newChat = async (req, res) => {
   if (req.activeProject) {
     await chatService.createNewChat(req.activeProject);
   }
-  res.set('HX-Redirect', '/');
+  res.set('HX-Redirect', `/${req.activeProject.id}`);
   return res.send();
 };
 
@@ -24,7 +23,7 @@ exports.switchChat = async (req, res) => {
   if (req.activeProject) {
     await chatService.switchChat(req.activeProject, req.params.id);
   }
-  res.set('HX-Redirect', '/');
+  res.set('HX-Redirect', `/${req.activeProject.id}`);
   return res.send();
 };
 
@@ -38,7 +37,7 @@ exports.startPersonaChat = async (req, res) => {
     return res.status(404).send('Persona not found');
   }
 
-  res.set('HX-Redirect', '/');
+  res.set('HX-Redirect', `/${req.activeProject.id}`);
   res.send('');
 };
 

@@ -22,22 +22,39 @@ function submitSuggestion(element) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+// 新規プロジェクト作成時のメッセージ自動送信トリガー
+function triggerPendingStreamChat() {
   const pendingText = sessionStorage.getItem('pendingStreamText');
   const pendingModel = sessionStorage.getItem('pendingStreamModel');
   if (pendingText) {
-    sessionStorage.removeItem('pendingStreamText');
-    sessionStorage.removeItem('pendingStreamModel');
-    setTimeout(() => {
-      const input = document.getElementById('inputText');
-      const modelSelect = document.getElementById('modelSelect');
-      if (input) {
-        input.value = pendingText;
-        if (modelSelect && pendingModel) modelSelect.value = pendingModel;
-        const form = input.closest('form');
-        if (form) form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    const input = document.getElementById('inputText');
+    const modelSelect = document.getElementById('modelSelect');
+    if (input) {
+      // 確実に要素が見つかった段階でセッションを消去
+      sessionStorage.removeItem('pendingStreamText');
+      sessionStorage.removeItem('pendingStreamModel');
+      
+      input.value = pendingText;
+      if (modelSelect && pendingModel) modelSelect.value = pendingModel;
+      const form = input.closest('form');
+      if (form) {
+        // HTMXやカスタムイベントに対応するため、少し遅延させてサブミット
+        setTimeout(() => {
+          form.requestSubmit();
+        }, 100);
       }
-    }, 100);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  triggerPendingStreamChat();
+});
+
+// 非同期でチャット画面がロードされた際（HTMX swap完了時）にトリガー
+document.body.addEventListener('htmx:afterSwap', (evt) => {
+  if (evt.detail.target && evt.detail.target.id === 'left-panel-content') {
+    triggerPendingStreamChat();
   }
 });
 
@@ -97,19 +114,23 @@ async function submitStreamChat(event) {
   input.value = '';
   input.style.height = 'auto';
 
-  // Trigger mock persona reaction loading (Hourglass)
-  fetch('/action/simulate/reset-reactions', { method: 'POST' })
-    .then(res => res.text())
-    .then(html => {
-      const sandbox = document.getElementById('sandbox-characters');
-      if (sandbox && html) {
-        sandbox.innerHTML = html;
-        if (typeof htmx !== 'undefined') {
-          htmx.process(sandbox); // Ensure htmx processes the new sandbox elements
+  // メッセージ送信の瞬間に、箱庭（中央パネル）に「Thinking...」のローディング表示を出すための処理
+  // これにより、AIが推論中であることを視覚的にユーザーにフィードバックします
+  const projectId = window.currentProjectId;
+  if (projectId) {
+    fetch(`/${projectId}/action/simulate/reset-reactions`, { method: 'POST' })
+      .then(res => res.text())
+      .then(html => {
+        const sandbox = document.getElementById('sandbox-characters');
+        if (sandbox && html) {
+          sandbox.innerHTML = html;
+          if (typeof htmx !== 'undefined') {
+            htmx.process(sandbox); // Ensure htmx processes the new sandbox elements
+          }
         }
-      }
-    })
-    .catch(err => console.error('Failed to trigger reset reactions:', err));
+      })
+      .catch(err => console.error('Failed to trigger reset reactions:', err));
+  }
 
   // Check if text contains a URL and add system message
   const hasUrl = /(https?:\/\/[^\s]+)/g.test(text);
@@ -152,7 +173,7 @@ async function submitStreamChat(event) {
   }
 
   try {
-    const response = await fetch('/action/chat/stream', {
+    const response = await fetch(`/${projectId}/action/chat/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

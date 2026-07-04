@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const projectContext = require('../middlewares/projectContext');
 
 const chatRoutes = require('./chatRoutes');
 const personaRoutes = require('./personaRoutes');
@@ -7,10 +8,22 @@ const simulationRoutes = require('./simulationRoutes');
 const resourceRoutes = require('./resourceRoutes');
 const projectRoutes = require('./projectRoutes');
 
-router.use('/', chatRoutes);
-router.use('/', personaRoutes);
-router.use('/', simulationRoutes);
-router.use('/', resourceRoutes);
+// プロジェクトIDを持たないルート（ウェルカム画面、プロジェクト新規作成、プロジェクト削除等）
 router.use('/', projectRoutes);
+
+// プロジェクトIDを持つルートのためのサブルーター（パラメータ引き継ぎのため mergeParams: true に設定）
+const projectSpecificRouter = express.Router({ mergeParams: true });
+projectSpecificRouter.use(projectContext);
+
+projectSpecificRouter.use('/', chatRoutes);
+projectSpecificRouter.use('/', personaRoutes);
+projectSpecificRouter.use('/', simulationRoutes);
+projectSpecificRouter.use('/', resourceRoutes);
+
+// プロジェクトID直下のルート（例: GET /:projectId）でダッシュボードを表示
+const projectController = require('../controllers/projectController');
+projectSpecificRouter.get('/', projectController.getDashboard);
+
+router.use('/:projectId', projectSpecificRouter);
 
 module.exports = router;

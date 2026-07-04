@@ -2,7 +2,7 @@
   const selectedId = selectedSimulation?.id;
   const isPolling = selectedSimulation && ['queued', 'running'].includes(selectedSimulation.status);
   const pollingAttrs = isPolling
-    ? `hx-get="/view/simulation-square?simulationId=${encodeURIComponent(selectedId)}"` +
+    ? `hx-get="/${activeProject.id}/view/simulation-square?simulationId=${encodeURIComponent(selectedId)}"` +
       ` hx-trigger="every 5s"` +
       ` hx-target="#sandbox-characters"` +
       ` hx-swap="outerHTML"`
@@ -73,7 +73,7 @@
       }
     %>
     <div
-      hx-get="/view/persona/<%= p.id %>?simulationId=<%= selectedId || '' %>"
+      hx-get="/<%= activeProject.id %>/view/persona/<%= p.id %>?simulationId=<%= selectedId || '' %>"
       hx-target="#detail-panel"
       hx-swap="outerHTML"
       class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"

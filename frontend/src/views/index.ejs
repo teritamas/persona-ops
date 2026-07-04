@@ -43,7 +43,7 @@
           ========================================== -->
             <aside id="left-panel-content"
               class="<%= isInitial ? 'w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out' : 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0' %>"
-              hx-get="/view/chat" hx-trigger="load" hx-swap="innerHTML">
+              hx-get="/<%= activeProject.id %>/view/chat" hx-trigger="load" hx-swap="innerHTML">
               <!-- ロード中に表示されるプレースホルダー -->
               <div class="h-10 border-b border-slate-100 bg-white shrink-0"></div>
               <div class="flex-1 flex items-center justify-center bg-slate-50/50">
@@ -77,7 +77,7 @@
                       id="simulation-select"
                       class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium text-slate-700 shadow-sm max-w-[200px] md:max-w-[320px] truncate"
                       style="text-overflow: ellipsis;"
-                      hx-get="/view/simulation-square"
+                      hx-get="/<%= activeProject.id %>/view/simulation-square"
                       hx-target="#sandbox-characters"
                       hx-swap="outerHTML"
                       name="simulationId"
@@ -122,6 +122,8 @@
   </div>
 
       <script>
+        window.currentProjectId = '<%= activeProject.id %>';
+
         // プロジェクトメニューのトグル
         function toggleProjectMenu() {
           const menu = document.getElementById('project-dropdown');
@@ -138,19 +140,8 @@
 
         // プロジェクト切り替え
         function switchProject(projectId) {
-          fetch('/action/project/switch', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ projectId })
-          }).then(res => {
-            if (res.headers.get('hx-redirect')) {
-              window.location.href = res.headers.get('hx-redirect');
-            } else {
-              window.location.reload();
-            }
-          });
+          document.cookie = "selectedPersonaId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          window.location.href = '/' + projectId;
         }
 
         // 新規プロジェクト作成
@@ -176,7 +167,9 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ projectId, name: newName.trim() })
-            }).then(() => window.location.reload());
+            }).then(() => {
+              window.location.href = '/' + projectId;
+            });
           }
         }
 
@@ -189,7 +182,9 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ projectId })
-            }).then(() => window.location.reload());
+            }).then(() => {
+              window.location.href = '/';
+            });
           }
         }
 
@@ -207,8 +202,6 @@
             detailPanel.style.display = 'none';
           }
         }
-
-
 
         // サイドバーのナビゲーションのアクティブ状態を管理
         document.body.addEventListener('htmx:afterSwap', function (evt) {
@@ -235,9 +228,9 @@
 
             // 対象のボタンをアクティブ（オレンジ）にする
             let activeBtnId = null;
-            if (path.startsWith('/view/chat')) activeBtnId = 'nav-chat';
-            if (path.startsWith('/view/resources')) activeBtnId = 'nav-resources';
-            if (path.startsWith('/view/simulations')) activeBtnId = 'nav-simulations';
+            if (path.includes('/view/chat')) activeBtnId = 'nav-chat';
+            if (path.includes('/view/resources')) activeBtnId = 'nav-resources';
+            if (path.includes('/view/simulations')) activeBtnId = 'nav-simulations';
 
             if (activeBtnId) {
               const btn = document.getElementById(activeBtnId);
@@ -258,6 +251,39 @@
             }
           }
         });
+
+        // HTMX によるスワップ時のスクロール位置保持ロジック
+        (function() {
+          const scrollPositions = {};
+          const scrollableIds = [
+            'chat-messages-scroll',
+            'resources-scroll',
+            'sim-history-scroll',
+            'sim-detail-scroll',
+            'detail-panel'
+          ];
+
+          document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            scrollableIds.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) {
+                scrollPositions[id] = el.scrollTop;
+              }
+            });
+          });
+
+          document.body.addEventListener('htmx:afterSwap', function(evt) {
+            // ブラウザのレイアウト更新タイミングと同調させて確実にscrollTopを適用する
+            requestAnimationFrame(() => {
+              scrollableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && scrollPositions[id] !== undefined) {
+                  el.scrollTop = scrollPositions[id];
+                }
+              });
+            });
+          });
+        })();
       </script>
 </body>
 

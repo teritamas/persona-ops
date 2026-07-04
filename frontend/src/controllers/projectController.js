@@ -2,19 +2,31 @@ const projectService = require('../services/projectService');
 const { simulationService } = require('../services/simulationService');
 const { marked } = require('marked');
 
+exports.getWelcomePage = async (req, res) => {
+  const projects = await projectService.fetchProjects();
+  res.render('welcome', {
+    projects,
+    activeProject: {
+      id: '',
+      name: '新しいプロジェクト',
+      personas: [],
+      chats: [],
+      activeChatId: null,
+      activeChat: { messages: [] },
+      isInitial: true
+    },
+    activeProjectId: '',
+    isInitial: true
+  });
+};
+
 exports.createProject = async (req, res) => {
   const newProject = await projectService.createProject();
   if (newProject) {
-    res.cookie('activeProjectId', newProject.id);
+    res.set('HX-Redirect', `/${newProject.id}`);
+  } else {
+    res.set('HX-Redirect', '/');
   }
-  res.set('HX-Redirect', '/');
-  return res.send();
-};
-
-exports.switchProject = (req, res) => {
-  res.cookie('activeProjectId', req.body.projectId);
-  res.clearCookie('selectedPersonaId');
-  res.set('HX-Redirect', '/');
   return res.send();
 };
 
@@ -40,25 +52,18 @@ exports.getDashboard = async (req, res) => {
   });
 };
 
-exports.getProjectState = (req, res) => {
-  res.json(projectService.getProjectState(req.activeProject));
-};
-
 exports.renameProject = async (req, res) => {
   const { projectId, name } = req.body;
   if (projectId && name) {
     await projectService.updateProjectName(projectId, name);
   }
-  res.redirect('/');
+  res.redirect(`/${projectId}`);
 };
 
 exports.deleteProject = async (req, res) => {
   const { projectId } = req.body;
   if (projectId) {
     await projectService.deleteProject(projectId);
-    if (req.cookies.activeProjectId === projectId) {
-      res.clearCookie('activeProjectId');
-    }
   }
   res.redirect('/');
 };

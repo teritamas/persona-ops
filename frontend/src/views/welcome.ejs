@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ペルソナOps</title>
+
+  <!-- Google Fonts for logo -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS Output (compiled locally) -->
+  <link href="/dist/output.css" rel="stylesheet">
+
+  <!-- Local htmx -->
+  <script src="/js/htmx.min.js"></script>
+  <!-- marked.js for Markdown parsing -->
+  <script src="/js/marked.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
+
+  <div class="flex flex-col h-screen bg-slate-100 font-sans text-slate-800 overflow-hidden">
+    <%- include('partials/topnav') %>
+      <div class="flex-1 flex w-full relative overflow-hidden">
+
+        <!-- ==========================================
+        左サイドバー (グローバルナビ - ミニホバー展開型)
+        ========================================== -->
+        <%- include('partials/sidebar', { activeProject: activeProject }) %>
+
+          <!-- ==========================================
+        メインコンテンツエリア (3カラム構成)
+        ========================================== -->
+          <div class="flex-1 flex w-full h-full overflow-hidden">
+
+            <!-- ==========================================
+          左カラム: エージェントチャット
+          ========================================== -->
+            <aside id="left-panel-content"
+              class="w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out">
+              <%- include('partials/chat-menu-active', { activeChat: null, activeProject: activeProject, isWelcome: true }) %>
+            </aside>
+
+            <!-- ==========================================
+          中央カラム: シミュレーション広場（初期状態なので非表示）
+          ========================================== -->
+            <main id="simulation-playground"
+              class="flex-1 relative bg-slate-100 flex flex-col overflow-hidden min-w-[500px]" style="display: none;">
+            </main>
+
+            <!-- ==========================================
+          右カラム: 詳細パネル (非表示)
+          ========================================== -->
+            <aside id="detail-panel"
+              class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: none;">
+            </aside>
+
+          </div>
+      </div>
+  </div>
+
+  <script>
+    // プロジェクトメニューのトグル
+    function toggleProjectMenu() {
+      const menu = document.getElementById('project-dropdown');
+      menu.classList.toggle('hidden');
+    }
+
+    // メニュー外クリックで閉じる
+    document.addEventListener('click', function (event) {
+      const container = document.getElementById('project-menu-container');
+      if (container && !container.contains(event.target)) {
+        document.getElementById('project-dropdown')?.classList.add('hidden');
+      }
+    });
+
+    // プロジェクト新規作成
+    function createProject() {
+      fetch('/action/project/create', {
+        method: 'POST'
+      }).then(res => {
+        if (res.headers.get('hx-redirect')) {
+          window.location.href = res.headers.get('hx-redirect');
+        } else {
+          window.location.reload();
+        }
+      });
+    }
+
+    // プロジェクト切り替え (通常遷移)
+    function switchProject(projectId) {
+      document.cookie = "selectedPersonaId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      window.location.href = '/' + projectId;
+    }
+
+    // プロジェクト名変更
+    function renameProject(event, projectId, currentName) {
+      event.preventDefault();
+      event.stopPropagation();
+      const newName = window.prompt('新しいプロジェクト名を入力してください', currentName);
+      if (newName && newName.trim() !== '' && newName !== currentName) {
+        fetch('/action/project/rename', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId, name: newName.trim() })
+        }).then(() => {
+          window.location.href = '/' + projectId;
+        });
+      }
+    }
+
+    // プロジェクト削除
+    function deleteProject(event, projectId) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (window.confirm('このプロジェクトを削除しますか？\n（復元できません）')) {
+        fetch('/action/project/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ projectId })
+        }).then(() => {
+          window.location.href = '/';
+        });
+      }
+    }
+
+    // 最初のプロジェクト作成 & メッセージ自動送信
+    async function startFirstProject(event) {
+      event.preventDefault();
+      const input = document.getElementById('inputText');
+      if (!input) return;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const modelSelect = document.getElementById('modelSelect');
+      const model = modelSelect ? modelSelect.value : 'gemini-2.5-flash';
+
+      // sessionStorage に退避
+      sessionStorage.setItem('pendingStreamText', text);
+      sessionStorage.setItem('pendingStreamModel', model);
+
+      // 送信ボタンをローディング状態にする
+      const submitBtn = event.target.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      fetch('/action/project/create', {
+        method: 'POST'
+      }).then(res => {
+        const redirectUrl = res.headers.get('hx-redirect');
+        if (redirectUrl) {
+          window.location.href = redirectUrl;
+        } else {
+          window.location.reload();
+        }
+      }).catch(err => {
+        console.error('Failed to create project:', err);
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>
