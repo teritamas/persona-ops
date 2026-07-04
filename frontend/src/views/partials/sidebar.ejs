@@ -14,6 +14,20 @@
         class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">リソース</span>
     </button>
 
+    <!-- Simulation Results -->
+    <button id="nav-simulations" hx-get="/view/simulations" hx-target="#simulation-playground" hx-swap="innerHTML"
+      onclick="openSimulationDashboard()"
+      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item">
+      <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
+        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z">
+        </path>
+      </svg>
+      <span
+        class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">シミュレーション</span>
+    </button>
+
     <!-- Chat Menu (Active by default) -->
     <div class="w-full relative group/chatmenu">
       <button id="nav-chat" hx-get="/view/chat" hx-target="#left-panel-content" hx-swap="innerHTML"

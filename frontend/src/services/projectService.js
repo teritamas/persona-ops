@@ -1,5 +1,4 @@
 const { requestPrivateApi } = require('../clients/private-api');
-const { mockProjects, state } = require('./dummy_data/store');
 
 class ProjectService {
   async createProject(name = '新しいプロジェクト') {
@@ -10,20 +9,7 @@ class ProjectService {
       });
 
       if (response.ok && response.data) {
-        const newProject = {
-          id: response.data.id,
-          name: response.data.name,
-          isInitial: true,
-          personas: [],
-          chats: [],
-          activeChatId: null
-        };
-        const existingIndex = mockProjects.findIndex(p => p.id === newProject.id);
-        if (existingIndex === -1) {
-          mockProjects.push(newProject);
-        }
-        state.activeProjectId = newProject.id;
-        return newProject;
+        return response.data;
       }
       return null;
     } catch (err) {
@@ -37,7 +23,7 @@ class ProjectService {
       const response = await requestPrivateApi('/api/v1/projects');
       if (response.ok && Array.isArray(response.data)) {
         const apiProjects = response.data;
-        await Promise.all(
+        return await Promise.all(
           apiProjects.map(async (apiProj) => {
             let personas = [];
             try {
@@ -53,39 +39,18 @@ class ProjectService {
                 err,
               );
             }
-            const mockProj = mockProjects.find((p) => p.id === apiProj.id);
-            if (mockProj) {
-              mockProj.name = apiProj.name;
-              if (apiProj.chats !== undefined) mockProj.chats = apiProj.chats;
-              if (apiProj.activeChatId !== undefined) mockProj.activeChatId = apiProj.activeChatId;
-              
-              if (personas.length > 0) {
-                mockProj.personas = personas;
-              }
-              
-              if (mockProj.chats && mockProj.chats.length > 0) {
-                mockProj.isInitial = false;
-              }
-            } else {
-              mockProjects.push({
-                id: apiProj.id,
-                name: apiProj.name,
-                isInitial: apiProj.chats && apiProj.chats.length > 0 ? false : true,
-                personas: personas,
-                chats: apiProj.chats || [],
-                activeChatId: apiProj.activeChatId || null
-              });
-            }
+            return {
+              id: apiProj.id,
+              name: apiProj.name,
+              isInitial: apiProj.chats && apiProj.chats.length > 0 ? false : true,
+              personas: personas,
+              chats: apiProj.chats || [],
+              activeChatId: apiProj.activeChatId || null,
+              createdAt: apiProj.createdAt,
+              updatedAt: apiProj.updatedAt
+            };
           }),
         );
-
-        // Remove local mockProjects that don't exist in API anymore
-        for (let i = mockProjects.length - 1; i >= 0; i--) {
-          if (!apiProjects.find(ap => ap.id === mockProjects[i].id)) {
-            mockProjects.splice(i, 1);
-          }
-        }
-        return apiProjects;
       }
     } catch (err) {
       console.error('Failed to fetch projects', err);
@@ -99,14 +64,7 @@ class ProjectService {
         method: 'PUT',
         body: { name }
       });
-      if (response.ok) {
-        const mockProj = mockProjects.find(p => p.id === id);
-        if (mockProj) {
-          mockProj.name = name;
-        }
-        return true;
-      }
-      return false;
+      return response.ok;
     } catch (err) {
       console.error('Failed to update project name', err);
       return false;
@@ -118,33 +76,63 @@ class ProjectService {
       const response = await requestPrivateApi(`/api/v1/projects/${id}`, {
         method: 'DELETE'
       });
-      if (response.ok) {
-        const idx = mockProjects.findIndex(p => p.id === id);
-        if (idx !== -1) {
-          mockProjects.splice(idx, 1);
-        }
-        return true;
-      }
-      return false;
+      return response.ok;
     } catch (err) {
       console.error('Failed to delete project', err);
       return false;
     }
   }
 
-  async syncProject(project) {
-    try {
-      await requestPrivateApi(`/api/v1/projects/${project.id}`, {
-        method: 'PUT',
-        body: {
-          name: project.name,
-          chats: project.chats,
-          activeChatId: project.activeChatId
-        }
-      });
-    } catch (err) {
-      console.error('Failed to sync project via API', err);
+  async getDashboardContext(activeProjectId, selectedPersonaId) {
+    const projectsList = await this.fetchProjects();
+    const activeProject =
+      projectsList.find((candidate) => candidate.id === activeProjectId) ||
+      projectsList[0];
+
+    if (!activeProject) {
+      return {
+        activeProject: {
+          id: '',
+          name: '',
+          personas: [],
+          chats: [],
+          activeChatId: null,
+          activeChat: { messages: [] },
+          isInitial: true,
+        },
+        projects: [],
+        activeProjectId: '',
+        selectedPersonaId: null
+      };
     }
+
+    activeProject.activeChat =
+      activeProject.chats.find((chat) => chat.id === activeProject.activeChatId) ||
+      activeProject.chats[0] ||
+      { messages: [] };
+    activeProject.isInitial = activeProject.personas.length === 0;
+
+    return {
+      activeProject,
+      projects: projectsList,
+      activeProjectId: activeProject.id,
+      selectedPersonaId: selectedPersonaId || null
+    };
+  }
+
+  getProjectState(activeProject) {
+    if (!activeProject) {
+      return {
+        activeProjectId: null,
+        isInitial: true,
+        activeChatId: null
+      };
+    }
+    return {
+      activeProjectId: activeProject.id,
+      isInitial: activeProject.isInitial,
+      activeChatId: activeProject.activeChatId
+    };
   }
 }
 

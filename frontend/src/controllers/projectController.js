@@ -1,50 +1,47 @@
 const projectService = require('../services/projectService');
-const { state, mockProjects, getActiveProject } = require('../services/dummy_data/store');
+const { simulationService } = require('../services/simulationService');
 const { marked } = require('marked');
 
 exports.createProject = async (req, res) => {
-  await projectService.createProject();
-  state.simulationDone = false;
-  state.selectedPersonaId = null;
+  const newProject = await projectService.createProject();
+  if (newProject) {
+    res.cookie('activeProjectId', newProject.id);
+  }
   res.set('HX-Redirect', '/');
   return res.send();
 };
 
 exports.switchProject = (req, res) => {
-  state.activeProjectId = req.body.projectId;
-  state.simulationDone = false;
-  state.selectedPersonaId = null;
+  res.cookie('activeProjectId', req.body.projectId);
+  res.clearCookie('selectedPersonaId');
   res.set('HX-Redirect', '/');
   return res.send();
 };
 
 exports.getDashboard = async (req, res) => {
-  await projectService.fetchProjects();
-
-  // もし activeProjectId が存在しないIDを指していたらリセット
-  if (!mockProjects.find(p => p.id === state.activeProjectId) && mockProjects.length > 0) {
-    state.activeProjectId = mockProjects[0].id;
+  let simulations = [];
+  let selectedSimulation = null;
+  
+  if (req.activeProject && req.activeProject.id) {
+    try {
+      const simContext = await simulationService.getDashboard(req.activeProject, req.query.simulationId);
+      simulations = simContext.simulations;
+      selectedSimulation = simContext.selectedSimulation;
+    } catch (err) {
+      console.error('Failed to fetch simulations for dashboard', err);
+    }
   }
 
-  const activeProject = getActiveProject();
   res.render('index', {
-    activeProject,
-    mockProjects,
-    activeProjectId: state.activeProjectId,
-    isInitial: activeProject.isInitial,
-    selectedPersonaId: state.selectedPersonaId,
-    simulationDone: state.simulationDone,
+    simulations,
+    selectedSimulation,
+    isInitial: req.activeProject ? req.activeProject.isInitial : true,
     marked: marked.parse
   });
 };
 
 exports.getProjectState = (req, res) => {
-  const activeProject = getActiveProject();
-  res.json({
-    activeProjectId: activeProject.id,
-    isInitial: activeProject.isInitial,
-    activeChatId: activeProject.activeChatId
-  });
+  res.json(projectService.getProjectState(req.activeProject));
 };
 
 exports.renameProject = async (req, res) => {
@@ -59,11 +56,8 @@ exports.deleteProject = async (req, res) => {
   const { projectId } = req.body;
   if (projectId) {
     await projectService.deleteProject(projectId);
-    if (state.activeProjectId === projectId) {
-      // Switch to another project if available, or null
-      state.activeProjectId = mockProjects.length > 0 ? mockProjects[0].id : null;
-      state.simulationDone = false;
-      state.selectedPersonaId = null;
+    if (req.cookies.activeProjectId === projectId) {
+      res.clearCookie('activeProjectId');
     }
   }
   res.redirect('/');

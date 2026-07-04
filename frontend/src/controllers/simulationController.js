@@ -1,35 +1,52 @@
-const simulationService = require('../services/simulationService');
+const { simulationService } = require('../services/simulationService');
 
-exports.getSuggestRes = (req, res) => {
-  res.render('partials/suggest-input', {
-    defaultValue: '先週実施したユーザーインタビューの議事録をアップロードします。これをもとにペルソナをアップデートしてください。'
-  });
+const SIMULATION_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+
+exports.getSimulationDashboard = async (req, res) => {
+  const selectedSimulationId = req.params.simulationId;
+  if (
+    selectedSimulationId &&
+    !SIMULATION_ID_PATTERN.test(selectedSimulationId)
+  ) {
+    return res.status(400).render('partials/simulation-dashboard-error', {
+      message: 'シミュレーションIDが不正です。',
+    });
+  }
+
+  try {
+    const context =
+      await simulationService.getDashboard(req.activeProject, selectedSimulationId);
+    return res.render('partials/simulation-dashboard', context);
+  } catch (error) {
+    console.error('Failed to render simulation dashboard', error);
+    const statusCode = error.code === 'NOT_FOUND' ? 404 : 502;
+    return res.status(statusCode).render('partials/simulation-dashboard-error', {
+      message: error.message,
+    });
+  }
 };
 
-exports.getSuggestSim = (req, res) => {
-  res.render('partials/suggest-input', {
-    defaultValue: '新機能「SFAモバイル音声入力」の要件定義を行いたいです。シミュレーションをお願いします。'
-  });
-};
+exports.getSimulationSquare = async (req, res) => {
+  const selectedSimulationId = req.query.simulationId;
+  if (
+    selectedSimulationId &&
+    !SIMULATION_ID_PATTERN.test(selectedSimulationId)
+  ) {
+    return res.status(400).send('Invalid simulation ID');
+  }
 
-exports.resetReactions = (req, res) => {
-  const { state, getActiveProject } = require('../services/dummy_data/store');
-  const activeProject = getActiveProject();
+  try {
+    const context = await simulationService.getDashboard(req.activeProject, selectedSimulationId);
+    const personaService = require('../services/personaService');
+    
+    personaService.closePersonaDetail(req.activeProject);
+    res.clearCookie('selectedPersonaId');
 
-  state.simulationDone = false;
-
-  res.render('partials/sandbox-characters', {
-    activeProject,
-    simulationDone: false,
-    selectedPersonaId: state.selectedPersonaId
-  });
-};
-
-exports.simulateReactions = async (req, res) => {
-  const activeProject = await simulationService.simulateReactions();
-  res.render('partials/sandbox-characters', {
-    activeProject,
-    simulationDone: true,
-    selectedPersonaId: null
-  });
+    return res.render('partials/sandbox-characters-with-oob', {
+      selectedSimulation: context.selectedSimulation,
+    });
+  } catch (error) {
+    console.error('Failed to render simulation square', error);
+    return res.status(500).send('Internal Server Error');
+  }
 };

@@ -31,7 +31,7 @@
 | `src/routes/`              | URLパスとHTTPメソッドをControllerにマッピングする定義                                            |
 | `src/controllers/`         | HTTPリクエストの受け入れ、Service呼び出し、レスポンスの返却（HTMX判定やEJSパーシャルの描画など） |
 | `src/services/`            | ビジネスロジック、外部APIの呼び出し（通信の隠蔽）、データ操作などのカプセル化層                  |
-| `src/services/dummy_data/` | プロトタイプ用モックデータとインメモリ状態（Controllerから直接参照せず、Serviceを介する）        |
+| `src/services/projectState.js` | private APIから取得したプロジェクトの画面状態（Controllerから直接変更せず、Serviceを介する） |
 | `src/utils/`               | 副作用を持たない表示変換・レンダリング補助                                                       |
 | `src/views/`               | EJSのページテンプレート                                                                          |
 | `src/views/partials/`      | 複数箇所で利用するEJSパーツ（HTMXのレスポンスとしても利用）                                      |
@@ -41,7 +41,7 @@
 ## 分割ルールと設計思想
 
 - **EJSとHTMXの活用**: JS内にHTML文字列を直書きせず、`src/views/partials/` へパーシャルとして切り出す。ControllerはリクエストがHTMXからのもの（`req.headers['hx-request']`）であれば、画面全体ではなく更新に必要なパーシャルのみをレンダリングして返す。
-- **レイヤー分離 (Thin Controller / Fat Service)**: `server.js` や Controller には業務ロジックを置かない。`routes/` はマッピングのみを行い、実際の処理・データアクセス・外部APIコールはすべて `services/` に委譲する。ダミーデータもControllerから直接触らず、必ずService経由で取得・更新する。
+- **レイヤー分離 (Thin Controller / Fat Service)**: `server.js` や Controller には業務ロジックを置かない。`routes/` はマッピングのみを行い、実際の処理・データアクセス・外部APIコールはすべて `services/` に委譲する。画面状態もControllerから直接触らず、必ずService経由で取得・更新する。
 - **ルーティング命名規則**: フロントエンドのルーティングにおいて、API通信との混同を避けるため以下のプレフィックスを利用する。
   - `/action/`: POST等の状態更新やビジネスロジックを実行するエンドポイント。
   - `/view/`: GET等でHTMX向けのHTML要素（EJSパーシャル）を取得・描画するエンドポイント。
