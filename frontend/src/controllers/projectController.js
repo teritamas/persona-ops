@@ -46,3 +46,25 @@ exports.getProjectState = (req, res) => {
     activeChatId: activeProject.activeChatId
   });
 };
+
+exports.renameProject = async (req, res) => {
+  const { projectId, name } = req.body;
+  if (projectId && name) {
+    await projectService.updateProjectName(projectId, name);
+  }
+  res.redirect('/');
+};
+
+exports.deleteProject = async (req, res) => {
+  const { projectId } = req.body;
+  if (projectId) {
+    await projectService.deleteProject(projectId);
+    if (state.activeProjectId === projectId) {
+      // Switch to another project if available, or null
+      state.activeProjectId = mockProjects.length > 0 ? mockProjects[0].id : null;
+      state.simulationDone = false;
+      state.selectedPersonaId = null;
+    }
+  }
+  res.redirect('/');
+};

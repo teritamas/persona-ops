@@ -18,4 +18,10 @@ export interface ProjectRepositoryPort {
    * @param id プロジェクトID
    */
   findById(id: string): Promise<Project | null>;
+
+  /**
+   * プロジェクトを削除する
+   * @param id プロジェクトID
+   */
+  delete(id: string): Promise<void>;
 }
