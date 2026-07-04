@@ -31,7 +31,8 @@ exports.getDashboard = async (req, res) => {
     mockProjects,
     activeProjectId: state.activeProjectId,
     isInitial: activeProject.isInitial,
-    selectedPersonaId: state.selectedPersonaId
+    selectedPersonaId: state.selectedPersonaId,
+    simulationDone: state.simulationDone
   });
 };
 

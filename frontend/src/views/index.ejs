@@ -91,7 +91,7 @@
                 <div id="simulation-hologram-title"></div>
 
                 <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10">
-                  <%- include('partials/sandbox-characters', { activeProject, simulationDone: false, selectedPersonaId }) %>
+                  <%- include('partials/sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
                 </div>
               </div>
             </main>
@@ -109,6 +109,7 @@
 
           </div>
       </div>
+  </div>
 
       <script>
         // プロジェクトメニューのトグル
