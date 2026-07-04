@@ -28,7 +28,6 @@ RUN pnpm install --frozen-lockfile --prod
 COPY --from=build /app/public ./public
 COPY --from=build /app/server.js ./server.js
 COPY --from=build /app/src ./src
-COPY --from=build /app/views ./views
 
 EXPOSE 8080
 

@@ -33,7 +33,6 @@ pnpm dev
 
 起動後、[http://localhost:3000](http://localhost:3000)へアクセスする。
 `3000` が使用中の場合は、開発時に限り `3001` 以降の空きポートへ自動で切り替わる。
-`views/` と生成済み CSS は LiveReload で反映され、`server.js` と `src/` 配下の変更時のみサーバーが再起動する。
 
 ローカルでは先に`api`を起動する。
 
@@ -72,13 +71,14 @@ VS Codeでは「ターミナル: タスクの実行」から、同名の`fronten
 frontend/
 ├── server.js              # Expressサーバーのエントリーポイント
 ├── src/
-│   ├── data/              # モックデータとインメモリ状態
 │   ├── clients/           # private APIへの共通server-side通信
+│   ├── controllers/       # HTTPリクエスト処理とレスポンス返却
 │   ├── routes/            # HTTPルーティング
-│   └── utils/             # HTMLレンダリング補助
-├── views/
-│   ├── index.ejs          # 画面全体のテンプレート
-│   └── partials/          # 再利用するEJSパーツ
+│   ├── services/          # ビジネスロジックと外部API通信
+│   │   └── dummy_data/    # モックデータとインメモリ状態
+│   └── views/             # EJSテンプレート
+│       ├── index.ejs      # 画面全体のテンプレート
+│       └── partials/      # 再利用するEJSパーツ
 ├── public/
 │   ├── src/               # Tailwind CSSの入力
 │   └── dist/              # 生成済みCSS
