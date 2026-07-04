@@ -4,6 +4,8 @@ import { AdkAiAgent } from './ai/adk-ai-agent.js';
 import { Firestore } from '@google-cloud/firestore';
 import { ProjectService } from '../application/project-service.js';
 import { FirestoreProjectRepository } from './database/firestore-project-repository.js';
+import { PersonaService } from '../application/persona-service.js';
+import { FirestorePersonaRepository } from './database/firestore-persona-repository.js';
 
 /**
  * アプリケーション全体の依存オブジェクトをまとめた型
@@ -14,6 +16,7 @@ import { FirestoreProjectRepository } from './database/firestore-project-reposit
 export type Container = {
   aiAgent: AiAgentPort;
   projectService: ProjectService;
+  personaService: PersonaService;
 };
 
 /**
@@ -25,11 +28,15 @@ export type Container = {
 export function buildContainer(config: AppConfig): Container {
   const firestore = new Firestore({ projectId: config.GOOGLE_CLOUD_PROJECT });
   const projectRepository = new FirestoreProjectRepository(firestore);
+  const personaRepository = new FirestorePersonaRepository(firestore);
+
+  const aiAgent = new AdkAiAgent({
+    model: config.VERTEX_AI_MODEL,
+  });
 
   return {
-    aiAgent: new AdkAiAgent({
-      model: config.VERTEX_AI_MODEL,
-    }),
+    aiAgent,
     projectService: new ProjectService(projectRepository),
+    personaService: new PersonaService(personaRepository, aiAgent),
   };
 }

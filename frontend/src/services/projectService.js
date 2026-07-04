@@ -37,21 +37,42 @@ class ProjectService {
       const response = await requestPrivateApi('/api/v1/projects');
       if (response.ok && Array.isArray(response.data)) {
         const apiProjects = response.data;
-        apiProjects.forEach(apiProj => {
-          const mockProj = mockProjects.find(p => p.id === apiProj.id);
-          if (mockProj) {
-            mockProj.name = apiProj.name;
-          } else {
-            mockProjects.push({
-              id: apiProj.id,
-              name: apiProj.name,
-              isInitial: true,
-              personas: [],
-              chats: [],
-              activeChatId: null
-            });
-          }
-        });
+
+        await Promise.all(
+          apiProjects.map(async (apiProj) => {
+            let personas = [];
+            try {
+              const personaResponse = await requestPrivateApi(
+                `/api/v1/projects/${apiProj.id}/personas`,
+              );
+              if (personaResponse.ok && Array.isArray(personaResponse.data)) {
+                personas = personaResponse.data;
+              }
+            } catch (err) {
+              console.error(
+                `Failed to fetch personas for project ${apiProj.id}`,
+                err,
+              );
+            }
+
+            const mockProj = mockProjects.find((p) => p.id === apiProj.id);
+            if (mockProj) {
+              mockProj.name = apiProj.name;
+              // APIから取得したペルソナをマージ（APIから取得できた場合はそれを正とする）
+              if (personas.length > 0) {
+                mockProj.personas = personas;
+              }
+            } else {
+              mockProjects.push({
+                id: apiProj.id,
+                name: apiProj.name,
+                personas: personas,
+                chats: [],
+                activeChatId: null,
+              });
+            }
+          }),
+        );
         return apiProjects;
       }
     } catch (err) {

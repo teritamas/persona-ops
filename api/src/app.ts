@@ -6,6 +6,7 @@ import Fastify, {
 import type { Container } from './infra/container.js';
 import { healthRoutes } from './routes/health-routes.js';
 import { projectRoutes } from './routes/project-routes.js';
+import { personaRoutes } from './routes/persona-routes.js';
 import { type AppConfig } from './config.js';
 
 /**
@@ -33,6 +34,10 @@ export function buildApp({
 
   void app.register(projectRoutes, {
     projectService: container.projectService,
+  });
+
+  void app.register(personaRoutes, {
+    personaService: container.personaService,
   });
 
   return app;
