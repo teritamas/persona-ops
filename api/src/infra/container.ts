@@ -7,8 +7,12 @@ import { FirestoreProjectRepository } from './database/firestore-project-reposit
 import { PersonaService } from '../application/persona-service.js';
 import { FirestorePersonaRepository } from './database/firestore-persona-repository.js';
 import { createSavePersonasTool } from '../agents/persona-ops-agent/tools/save-personas-tool.js';
+import { createFetchDocumentTool } from '../agents/persona-ops-agent/tools/fetch-document-tool.js';
 import { createPersonaOpsAgent } from '../agents/persona-ops-agent/agent.js';
 import type { InMemoryRunner } from '@google/adk';
+import { FirestoreSourceDocumentRepository } from './database/firestore-source-document-repository.js';
+import { HttpDocumentFetcher } from './document/http-document-fetcher.js';
+import { SourceDocumentService } from '../application/source-document/source-document-service.js';
 
 /**
  * アプリケーション全体の依存オブジェクトをまとめた型
@@ -21,6 +25,7 @@ export type Container = {
   projectService: ProjectService;
   personaService: PersonaService;
   personaOpsAgent: InMemoryRunner;
+  sourceDocumentService: SourceDocumentService;
 };
 
 /**
@@ -33,15 +38,26 @@ export function buildContainer(config: AppConfig): Container {
   const firestore = new Firestore({ projectId: config.GOOGLE_CLOUD_PROJECT });
   const projectRepository = new FirestoreProjectRepository(firestore);
   const personaRepository = new FirestorePersonaRepository(firestore);
+  const sourceDocumentRepository = new FirestoreSourceDocumentRepository(
+    firestore,
+  );
+  const documentFetcher = new HttpDocumentFetcher();
 
   const aiAgent = new AdkAiAgent({
     model: config.VERTEX_AI_MODEL,
   });
 
+  const sourceDocumentService = new SourceDocumentService(
+    sourceDocumentRepository,
+    documentFetcher,
+  );
+
   const savePersonasTool = createSavePersonasTool(personaRepository);
+  const fetchDocumentTool = createFetchDocumentTool(sourceDocumentService);
+
   const personaOpsAgent = createPersonaOpsAgent({
     model: config.VERTEX_AI_MODEL,
-    tools: [savePersonasTool],
+    tools: [savePersonasTool, fetchDocumentTool],
   });
 
   return {
@@ -49,5 +65,6 @@ export function buildContainer(config: AppConfig): Container {
     projectService: new ProjectService(projectRepository),
     personaService: new PersonaService(personaRepository, aiAgent),
     personaOpsAgent,
+    sourceDocumentService,
   };
 }

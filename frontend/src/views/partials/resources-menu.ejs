@@ -16,45 +16,32 @@
         <span class="text-orange-400 mr-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
         </span>
-        <span class="text-sm font-bold">ユーザーインタビュー</span>
+        <span class="text-sm font-bold">登録されたURL</span>
       </summary>
       <div class="ml-5 pl-3 border-l border-slate-200 flex flex-col gap-1 mt-1">
-        <div class="flex items-center justify-between w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors group cursor-pointer">
-          <div class="flex items-center overflow-hidden">
-            <svg class="w-[0.875rem] h-[0.875rem] text-blue-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            <span class="text-xs font-medium truncate">2023下期_営業部門ヒアリング.pdf</span>
+        <% if (typeof sourceDocuments !== 'undefined' && sourceDocuments.length > 0) { %>
+          <% sourceDocuments.forEach(doc => { %>
+            <div class="flex items-center justify-between w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors group cursor-pointer" title="<%= doc.reference %>">
+              <div class="flex items-center overflow-hidden">
+                <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                <span class="text-xs font-medium truncate"><%= doc.reference %></span>
+              </div>
+              <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                <% 
+                  const d = new Date(doc.createdAt);
+                  const yyyy = d.getFullYear();
+                  const mm = String(d.getMonth() + 1).padStart(2, '0');
+                  const dd = String(d.getDate()).padStart(2, '0');
+                %>
+                <%= `${yyyy}/${mm}/${dd}` %>
+              </span>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="p-2 text-xs text-slate-400">
+            データがありません
           </div>
-          <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">2023.10.15</span>
-        </div>
-        <div class="flex items-center justify-between w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors group cursor-pointer">
-          <div class="flex items-center overflow-hidden">
-            <svg class="w-[0.875rem] h-[0.875rem] text-blue-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-            <span class="text-xs font-medium truncate">2024上期_マネージャー層.md</span>
-          </div>
-          <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">2024.02.20</span>
-        </div>
-      </div>
-    </details>
-    
-    <details class="group/folder" open>
-      <summary class="flex items-center w-full hover:bg-slate-100 p-2 rounded-lg text-slate-700 list-none cursor-pointer transition-colors">
-        <span class="w-4 h-4 mr-1 flex items-center justify-center text-slate-400 group-open/folder:rotate-90 transition-transform">
-          <svg class="w-[0.875rem] h-[0.875rem]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
-        </span>
-        <span class="text-orange-400 mr-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-        </span>
-        <span class="text-sm font-bold">仕様書・要件定義</span>
-      </summary>
-      <div class="ml-5 pl-3 border-l border-slate-200 flex flex-col gap-1 mt-1">
-        <div class="flex items-center w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors cursor-pointer">
-          <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-          <span class="text-xs font-medium truncate">GitHub Issue #142 (モバイル刷新)</span>
-        </div>
-        <div class="flex items-center w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors cursor-pointer">
-          <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-          <span class="text-xs font-medium truncate">Notion: 新規ダッシュボード要件</span>
-        </div>
+        <% } %>
       </div>
     </details>
   </div>

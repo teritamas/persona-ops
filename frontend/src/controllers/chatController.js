@@ -56,6 +56,18 @@ exports.streamChat = async (req, res) => {
     time: userTime
   };
   activeChat.messages.push(userMsg);
+
+  // Check if text contains a URL and add system message to history
+  const hasUrl = /(https?:\/\/[^\s]+)/g.test(inputText);
+  if (hasUrl) {
+    activeChat.messages.push({
+      id: 'msg_' + (Date.now() + 1),
+      role: 'system',
+      text: 'リソースに登録しました',
+      time: userTime
+    });
+  }
+
   await projectService.syncProject(activeProject);
 
   // Determine system prompt
