@@ -127,8 +127,19 @@ test('タイムアウト、ネットワーク、無効レスポンスを識別�
       defaultTimeoutMs: 1,
       environment: {},
       fetchImplementation: async (_url, options) =>
-        new Promise((_resolve, reject) => {
-          options.signal.addEventListener('abort', () => reject(options.signal.reason));
+        new Promise((resolve, reject) => {
+          if (options.signal?.aborted) {
+            return reject(options.signal.reason);
+          }
+          const onAbort = () => {
+            clearTimeout(timer);
+            reject(options.signal.reason);
+          };
+          options.signal?.addEventListener('abort', onAbort);
+          const timer = setTimeout(() => {
+            options.signal?.removeEventListener('abort', onAbort);
+            resolve(new Response('{}'));
+          }, 100);
         }),
     });
 

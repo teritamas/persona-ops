@@ -13,16 +13,11 @@ exports.getSuggestSim = (req, res) => {
 };
 
 exports.resetReactions = (req, res) => {
-  const { state, getActiveProject, initialPersonas } = require('../services/dummy_data/store');
+  const { state, getActiveProject } = require('../services/dummy_data/store');
   const activeProject = getActiveProject();
-  
-  // Create initial personas if they don't exist
-  if (!activeProject.personas || activeProject.personas.length === 0) {
-    activeProject.personas = JSON.parse(JSON.stringify(initialPersonas));
-  }
 
   state.simulationDone = false;
-  
+
   res.render('partials/sandbox-characters', {
     activeProject,
     simulationDone: false,

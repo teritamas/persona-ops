@@ -4,6 +4,11 @@ import { AdkAiAgent } from './ai/adk-ai-agent.js';
 import { Firestore } from '@google-cloud/firestore';
 import { ProjectService } from '../application/project-service.js';
 import { FirestoreProjectRepository } from './database/firestore-project-repository.js';
+import { PersonaService } from '../application/persona-service.js';
+import { FirestorePersonaRepository } from './database/firestore-persona-repository.js';
+import { createSavePersonasTool } from '../agents/persona-ops-agent/tools/save-personas-tool.js';
+import { createPersonaOpsAgent } from '../agents/persona-ops-agent/agent.js';
+import type { InMemoryRunner } from '@google/adk';
 
 /**
  * アプリケーション全体の依存オブジェクトをまとめた型
@@ -14,6 +19,8 @@ import { FirestoreProjectRepository } from './database/firestore-project-reposit
 export type Container = {
   aiAgent: AiAgentPort;
   projectService: ProjectService;
+  personaService: PersonaService;
+  personaOpsAgent: InMemoryRunner;
 };
 
 /**
@@ -25,11 +32,22 @@ export type Container = {
 export function buildContainer(config: AppConfig): Container {
   const firestore = new Firestore({ projectId: config.GOOGLE_CLOUD_PROJECT });
   const projectRepository = new FirestoreProjectRepository(firestore);
+  const personaRepository = new FirestorePersonaRepository(firestore);
+
+  const aiAgent = new AdkAiAgent({
+    model: config.VERTEX_AI_MODEL,
+  });
+
+  const savePersonasTool = createSavePersonasTool(personaRepository);
+  const personaOpsAgent = createPersonaOpsAgent({
+    model: config.VERTEX_AI_MODEL,
+    tools: [savePersonasTool],
+  });
 
   return {
-    aiAgent: new AdkAiAgent({
-      model: config.VERTEX_AI_MODEL,
-    }),
+    aiAgent,
     projectService: new ProjectService(projectRepository),
+    personaService: new PersonaService(personaRepository, aiAgent),
+    personaOpsAgent,
   };
 }

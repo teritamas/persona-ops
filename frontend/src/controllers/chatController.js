@@ -83,7 +83,9 @@ exports.streamChat = async (req, res) => {
         message: inputText,
         history,
         model,
-        systemPrompt
+        systemPrompt,
+        projectId: activeProject.id,
+        existingPersonas: activeProject.personas || []
       }
     });
 
@@ -114,6 +116,9 @@ exports.streamChat = async (req, res) => {
     };
     activeChat.messages.push(agentMsg);
     await projectService.syncProject(activeProject);
+    
+    // データベースで新しく作成されたペルソナをローカルのステートに同期する
+    await projectService.fetchProjects();
 
   } catch (error) {
     console.error('Streaming error in frontend controller:', error);

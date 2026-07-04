@@ -55,6 +55,17 @@ async function submitStreamChat(event) {
   const container = document.getElementById('chat-messages-container');
   if (!container) return;
 
+  // 初回のインタラクション（初期状態）の場合、シミュレーション広場を表示して左パネルのサイズを調整する
+  const playground = document.getElementById('simulation-playground');
+  if (playground && playground.style.display === 'none') {
+    playground.style.display = 'flex'; // Tailwind のクラスに合わせて flex を使用する
+    const leftPanel = document.getElementById('left-panel-content');
+    if (leftPanel) {
+      // w-full から w-[400px] へ滑らかにアニメーションさせる
+      leftPanel.className = 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out';
+    }
+  }
+
   const welcomeMessage = document.getElementById('welcome-message-wrapper');
   if (welcomeMessage) {
     welcomeMessage.remove();
@@ -173,6 +184,10 @@ async function submitStreamChat(event) {
             const sandbox = document.getElementById('sandbox-characters');
             if (sandbox && html) {
               sandbox.innerHTML = html;
+              // 新しく追加されたDOM要素を HTMX に認識させ、クリックできるようにする
+              if (window.htmx) {
+                window.htmx.process(sandbox);
+              }
             }
           })
           .catch(err => console.error('Failed to trigger reactions:', err));
