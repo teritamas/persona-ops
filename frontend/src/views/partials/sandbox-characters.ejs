@@ -1,12 +1,7 @@
 <%
   const selectedId = selectedSimulation?.id;
-  const isPolling = selectedSimulation && ['queued', 'running'].includes(selectedSimulation.status);
-  const pollingAttrs = isPolling
-    ? `hx-get="/${activeProject.id}/view/simulation-square?simulationId=${encodeURIComponent(selectedId)}"` +
-      ` hx-trigger="every 5s"` +
-      ` hx-target="#sandbox-characters"` +
-      ` hx-swap="outerHTML"`
-    : '';
+  const isPolling = false; // 自動ポーリング更新を無効化
+  const pollingAttrs = '';
 %>
 <div id="sandbox-characters"
      class="relative w-full h-full max-w-5xl max-h-[800px] z-10"

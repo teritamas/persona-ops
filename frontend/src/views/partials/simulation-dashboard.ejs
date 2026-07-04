@@ -5,22 +5,13 @@
     : `/${activeProject.id}/view/simulations`;
 %>
 <section id="simulation-dashboard"
-  class="flex-1 min-h-0 flex flex-col bg-slate-50"
-  hx-get="<%= pollingPath %>"
-  hx-trigger="every 5s"
-  hx-target="#simulation-dashboard"
-  hx-swap="outerHTML">
+  class="flex-1 min-h-0 flex flex-col bg-slate-50">
   <header class="h-14 shrink-0 border-b border-slate-200 bg-white px-6 flex items-center justify-between">
     <div>
       <h2 class="text-sm font-bold text-slate-800">シミュレーション結果</h2>
-      <p class="text-[11px] text-slate-400">5秒ごとに最新状態へ更新</p>
     </div>
     <div class="flex items-center gap-3">
       <span class="text-xs text-slate-500"><%= simulations.length %>件</span>
-      <a href="/"
-        class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">
-        箱庭に戻る
-      </a>
     </div>
   </header>
 

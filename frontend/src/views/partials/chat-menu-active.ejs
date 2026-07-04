@@ -35,9 +35,6 @@
         <% (activeChat.messages || []).forEach(msg => { %>
           <%- include('chat-message', { msg, activeProject }) %>
         <% }) %>
-        
-        <!-- Suggestions inside chat messages container -->
-        <%- include('chat-suggestions') %>
       <% } %>
     </div>
   </div>
