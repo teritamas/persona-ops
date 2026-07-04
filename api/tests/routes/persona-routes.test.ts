@@ -3,7 +3,6 @@ import Fastify from 'fastify';
 import { personaRoutes } from '../../src/routes/persona-routes.js';
 import { PersonaService } from '../../src/application/persona-service.js';
 import type { PersonaRepositoryPort } from '../../src/application/ports/persona-repository-port.js';
-import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
 import type { Persona } from '../../src/domain/persona.js';
 
 class MockPersonaRepository implements PersonaRepositoryPort {
@@ -25,49 +24,30 @@ class MockPersonaRepository implements PersonaRepositoryPort {
   }
 }
 
-class MockAiAgent implements AiAgentPort {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async invoke(): Promise<string> {
-    return `
-\`\`\`json
-{
-  "personas": [
-    {
-      "name": "山田 太郎",
-      "role": "デザイナー",
-      "traits": ["几帳面"],
-      "background": "使いやすさを重視"
-    }
-  ]
-}
-\`\`\`
-    `;
-  }
-}
-
 describe('ペルソナ ルーター', () => {
   const app = Fastify();
   const repository = new MockPersonaRepository();
-  const aiAgent = new MockAiAgent();
+  const aiAgent = {} as any; // Mock unused AiAgent
   const personaService = new PersonaService(repository, aiAgent);
 
   void app.register(personaRoutes, { personaService });
 
-  it('POST /api/v1/projects/:projectId/personas/generate でペルソナを自動生成する', async () => {
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/projects/proj_123/personas/generate',
-      payload: { promptText: '仕様書データ' },
+  it('GET /api/v1/projects/:projectId/personas でペルソナ一覧を返す', async () => {
+    // Seed the mock repository
+    await repository.save({
+      id: 'test_id',
+      projectId: 'proj_123',
+      name: '山田 太郎',
+      role: 'デザイナー',
+      traits: [],
+      background: '',
+      avatarSeed: 'Felix',
+      x: 0,
+      y: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     });
 
-    expect(response.statusCode).toBe(201);
-    const body = response.json<Persona[]>();
-    expect(body.length).toBe(1);
-    expect(body[0]?.name).toBe('山田 太郎');
-    expect(body[0]?.role).toBe('デザイナー');
-  });
-
-  it('GET /api/v1/projects/:projectId/personas でペルソナ一覧を返す', async () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/v1/projects/proj_123/personas',
@@ -86,10 +66,6 @@ describe('ペルソナ ルーター', () => {
       getPersonasByProjectId: async () => {
         throw new Error('Test DB Error');
       },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      generatePersonas: async () => {
-        throw new Error('Test Gen Error');
-      },
     } as unknown as PersonaService;
 
     void errorApp.register(personaRoutes, { personaService: errorService });
@@ -101,30 +77,5 @@ describe('ペルソナ ルーター', () => {
 
     expect(response.statusCode).toBe(500);
     expect(response.json()).toEqual({ error: 'Internal Server Error' });
-  });
-
-  it('POST /api/v1/projects/:projectId/personas/generate でエラーが発生した時に 500 エラーを返す', async () => {
-    const errorApp = Fastify();
-    const errorService = {
-      // eslint-disable-next-line @typescript-eslint/require-await
-      getPersonasByProjectId: async () => {
-        throw new Error('Test DB Error');
-      },
-      // eslint-disable-next-line @typescript-eslint/require-await
-      generatePersonas: async () => {
-        throw new Error('Test Gen Error');
-      },
-    } as unknown as PersonaService;
-
-    void errorApp.register(personaRoutes, { personaService: errorService });
-
-    const response = await errorApp.inject({
-      method: 'POST',
-      url: '/api/v1/projects/proj_123/personas/generate',
-      payload: { promptText: '仕様書データ' },
-    });
-
-    expect(response.statusCode).toBe(500);
-    expect(response.json()).toEqual({ error: 'Test Gen Error' });
   });
 });

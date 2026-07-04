@@ -43,6 +43,7 @@ export function buildApp({
 
   void app.register(chatRoutes, {
     defaultModel: config.VERTEX_AI_MODEL,
+    personaOpsAgent: container.personaOpsAgent,
   });
 
   return app;

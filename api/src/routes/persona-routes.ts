@@ -36,14 +36,6 @@ const personaResponseSchema = {
   },
 } as const;
 
-const generatePersonaBodySchema = {
-  type: 'object',
-  required: ['promptText'],
-  properties: {
-    promptText: { type: 'string', minLength: 1 },
-  },
-} as const;
-
 const projectIdParamsSchema = {
   type: 'object',
   required: ['projectId'],
@@ -94,39 +86,4 @@ export async function personaRoutes(
     },
   );
 
-  // POST /api/v1/projects/:projectId/personas/generate
-  app.post(
-    `${ROUTE_PREFIX}/generate`,
-    {
-      schema: {
-        params: projectIdParamsSchema,
-        body: generatePersonaBodySchema,
-        response: {
-          201: {
-            type: 'array',
-            items: personaResponseSchema,
-          },
-          500: errorResponseSchema,
-        },
-      },
-    },
-    async (request, reply) => {
-      try {
-        const { projectId } = request.params as { projectId: string };
-        const { promptText } = request.body as { promptText: string };
-
-        const personas = await personaService.generatePersonas(
-          projectId,
-          promptText,
-        );
-        return reply.status(201).send(personas);
-      } catch (error: unknown) {
-        request.log.error({ err: error }, 'Failed to generate personas');
-        return reply.status(500).send({
-          error:
-            error instanceof Error ? error.message : 'Internal Server Error',
-        });
-      }
-    },
-  );
 }

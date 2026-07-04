@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { InMemoryRunner, LlmAgent } from '@google/adk';
+import type { AgentRunner } from '../infra/ai/adk-ai-agent.js';
 
 interface ChatMessage {
   role: 'user' | 'agent' | 'persona';
@@ -9,29 +9,29 @@ interface ChatMessage {
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function chatRoutes(
   app: FastifyInstance,
-  options: { defaultModel: string },
+  options: { defaultModel: string; personaOpsAgent: any }, // using any to avoid direct type coupling if runner export is not easy, or we can use the AgentRunner type
 ): Promise<void> {
-  const { defaultModel } = options;
+  const { personaOpsAgent } = options;
 
   app.post('/api/v1/chat/stream', async (request, reply) => {
-    const { message, history, model, systemPrompt } = request.body as {
+    const { message, history, projectId, existingPersonas } = request.body as {
       message: string;
       history: ChatMessage[];
-      model?: string;
-      systemPrompt?: string;
+      projectId?: string;
+      existingPersonas?: any[];
     };
 
-    const selectedModel = model || defaultModel;
-    const instruction =
-      systemPrompt || 'ユーザーの指示に従い、適切な応答を返してください。';
+    // プロジェクトごとにコンテキストを保持するため、sessionId に projectId を使用する
+    // 指定がない場合はデフォルトのセッションにフォールバックする
+    const sessionId = projectId || 'default-chat-session';
 
-    // Create a prompt with context
-    const formattedHistory = (history || [])
-      .map((h) => `${h.role === 'user' ? 'User' : 'AI'}: ${h.text}`)
-      .join('\n');
-
-    const fullPrompt = formattedHistory
-      ? `${formattedHistory}\nUser: ${message}\n`
+    // ツール呼び出し時のコンテキストとして、エージェントのプロンプト（System Note）に projectId と既存のペルソナ情報を追加する
+    const existingPersonasContext = existingPersonas && existingPersonas.length > 0 
+      ? `\n\n[Current Personas]: ${JSON.stringify(existingPersonas.map(p => ({ name: p.name, role: p.role })))}`
+      : '';
+      
+    const fullPrompt = projectId 
+      ? `[System Note: The current projectId is "${projectId}". Use this ID implicitly when saving personas.${existingPersonasContext}]\n\n${message}`
       : message;
 
     // Set headers for streaming
@@ -43,38 +43,32 @@ export async function chatRoutes(
     });
 
     try {
-      const agentRunner = new InMemoryRunner({
-        agent: new LlmAgent({
-          description: 'PersonaOps assistant',
-          instruction,
-          model: selectedModel,
-          name: 'persona_ops_assistant',
-        }),
-        appName: 'persona_ops_ai',
-      });
-
-      const events = agentRunner.runEphemeral({
+      // @ts-ignore
+      const events = personaOpsAgent.runEphemeral({
         newMessage: {
           parts: [{ text: fullPrompt }],
           role: 'user',
         },
         runConfig: {
-          maxLlmCalls: 1,
+          maxLlmCalls: 5, // Allow multiple calls for tool execution
         },
-        userId: `stream-${Date.now()}`,
+        userId: sessionId, // This tells the agent to use this session's memory
       });
 
       for await (const event of events) {
-        const parts = event.content?.parts ?? [];
-        for (const part of parts) {
-          if (typeof part.text === 'string' && part.text.length > 0) {
-            reply.raw.write(part.text);
+        if (event.content?.parts) {
+          for (const part of event.content.parts) {
+            if (part.text) {
+              reply.raw.write(part.text);
+            }
           }
         }
       }
     } catch (error) {
-      request.log.error({ err: error }, 'Streaming chat failed');
-      reply.raw.write('\n[ERROR: Failed to generate response]');
+      app.log.error({ err: error }, 'Chat stream error');
+      reply.raw.write(
+        '\n[Error] I apologize, but an error occurred while processing your request.',
+      );
     } finally {
       reply.raw.end();
     }

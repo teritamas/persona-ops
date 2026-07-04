@@ -6,6 +6,9 @@ import { ProjectService } from '../application/project-service.js';
 import { FirestoreProjectRepository } from './database/firestore-project-repository.js';
 import { PersonaService } from '../application/persona-service.js';
 import { FirestorePersonaRepository } from './database/firestore-persona-repository.js';
+import { createSavePersonasTool } from '../agents/persona-ops-agent/tools/save-personas-tool.js';
+import { createPersonaOpsAgent } from '../agents/persona-ops-agent/agent.js';
+import type { InMemoryRunner } from '@google/adk';
 
 /**
  * アプリケーション全体の依存オブジェクトをまとめた型
@@ -17,6 +20,7 @@ export type Container = {
   aiAgent: AiAgentPort;
   projectService: ProjectService;
   personaService: PersonaService;
+  personaOpsAgent: InMemoryRunner;
 };
 
 /**
@@ -34,9 +38,16 @@ export function buildContainer(config: AppConfig): Container {
     model: config.VERTEX_AI_MODEL,
   });
 
+  const savePersonasTool = createSavePersonasTool(personaRepository);
+  const personaOpsAgent = createPersonaOpsAgent({
+    model: config.VERTEX_AI_MODEL,
+    tools: [savePersonasTool],
+  });
+
   return {
     aiAgent,
     projectService: new ProjectService(projectRepository),
     personaService: new PersonaService(personaRepository, aiAgent),
+    personaOpsAgent,
   };
 }
