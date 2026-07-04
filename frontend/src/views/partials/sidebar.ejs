@@ -1,10 +1,11 @@
+<% const hideClass = (!activeProject || !activeProject.id) ? 'hidden' : ''; %>
 <nav
   class="w-14 hover:w-48 transition-all duration-300 ease-in-out bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group">
   <!-- Nav Items -->
   <div class="flex flex-col space-y-2 w-full px-2 overflow-hidden">
     <!-- Resources Menu -->
     <button id="nav-resources" hx-get="/<%= activeProject.id %>/view/resources" hx-target="#left-panel-content" hx-swap="innerHTML"
-      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative"
+      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative <%= hideClass %>"
       onclick="document.getElementById('resource-notification-badge').classList.add('hidden')">
       <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
         stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -19,7 +20,7 @@
     <!-- Simulation Results -->
     <button id="nav-simulations" hx-get="/<%= activeProject.id %>/view/simulations" hx-target="#simulation-playground" hx-swap="innerHTML"
       onclick="openSimulationDashboard()"
-      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item">
+      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item <%= hideClass %>">
       <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
         stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round"
@@ -34,7 +35,7 @@
     <div class="w-full relative group/chatmenu">
       <button id="nav-chat" hx-get="/<%= activeProject.id %>/view/chat" hx-target="#left-panel-content" hx-swap="innerHTML"
         onclick="showSimulationPlayground()"
-        class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item">
+        class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item <%= hideClass %>">
         <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round"

@@ -22,6 +22,16 @@ function submitSuggestion(element) {
   }
 }
 
+// チャットウィンドウを最下部までスクロールする
+function scrollToBottom() {
+  const scrollContainer = document.getElementById('chat-messages-scroll');
+  if (scrollContainer) {
+    requestAnimationFrame(() => {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    });
+  }
+}
+
 // 新規プロジェクト作成時のメッセージ自動送信トリガー
 function triggerPendingStreamChat() {
   const pendingText = sessionStorage.getItem('pendingStreamText');
@@ -49,12 +59,14 @@ function triggerPendingStreamChat() {
 
 document.addEventListener('DOMContentLoaded', () => {
   triggerPendingStreamChat();
+  scrollToBottom();
 });
 
 // 非同期でチャット画面がロードされた際（HTMX swap完了時）にトリガー
 document.addEventListener('htmx:afterSwap', (evt) => {
   if (evt.detail.target && evt.detail.target.id === 'left-panel-content') {
     triggerPendingStreamChat();
+    scrollToBottom();
   }
 });
 
