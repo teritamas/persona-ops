@@ -300,7 +300,10 @@ describe('SimulationService', () => {
 
     await service.delete('project-1', simulation.id);
 
-    expect(simulationStore.delete).toHaveBeenCalledWith('project-1', simulation.id);
+    expect(simulationStore.delete).toHaveBeenCalledWith(
+      'project-1',
+      simulation.id,
+    );
     expect(simulationStore.simulation).toBeNull();
   });
 });

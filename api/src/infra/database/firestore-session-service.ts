@@ -1,13 +1,14 @@
-import { Firestore } from '@google-cloud/firestore';
-import {
-  BaseSessionService,
+import type { Firestore } from '@google-cloud/firestore';
+import type {
   CreateSessionRequest,
   DeleteSessionRequest,
   GetSessionRequest,
   ListSessionsRequest,
   ListSessionsResponse,
   Session,
-  Event,
+  Event} from '@google/adk';
+import {
+  BaseSessionService,
   createSession,
 } from '@google/adk';
 
@@ -27,10 +28,7 @@ export class FirestoreSessionService extends BaseSessionService {
       lastUpdateTime: now,
     };
 
-    await this.firestore
-      .collection('sessions')
-      .doc(sessionId)
-      .set(sessionData);
+    await this.firestore.collection('sessions').doc(sessionId).set(sessionData);
 
     return createSession({
       id: sessionId,

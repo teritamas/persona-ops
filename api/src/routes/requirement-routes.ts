@@ -95,7 +95,9 @@ export async function requirementRoutes(
 
   app.post(
     '/api/v1/projects/:projectId/requirements',
-    { schema: { params: projectParamsSchema, body: saveRequirementBodySchema } },
+    {
+      schema: { params: projectParamsSchema, body: saveRequirementBodySchema },
+    },
     async (request, reply) => {
       try {
         const { projectId } = request.params as { projectId: string };
@@ -139,4 +141,3 @@ export async function requirementRoutes(
     },
   );
 }
-

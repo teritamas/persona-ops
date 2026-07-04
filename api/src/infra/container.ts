@@ -99,4 +99,3 @@ export function buildContainer(config: AppConfig): Container {
     sourceDocumentService,
   };
 }
-
