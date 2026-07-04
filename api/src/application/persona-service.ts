@@ -9,6 +9,7 @@ export interface SavePersonaInput {
   role: string;
   traits: string[];
   background: string;
+  avatarSeed?: string | undefined;
 }
 
 const AVATARS = ['Felix', 'Aneka', 'Jasper', 'Avery', 'Leo'] as const;
@@ -51,6 +52,7 @@ export class PersonaService {
           role: input.role,
           traits: [...input.traits],
           background: input.background,
+          avatarSeed: input.avatarSeed || matched.avatarSeed,
           updatedAt: now,
         });
         updatedCount += 1;
@@ -65,7 +67,7 @@ export class PersonaService {
         role: input.role,
         traits: [...input.traits],
         background: input.background,
-        avatarSeed: AVATARS[index % AVATARS.length]!,
+        avatarSeed: input.avatarSeed || AVATARS[index % AVATARS.length]!,
         x: coordinate.x,
         y: coordinate.y,
         createdAt: now,
