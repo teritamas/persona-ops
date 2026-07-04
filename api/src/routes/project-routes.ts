@@ -22,6 +22,14 @@ const createProjectBodySchema = {
   },
 } as const;
 
+const errorResponseSchema = {
+  type: 'object',
+  required: ['error'],
+  properties: {
+    error: { type: 'string' },
+  },
+} as const;
+
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function projectRoutes(
   app: FastifyInstance,
@@ -38,6 +46,7 @@ export async function projectRoutes(
             type: 'array',
             items: projectResponseSchema,
           },
+          500: errorResponseSchema,
         },
       },
     },
@@ -59,6 +68,7 @@ export async function projectRoutes(
         body: createProjectBodySchema,
         response: {
           201: projectResponseSchema,
+          500: errorResponseSchema,
         },
       },
     },

@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildApp } from '../../src/app.js';
 import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
 import type { AppConfig } from '../../src/config.js';
+import type { Container } from '../../src/infra/container.js';
 
 const apps: Array<ReturnType<typeof buildApp>> = [];
 
@@ -18,7 +19,7 @@ const stubConfig = {
 function createApp(aiAgent: AiAgentPort) {
   const app = buildApp({
     config: stubConfig,
-    container: { aiAgent },
+    container: { aiAgent } as unknown as Container,
     logger: false,
   });
   apps.push(app);

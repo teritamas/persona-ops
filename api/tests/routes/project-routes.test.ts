@@ -57,6 +57,6 @@ describe('プロジェクトルーター', () => {
     const body = response.json<Project[]>();
     expect(Array.isArray(body)).toBeTruthy();
     expect(body.length).toBe(1);
-    expect(body[0].name).toBe('Test Project');
+    expect(body[0]?.name).toBe('Test Project');
   });
 });
