@@ -1,7 +1,25 @@
 <div class="flex-1 flex flex-col h-full bg-white relative">
   <!-- Header -->
   <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
-    <%- chatHeaderTitleHtml %>
+    <% if (activeChat.type === 'persona') { %>
+      <% const p = activeProject.personas.find(p => p.id === activeChat.personaId); %>
+      <% if (p) { %>
+        <div class="flex items-center gap-3">
+          <div class="w-7 h-7 bg-slate-100 rounded-full border border-orange-200 overflow-hidden flex items-center justify-center">
+            <img src="https://api.dicebear.com/7.x/micah/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" class="w-full h-full object-cover scale-110" />
+          </div>
+          <div class="flex flex-col">
+            <div class="flex items-center gap-2">
+              <h1 class="text-sm font-bold text-slate-800"><%= activeChat.title %></h1>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <h1 class="text-sm font-bold text-slate-800 flex items-center"><%= activeChat.title %></h1>
+      <% } %>
+    <% } else { %>
+      <h1 class="text-sm font-bold text-slate-800 flex items-center"><%= activeChat.title %></h1>
+    <% } %>
     <button hx-post="/action/chat/new" hx-target="#left-panel-content" hx-swap="innerHTML" class="text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-3 py-1.5 rounded-lg flex items-center transition-colors">
       <svg class="w-[0.875rem] h-[0.875rem] mr-1 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg> 新しいチャット
     </button>
@@ -10,7 +28,9 @@
   <div class="flex-1 bg-slate-50/30 p-6 overflow-y-auto flex flex-col">
     <div id="chat-messages-container" class="space-y-6">
       <div class="text-center text-xs text-slate-400 font-medium my-4">Today</div>
-      <%- renderedMessages %>
+      <% (activeChat.messages || []).forEach(msg => { %>
+        <%- include('chat-message', { msg, activeProject }) %>
+      <% }) %>
     </div>
     
     <!-- Suggestions -->

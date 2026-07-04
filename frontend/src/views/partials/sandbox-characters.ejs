@@ -1,0 +1,52 @@
+<% activeProject.personas.forEach((p, idx) => { %>
+  <% 
+    let reactionHtml = '';
+    if (simulationDone && p.reaction) {
+      let iconColor = 'text-slate-500 bg-slate-100 border-slate-200';
+      let iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>';
+      if (p.reaction.type === 'positive') {
+        iconColor = 'text-green-600 bg-green-100 border-green-200';
+        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      } else if (p.reaction.type === 'negative') {
+        iconColor = 'text-red-600 bg-red-100 border-red-200';
+        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      } else if (p.reaction.type === 'neutral') {
+        iconColor = 'text-slate-600 bg-slate-100 border-slate-200';
+        iconSvg = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+      }
+
+      reactionHtml = `
+        <div class="absolute bottom-[90px] left-1/2 -translate-x-1/2 w-56 bg-white p-3 rounded-2xl shadow-xl border border-slate-100 animate-pop-in z-20 flex flex-col" style="animation-delay: ${idx * 0.2}s">
+          <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b border-r border-slate-100 transform rotate-45"></div>
+          <div class="flex items-center gap-2 mb-2 pb-2 border-b border-slate-50">
+            <div class="shrink-0 p-1.5 rounded-full ${iconColor}">
+              ${iconSvg}
+            </div>
+            <span class="text-xs font-bold text-slate-700 truncate">${p.name}</span>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed font-medium">${p.reaction.text}</p>
+        </div>
+      `;
+    }
+
+    const isSelected = selectedPersonaId === p.id;
+  %>
+  <div 
+    hx-get="/view/persona/<%= p.id %>" 
+    hx-target="#detail-panel" 
+    hx-swap="outerHTML"
+    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 <%= isSelected ? 'z-50 scale-110' : 'z-10' %>"
+    style="left: <%= p.x %>%; top: <%= p.y %>%; transform: translate(-50%, -50%)"
+  >
+    <%- reactionHtml %>
+    <div class="relative animate-float flex flex-col items-center" style="animation-delay: <%= idx * 0.5 %>s">
+      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
+      <div class="w-14 h-14 bg-white rounded-full border-4 shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors <%= isSelected ? 'border-orange-400 shadow-orange-500/30' : 'border-white' %>">
+        <img src="https://api.dicebear.com/7.x/micah/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" alt="avatar" class="w-full h-full object-cover scale-110" />
+      </div>
+      <div class="mt-2 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm <%= isSelected ? 'bg-orange-500 text-white opacity-100' : 'bg-slate-800/80 text-white opacity-70 group-hover:opacity-100' %>">
+        <%= p.role %>
+      </div>
+    </div>
+  </div>
+<% }) %>
