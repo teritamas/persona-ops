@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import type { ProjectService } from '../application/project-service.js';
+import type { Chat } from '../domain/project.js';
 
 const PROJECT_ROUTE_PREFIX = '/api/v1/projects';
 
@@ -11,6 +12,34 @@ const projectResponseSchema = {
     name: { type: 'string' },
     createdAt: { type: 'string', format: 'date-time' },
     updatedAt: { type: 'string', format: 'date-time' },
+    chats: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['id', 'title', 'messages'],
+        properties: {
+          id: { type: 'string' },
+          title: { type: 'string' },
+          type: { type: 'string' },
+          personaId: { type: 'string' },
+          messages: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['id', 'role', 'text', 'time'],
+              properties: {
+                id: { type: 'string' },
+                role: { type: 'string' },
+                text: { type: 'string' },
+                time: { type: 'string' },
+                isSystem: { type: 'boolean' },
+              },
+            },
+          },
+        },
+      },
+    },
+    activeChatId: { type: ['string', 'null'] },
   },
 } as const;
 
@@ -79,6 +108,51 @@ export async function projectRoutes(
         return reply.status(201).send(project);
       } catch (error: unknown) {
         request.log.error({ err: error }, 'Failed to create project');
+        return reply.status(500).send({ error: 'Internal Server Error' });
+      }
+    },
+  );
+
+  app.put(
+    `${PROJECT_ROUTE_PREFIX}/:id`,
+    {
+      schema: {
+        body: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            chats: { type: 'array' },
+            activeChatId: { type: ['string', 'null'] },
+          },
+        },
+        response: {
+          200: projectResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const body = request.body as {
+          name?: string;
+          chats?: Chat[];
+          activeChatId?: string | null;
+        };
+        const project = await projectService.getProjectById(id);
+        if (!project) {
+          return reply.status(404).send({ error: 'Project not found' });
+        }
+        if (body.name !== undefined) project.name = body.name;
+        if (body.chats !== undefined) project.chats = body.chats;
+        if (body.activeChatId !== undefined)
+          project.activeChatId = body.activeChatId;
+
+        await projectService.updateProject(project);
+        return reply.status(200).send(project);
+      } catch (error: unknown) {
+        request.log.error({ err: error }, 'Failed to update project');
         return reply.status(500).send({ error: 'Internal Server Error' });
       }
     },

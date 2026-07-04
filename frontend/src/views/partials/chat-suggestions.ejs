@@ -4,10 +4,13 @@
     次のアクション提案
   </p>
   <button 
+    onclick="submitSuggestion(this)" 
+    data-text="先週実施したユーザーインタビューの議事録をアップロードします。これをもとにペルソナをアップデートしてください。"
+    type="button"
+    class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm group"
     hx-get="/view/suggest/res" 
     hx-target="#inputText" 
     hx-swap="outerHTML"
-    class="flex items-start text-left w-full bg-white border border-slate-200 hover:border-orange-300 hover:bg-orange-50 p-3 rounded-xl transition-all shadow-sm hover:shadow-md hover:-translate-y-1 active:scale-95 group"
   >
     <div class="shrink-0 mt-0.5 mr-3 bg-slate-50 group-hover:bg-white p-1.5 rounded-lg border border-slate-100 transition-colors">
       <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -17,6 +20,8 @@
     </span>
   </button>
   <button 
+    onclick="submitSuggestion(this)" 
+    type="button"
     hx-get="/view/suggest/sim" 
     hx-target="#inputText" 
     hx-swap="outerHTML"
@@ -30,3 +35,4 @@
     </span>
   </button>
 </div>
+ 

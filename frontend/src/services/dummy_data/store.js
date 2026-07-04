@@ -1,3 +1,11 @@
+const initialPersonas = [
+  { id: 'p1', name: '鈴木 健太', role: '現場セールス', x: 20, y: 30, avatarSeed: 'Felix', traits: ['効率重視', '外出多い'], reaction: null },
+  { id: 'p2', name: '佐藤 真由美', role: 'マネージャー', x: 70, y: 40, avatarSeed: 'Aneka', traits: ['データ重視', '管理職'], reaction: null },
+  { id: 'p3', name: '田中 宏', role: '内勤営業', x: 45, y: 60, avatarSeed: 'Jasper', traits: ['PCメイン', '丁寧'], reaction: null },
+  { id: 'p4', name: '高橋 涼子', role: '営業企画', x: 80, y: 70, avatarSeed: 'Avery', traits: ['分析好き', '新しい物好き'], reaction: null },
+  { id: 'p5', name: '伊藤 健', role: '若手セールス', x: 30, y: 80, avatarSeed: 'Leo', traits: ['スマホネイティブ', 'フットワーク軽'], reaction: null },
+];
+
 const mockProjects = [
   {
     id: 'proj_1',
@@ -50,5 +58,6 @@ function getActiveProject() {
 module.exports = {
   mockProjects,
   state,
-  getActiveProject
+  getActiveProject,
+  initialPersonas
 };
