@@ -3,7 +3,7 @@
   <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
     <h2 class="text-sm font-bold text-slate-800 flex items-center">ペルソナ詳細</h2>
     <button 
-      hx-get="/action/persona/close?simulationId=<%= typeof selectedSimulation !== 'undefined' && selectedSimulation ? selectedSimulation.id : '' %>" 
+      hx-get="/<%= activeProject.id %>/action/persona/close?simulationId=<%= typeof selectedSimulation !== 'undefined' && selectedSimulation ? selectedSimulation.id : '' %>" 
       hx-target="#detail-panel" 
       hx-swap="outerHTML"
       class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1.5 transition-colors"
@@ -111,7 +111,7 @@
 
   <!-- Action -->
   <div class="mt-auto p-6 bg-white border-t border-slate-100">
-    <button hx-post="/action/chat/persona/<%= p.id %>" class="w-full flex items-center justify-center text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 py-3 rounded-xl shadow-sm transition-colors group">
+    <button hx-post="/<%= activeProject.id %>/action/chat/persona/<%= p.id %>" class="w-full flex items-center justify-center text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 py-3 rounded-xl shadow-sm transition-colors group">
       このペルソナと個別にチャット
     </button>
   </div>
