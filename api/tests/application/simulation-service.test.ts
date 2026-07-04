@@ -24,6 +24,7 @@ class MemoryRequirementStore implements RequirementStorePort {
   findByProjectId = vi.fn(async () =>
     Promise.resolve(this.requirement ? [this.requirement] : []),
   );
+  delete = vi.fn(async () => Promise.resolve());
 }
 
 class MemoryPersonaStore implements PersonaStorePort {

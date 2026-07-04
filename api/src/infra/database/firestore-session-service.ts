@@ -140,7 +140,7 @@ export class FirestoreSessionService extends BaseSessionService {
     await batch.commit();
   }
 
-  async appendEvent(request: {
+  override async appendEvent(request: {
     session: Session;
     event: Event;
   }): Promise<Event> {
