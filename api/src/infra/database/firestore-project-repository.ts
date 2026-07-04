@@ -21,7 +21,11 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
   async findAll(): Promise<Project[]> {
     const snapshot = await this.firestore.collection(this.collectionName).get();
     return snapshot.docs.map((doc) => {
-      const data = doc.data() as { name: string; createdAt: string; updatedAt: string };
+      const data = doc.data() as {
+        name: string;
+        createdAt: string;
+        updatedAt: string;
+      };
       return {
         id: doc.id,
         name: data.name,
@@ -39,7 +43,11 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
       return null;
     }
 
-    const data = snapshot.data() as { name: string; createdAt: string; updatedAt: string };
+    const data = snapshot.data() as {
+      name: string;
+      createdAt: string;
+      updatedAt: string;
+    };
     return {
       id: snapshot.id,
       name: data.name,
