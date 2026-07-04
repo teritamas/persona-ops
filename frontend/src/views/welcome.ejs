@@ -127,6 +127,23 @@
       }
     }
 
+    function showSimulationPlayground() {
+      const pathParts = window.location.pathname.split('/');
+      const projectId = pathParts[1];
+      if (!projectId) return;
+
+      const hasDashboard = document.getElementById('simulation-dashboard');
+      if (hasDashboard) {
+        if (typeof htmx !== 'undefined') {
+          htmx.ajax('GET', `/${projectId}/view/simulation-square`, { target: '#simulation-playground', swap: 'innerHTML' });
+        }
+        const leftPanel = document.getElementById('left-panel-content');
+        if (leftPanel) {
+          leftPanel.className = 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out';
+        }
+      }
+    }
+
     // 最初のプロジェクト作成 & メッセージ自動送信
     async function startFirstProject(event) {
       event.preventDefault();

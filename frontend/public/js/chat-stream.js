@@ -216,7 +216,10 @@ async function submitStreamChat(event) {
         clearInterval(typeInterval);
         timeLabel.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         setTimeout(() => {
-          window.location.reload();
+          if (typeof htmx !== 'undefined') {
+            htmx.ajax('GET', `/${projectId}/view/chat`, { target: '#left-panel-content', swap: 'innerHTML' });
+            htmx.ajax('GET', `/${projectId}/view/simulation-square`, { target: '#sandbox-characters', swap: 'outerHTML' });
+          }
         }, 500);
       }
     }, 20);

@@ -33,6 +33,7 @@
     <!-- Chat Menu (Active by default) -->
     <div class="w-full relative group/chatmenu">
       <button id="nav-chat" hx-get="/<%= activeProject.id %>/view/chat" hx-target="#left-panel-content" hx-swap="innerHTML"
+        onclick="showSimulationPlayground()"
         class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item">
         <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24">
