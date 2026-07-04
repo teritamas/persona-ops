@@ -43,7 +43,7 @@
           ========================================== -->
             <aside id="left-panel-content"
               class="<%= isInitial ? 'w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out' : 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0' %>"
-              hx-get="/view/chat" hx-trigger="load" hx-swap="innerHTML">
+              hx-get="/<%= activeProject.id %>/view/chat" hx-trigger="load" hx-swap="innerHTML">
               <!-- ロード中に表示されるプレースホルダー -->
               <div class="h-10 border-b border-slate-100 bg-white shrink-0"></div>
               <div class="flex-1 flex items-center justify-center bg-slate-50/50">
@@ -65,10 +65,32 @@
 
               <!-- ヘッダー -->
               <header
-                class="h-10 bg-white/80 backdrop-blur-sm border-b border-slate-200 z-30 flex items-center justify-between px-6 shrink-0 shadow-sm relative">
-                <div class="flex items-center gap-4">
-                  <h2 class="text-sm font-bold text-slate-800">シミュレーション広場</h2>
+                class="h-10 bg-white/80 backdrop-blur-sm border-b border-slate-200 z-30 flex items-center justify-between px-6 shrink-0 shadow-sm relative gap-4">
+                <div class="flex items-center gap-4 shrink-0">
+                  <h2 class="text-sm font-bold text-slate-800 whitespace-nowrap">シミュレーション広場</h2>
                 </div>
+
+                <% if (typeof simulations !== 'undefined' && simulations && simulations.length > 0) { %>
+                  <div class="flex items-center gap-2 min-w-0">
+                    <label for="simulation-select" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 whitespace-nowrap">結果切替:</label>
+                    <select
+                      id="simulation-select"
+                      class="text-xs border border-slate-200 rounded-lg px-2 py-1 bg-white hover:border-slate-300 focus:outline-none focus:ring-1 focus:ring-orange-500 font-medium text-slate-700 shadow-sm max-w-[200px] md:max-w-[320px] truncate"
+                      style="text-overflow: ellipsis;"
+                      hx-get="/<%= activeProject.id %>/view/simulation-square"
+                      hx-target="#sandbox-characters"
+                      hx-swap="outerHTML"
+                      name="simulationId"
+                    >
+                      <option value="">なし（初期状態）</option>
+                      <% simulations.forEach((sim, idx) => { %>
+                        <option value="<%= sim.id %>" <%= selectedSimulation?.id === sim.id ? 'selected' : '' %>>
+                          <%= idx === 0 ? '最新: ' : '' %><%= sim.requirementSnapshot.title %>
+                        </option>
+                      <% }) %>
+                    </select>
+                  </div>
+                <% } %>
               </header>
 
               <!-- 箱庭エリア本体 (相対配置用ラッパー) -->
@@ -77,29 +99,10 @@
                 <!-- 箱庭の床（グリッド装飾） -->
                 <div class="absolute inset-0 z-0 bg-grid opacity-50 pointer-events-none"></div>
 
-                <!-- シミュレーション中のエフェクト（htmx ローディング表示） -->
-                <div id="loading-overlay"
-                  class="absolute inset-0 bg-slate-900/5 backdrop-blur-[2px] z-20 hidden items-center justify-center transition-all duration-500">
-                  <div class="bg-white/90 backdrop-blur-md px-6 py-4 rounded-2xl shadow-2xl border border-white flex flex-col items-center animate-pop-in">
-                    <div class="relative mb-3">
-                      <div class="absolute inset-0 bg-orange-400 blur-md opacity-50 animate-pulse-glow rounded-full"></div>
-                      <div class="w-12 h-12 bg-white rounded-full border border-orange-100 flex items-center justify-center relative z-10 shadow-inner">
-                        <svg class="w-6 h-6 text-orange-500 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                        </svg>
-                      </div>
-                    </div>
-                    <span class="font-bold text-slate-700 text-sm font-mono">Thinking...</span>
-                    <span class="text-[10px] text-slate-400 mt-1">ペルソナの反応を推論中</span>
-                  </div>
-                </div>
-
                 <!-- ユーザー入力要件のホログラム的表示 -->
                 <div id="simulation-hologram-title"></div>
 
-                <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10">
-                  <%- include('partials/sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
-                </div>
+                <%- include('partials/sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation }) %>
               </div>
             </main>
 
@@ -119,6 +122,8 @@
   </div>
 
       <script>
+        window.currentProjectId = '<%= activeProject.id %>';
+
         // プロジェクトメニューのトグル
         function toggleProjectMenu() {
           const menu = document.getElementById('project-dropdown');
@@ -135,19 +140,8 @@
 
         // プロジェクト切り替え
         function switchProject(projectId) {
-          fetch('/action/project/switch', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ projectId })
-          }).then(res => {
-            if (res.headers.get('hx-redirect')) {
-              window.location.href = res.headers.get('hx-redirect');
-            } else {
-              window.location.reload();
-            }
-          });
+          document.cookie = "selectedPersonaId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          window.location.href = '/' + projectId;
         }
 
         // 新規プロジェクト作成
@@ -173,7 +167,9 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ projectId, name: newName.trim() })
-            }).then(() => window.location.reload());
+            }).then(() => {
+              window.location.href = '/' + projectId;
+            });
           }
         }
 
@@ -186,25 +182,47 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ projectId })
-            }).then(() => window.location.reload());
+            }).then(() => {
+              window.location.href = '/';
+            });
           }
         }
 
-        // htmx 送信中のロード画面自動トグル用の追加ロジック
-        document.body.addEventListener('htmx:beforeRequest', function (evt) {
-          if (evt.detail.pathInfo.requestPath === '/action/simulate') {
-            document.getElementById('loading-overlay').style.display = 'flex';
+        function openSimulationDashboard() {
+          const playground = document.getElementById('simulation-playground');
+          const leftPanel = document.getElementById('left-panel-content');
+          const detailPanel = document.getElementById('detail-panel');
+          if (playground) {
+            playground.style.display = 'flex';
           }
-        });
-        document.body.addEventListener('htmx:afterRequest', function (evt) {
-          if (evt.detail.pathInfo.requestPath === '/action/simulate') {
-            document.getElementById('loading-overlay').style.display = 'none';
+          if (leftPanel) {
+            leftPanel.className = 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out';
           }
-        });
+          if (detailPanel) {
+            detailPanel.style.display = 'none';
+          }
+        }
+
+        function showSimulationPlayground() {
+          const pathParts = window.location.pathname.split('/');
+          const projectId = pathParts[1];
+          if (!projectId) return;
+
+          const hasDashboard = document.getElementById('simulation-dashboard');
+          if (hasDashboard) {
+            if (typeof htmx !== 'undefined') {
+              htmx.ajax('GET', `/${projectId}/view/simulation-square`, { target: '#simulation-playground', swap: 'innerHTML' });
+            }
+            const leftPanel = document.getElementById('left-panel-content');
+            if (leftPanel) {
+              leftPanel.className = 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out';
+            }
+          }
+        }
 
         // サイドバーのナビゲーションのアクティブ状態を管理
         document.body.addEventListener('htmx:afterSwap', function (evt) {
-          if (evt.detail.target.id === 'left-panel-content') {
+          if (evt.detail.target.id === 'left-panel-content' || evt.detail.target.id === 'simulation-playground') {
             const path = evt.detail.requestConfig ? evt.detail.requestConfig.path : '';
 
             if (!path) return;
@@ -227,8 +245,9 @@
 
             // 対象のボタンをアクティブ（オレンジ）にする
             let activeBtnId = null;
-            if (path.startsWith('/view/chat')) activeBtnId = 'nav-chat';
-            if (path.startsWith('/view/resources')) activeBtnId = 'nav-resources';
+            if (path.includes('/view/chat')) activeBtnId = 'nav-chat';
+            if (path.includes('/view/resources')) activeBtnId = 'nav-resources';
+            if (path.includes('/view/simulations')) activeBtnId = 'nav-simulations';
 
             if (activeBtnId) {
               const btn = document.getElementById(activeBtnId);
@@ -249,6 +268,39 @@
             }
           }
         });
+
+        // HTMX によるスワップ時のスクロール位置保持ロジック
+        (function() {
+          const scrollPositions = {};
+          const scrollableIds = [
+            'chat-messages-scroll',
+            'resources-scroll',
+            'sim-history-scroll',
+            'sim-detail-scroll',
+            'detail-panel'
+          ];
+
+          document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            scrollableIds.forEach(id => {
+              const el = document.getElementById(id);
+              if (el) {
+                scrollPositions[id] = el.scrollTop;
+              }
+            });
+          });
+
+          document.body.addEventListener('htmx:afterSwap', function(evt) {
+            // ブラウザのレイアウト更新タイミングと同調させて確実にscrollTopを適用する
+            requestAnimationFrame(() => {
+              scrollableIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && scrollPositions[id] !== undefined) {
+                  el.scrollTop = scrollPositions[id];
+                }
+              });
+            });
+          });
+        })();
       </script>
 </body>
 

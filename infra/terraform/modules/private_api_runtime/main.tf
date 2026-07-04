@@ -71,6 +71,11 @@ resource "google_cloud_run_v2_service" "application" {
       }
 
       env {
+        name  = "SIMULATION_QUEUE"
+        value = var.simulation_queue_name
+      }
+
+      env {
         name  = "UPLOADS_BUCKET"
         value = var.uploads_bucket
       }

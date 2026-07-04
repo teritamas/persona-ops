@@ -1,49 +1,54 @@
 const projectService = require('../services/projectService');
-const { state, mockProjects, getActiveProject } = require('../services/dummy_data/store');
+const { simulationService } = require('../services/simulationService');
 const { marked } = require('marked');
 
-exports.createProject = async (req, res) => {
-  await projectService.createProject();
-  state.simulationDone = false;
-  state.selectedPersonaId = null;
-  res.set('HX-Redirect', '/');
-  return res.send();
+exports.getWelcomePage = async (req, res) => {
+  const projects = await projectService.fetchProjects();
+  res.render('welcome', {
+    projects,
+    activeProject: {
+      id: '',
+      name: '新しいプロジェクト',
+      personas: [],
+      chats: [],
+      activeChatId: null,
+      activeChat: { messages: [] },
+      isInitial: true
+    },
+    activeProjectId: '',
+    isInitial: true
+  });
 };
 
-exports.switchProject = (req, res) => {
-  state.activeProjectId = req.body.projectId;
-  state.simulationDone = false;
-  state.selectedPersonaId = null;
-  res.set('HX-Redirect', '/');
+exports.createProject = async (req, res) => {
+  const newProject = await projectService.createProject();
+  if (newProject) {
+    res.set('HX-Redirect', `/${newProject.id}`);
+  } else {
+    res.set('HX-Redirect', '/');
+  }
   return res.send();
 };
 
 exports.getDashboard = async (req, res) => {
-  await projectService.fetchProjects();
-
-  // もし activeProjectId が存在しないIDを指していたらリセット
-  if (!mockProjects.find(p => p.id === state.activeProjectId) && mockProjects.length > 0) {
-    state.activeProjectId = mockProjects[0].id;
+  let simulations = [];
+  let selectedSimulation = null;
+  
+  if (req.activeProject && req.activeProject.id) {
+    try {
+      const simContext = await simulationService.getDashboard(req.activeProject, req.query.simulationId);
+      simulations = simContext.simulations;
+      selectedSimulation = simContext.selectedSimulation;
+    } catch (err) {
+      console.error('Failed to fetch simulations for dashboard', err);
+    }
   }
 
-  const activeProject = getActiveProject();
   res.render('index', {
-    activeProject,
-    mockProjects,
-    activeProjectId: state.activeProjectId,
-    isInitial: activeProject.isInitial,
-    selectedPersonaId: state.selectedPersonaId,
-    simulationDone: state.simulationDone,
+    simulations,
+    selectedSimulation,
+    isInitial: req.activeProject ? req.activeProject.isInitial : true,
     marked: marked.parse
-  });
-};
-
-exports.getProjectState = (req, res) => {
-  const activeProject = getActiveProject();
-  res.json({
-    activeProjectId: activeProject.id,
-    isInitial: activeProject.isInitial,
-    activeChatId: activeProject.activeChatId
   });
 };
 
@@ -52,19 +57,13 @@ exports.renameProject = async (req, res) => {
   if (projectId && name) {
     await projectService.updateProjectName(projectId, name);
   }
-  res.redirect('/');
+  res.redirect(`/${projectId}`);
 };
 
 exports.deleteProject = async (req, res) => {
   const { projectId } = req.body;
   if (projectId) {
     await projectService.deleteProject(projectId);
-    if (state.activeProjectId === projectId) {
-      // Switch to another project if available, or null
-      state.activeProjectId = mockProjects.length > 0 ? mockProjects[0].id : null;
-      state.simulationDone = false;
-      state.selectedPersonaId = null;
-    }
   }
   res.redirect('/');
 };

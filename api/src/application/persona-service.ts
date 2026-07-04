@@ -1,17 +1,79 @@
-import type { Persona } from '../domain/persona.js';
-import type { PersonaRepositoryPort } from './ports/persona-repository-port.js';
-import type { AiAgentPort } from './ports/ai-agent-port.js';
-export class PersonaService {
-  constructor(
-    private readonly personaRepository: PersonaRepositoryPort,
-    private readonly aiAgent: AiAgentPort, // Kept in constructor in case we need it, though currently unused here
-  ) {}
+import { randomUUID } from 'node:crypto';
 
-  /**
-   * プロジェクトに紐づくペルソナ一覧を取得する
-   * @param projectId プロジェクトID
-   */
+import type { Persona } from '../domain/persona.js';
+import type { PersonaStorePort } from './ports/infra/database/persona-store-port.js';
+
+export interface SavePersonaInput {
+  id?: string | undefined;
+  name: string;
+  role: string;
+  traits: string[];
+  background: string;
+}
+
+const AVATARS = ['Felix', 'Aneka', 'Jasper', 'Avery', 'Leo'] as const;
+const COORDINATES = [
+  { x: 20, y: 30 },
+  { x: 70, y: 40 },
+  { x: 45, y: 60 },
+  { x: 80, y: 70 },
+  { x: 30, y: 80 },
+] as const;
+
+export class PersonaService {
+  constructor(private readonly personaRepository: PersonaStorePort) {}
+
   async getPersonasByProjectId(projectId: string): Promise<Persona[]> {
     return this.personaRepository.findByProjectId(projectId);
+  }
+
+  async savePersonas(
+    projectId: string,
+    inputs: SavePersonaInput[],
+  ): Promise<{ addedCount: number; updatedCount: number }> {
+    const existing = await this.personaRepository.findByProjectId(projectId);
+    const now = new Date();
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    for (const [index, input] of inputs.entries()) {
+      const matched = input.id
+        ? existing.find((persona) => persona.id === input.id)
+        : existing.find(
+            (persona) =>
+              persona.name === input.name && persona.role === input.role,
+          );
+
+      if (matched) {
+        await this.personaRepository.save({
+          ...matched,
+          name: input.name,
+          role: input.role,
+          traits: [...input.traits],
+          background: input.background,
+          updatedAt: now,
+        });
+        updatedCount += 1;
+        continue;
+      }
+
+      const coordinate = COORDINATES[index % COORDINATES.length]!;
+      await this.personaRepository.save({
+        id: `pers_${randomUUID()}`,
+        projectId,
+        name: input.name,
+        role: input.role,
+        traits: [...input.traits],
+        background: input.background,
+        avatarSeed: AVATARS[index % AVATARS.length]!,
+        x: coordinate.x,
+        y: coordinate.y,
+        createdAt: now,
+        updatedAt: now,
+      });
+      addedCount += 1;
+    }
+
+    return { addedCount, updatedCount };
   }
 }

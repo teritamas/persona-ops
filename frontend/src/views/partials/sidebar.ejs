@@ -1,10 +1,11 @@
+<% const hideClass = (!activeProject || !activeProject.id) ? 'hidden' : ''; %>
 <nav
   class="w-14 hover:w-48 transition-all duration-300 ease-in-out bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group">
   <!-- Nav Items -->
   <div class="flex flex-col space-y-2 w-full px-2 overflow-hidden">
     <!-- Resources Menu -->
-    <button id="nav-resources" hx-get="/view/resources" hx-target="#left-panel-content" hx-swap="innerHTML"
-      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative"
+    <button id="nav-resources" hx-get="/<%= activeProject.id %>/view/resources" hx-target="#left-panel-content" hx-swap="innerHTML"
+      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative <%= hideClass %>"
       onclick="document.getElementById('resource-notification-badge').classList.add('hidden')">
       <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
         stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -16,10 +17,25 @@
         class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">リソース</span>
     </button>
 
+    <!-- Simulation Results -->
+    <button id="nav-simulations" hx-get="/<%= activeProject.id %>/view/simulations" hx-target="#simulation-playground" hx-swap="innerHTML"
+      onclick="openSimulationDashboard()"
+      class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item <%= hideClass %>">
+      <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
+        stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z">
+        </path>
+      </svg>
+      <span
+        class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">シミュレーション</span>
+    </button>
+
     <!-- Chat Menu (Active by default) -->
     <div class="w-full relative group/chatmenu">
-      <button id="nav-chat" hx-get="/view/chat" hx-target="#left-panel-content" hx-swap="innerHTML"
-        class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item">
+      <button id="nav-chat" hx-get="/<%= activeProject.id %>/view/chat" hx-target="#left-panel-content" hx-swap="innerHTML"
+        onclick="showSimulationPlayground()"
+        class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item <%= hideClass %>">
         <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round"
@@ -30,29 +46,6 @@
           class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-orange-600">チャット</span>
       </button>
 
-      <!-- Chat History Sub-menu (appears when sidebar expands) -->
-      <% if (typeof activeProject !== 'undefined') { %>
-        <div class="pl-3 pr-2 pt-2 pb-2 flex flex-col space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden group-hover:flex">
-          <% if (activeProject.chats && activeProject.chats.length > 0) { %>
-            <div class="flex flex-col space-y-1 max-h-[40vh] overflow-y-auto pr-1 pb-1">
-              <% activeProject.chats.forEach(chat => { %>
-                <button 
-                  hx-get="/action/chat/<%= chat.id %>" 
-                  class="w-full text-left px-2 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-2 truncate <%= chat.id === activeProject.activeChatId ? 'text-orange-600 font-bold bg-orange-50/50' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700' %>"
-                >
-                  <span class="truncate"><%= chat.title || '新しいチャット' %></span>
-                </button>
-              <% }) %>
-            </div>
-          <% } %>
-          <div class="pt-1 mt-1 border-t border-slate-100/50">
-            <button hx-post="/action/chat/new" hx-swap="none" class="w-full text-left px-2 py-1.5 rounded-lg text-sm transition-all active:scale-95 flex items-center gap-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-medium group whitespace-nowrap">
-              <svg class="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:opacity-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-              <span class="truncate">新しいチャット</span>
-            </button>
-          </div>
-        </div>
-      <% } %>
     </div>
   </div>
 

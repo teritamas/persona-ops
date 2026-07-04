@@ -2,6 +2,4 @@
 </aside>
 
 <!-- OOB Update sandbox to remove selected border -->
-<div id="sandbox-characters" hx-swap-oob="innerHTML">
-  <%- include('sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
-</div>
+<%- include('sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation, isOob: true }) %>

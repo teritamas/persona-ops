@@ -20,3 +20,11 @@ export class ValidationError extends Error {
     super(message);
   }
 }
+
+export class ConflictError extends Error {
+  override readonly name = 'ConflictError';
+
+  constructor(message: string) {
+    super(message);
+  }
+}

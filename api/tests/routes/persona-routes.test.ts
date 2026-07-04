@@ -2,12 +2,10 @@ import { describe, it, expect } from 'vitest';
 import Fastify from 'fastify';
 import { personaRoutes } from '../../src/routes/persona-routes.js';
 import { PersonaService } from '../../src/application/persona-service.js';
-import type { PersonaRepositoryPort } from '../../src/application/ports/persona-repository-port.js';
+import type { PersonaStorePort } from '../../src/application/ports/infra/database/persona-store-port.js';
 import type { Persona } from '../../src/domain/persona.js';
 
-import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
-
-class MockPersonaRepository implements PersonaRepositoryPort {
+class MockPersonaRepository implements PersonaStorePort {
   private personas: Persona[] = [];
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -29,8 +27,7 @@ class MockPersonaRepository implements PersonaRepositoryPort {
 describe('ペルソナ ルーター', () => {
   const app = Fastify();
   const repository = new MockPersonaRepository();
-  const aiAgent = {} as unknown as AiAgentPort; // Mock unused AiAgent
-  const personaService = new PersonaService(repository, aiAgent);
+  const personaService = new PersonaService(repository);
 
   void app.register(personaRoutes, { personaService });
 

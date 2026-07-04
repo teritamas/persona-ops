@@ -3,7 +3,7 @@ import Fastify from 'fastify';
 
 import { projectRoutes } from '../../src/routes/project-routes.js';
 import { ProjectService } from '../../src/application/project-service.js';
-import type { ProjectRepositoryPort } from '../../src/application/ports/project-repository-port.js';
+import type { ProjectRepositoryPort } from '../../src/application/ports/infra/database/project-repository-port.js';
 import type { Project } from '../../src/domain/project.js';
 
 class MockProjectRepository implements ProjectRepositoryPort {

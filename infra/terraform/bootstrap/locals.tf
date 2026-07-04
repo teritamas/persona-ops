@@ -8,6 +8,7 @@ locals {
 
   cloud_build_roles = toset([
     "roles/artifactregistry.writer",
+    "roles/cloudtasks.admin",
     "roles/datastore.owner",
     "roles/iam.serviceAccountAdmin",
     "roles/iam.serviceAccountUser",

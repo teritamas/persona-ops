@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { buildApp } from '../../src/app.js';
-import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
+import type { AiAgentPort } from '../../src/application/ports/infra/ai/ai-agent-port.js';
 import type { AppConfig } from '../../src/config.js';
 import type { Container } from '../../src/infra/container.js';
 

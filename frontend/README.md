@@ -51,6 +51,10 @@ pnpm dev
 
 `/ops/health`では、公開frontendの`GET /api/v1/healthz`を経由してローカルAPIの`GET /api/v1/healthz`を確認できる。
 
+## シミュレーション結果
+
+左側ナビゲーションの「シミュレーション」から、現在のプロジェクトに紐づく実行履歴を確認できる。最新結果は5秒ごとに更新され、過去の履歴を選択すると、承認時点の要件、集計スコア、各ペルソナの反応を表示する。
+
 ## コマンド
 
 | コマンド         | 用途                                                                       |
@@ -75,7 +79,7 @@ frontend/
 │   ├── controllers/       # HTTPリクエスト処理とレスポンス返却
 │   ├── routes/            # HTTPルーティング
 │   ├── services/          # ビジネスロジックと外部API通信
-│   │   └── dummy_data/    # モックデータとインメモリ状態
+│   │   └── projectState.js # API取得済みデータの画面状態
 │   └── views/             # EJSテンプレート
 │       ├── index.ejs      # 画面全体のテンプレート
 │       └── partials/      # 再利用するEJSパーツ

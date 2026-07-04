@@ -1,77 +1,58 @@
-<!-- トップナビゲーションバー -->
-<header class="h-14 bg-white border-b border-slate-200 flex items-center pr-6 pl-[18px] z-50 shrink-0">
-  <div class="flex items-center w-full">
-    <!-- ロゴ -->
-    <div class="font-['Quicksand'] text-2xl font-bold tracking-tight flex items-center mr-8 gap-1.5">
-      <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-      </svg>
-      <div><span class="text-slate-700">Persona</span><span class="text-orange-500">Ops</span></div>
-    </div>
+    <!-- トップナビゲーションバー -->
+    <header class="h-14 bg-white border-b border-slate-200 flex items-center pr-6 pl-[18px] z-50 shrink-0">
+      <div class="flex items-center w-full">
+        <!-- ロゴ -->
+        <a href="/" class="font-['Quicksand'] text-2xl font-bold tracking-tight flex items-center mr-8 gap-1.5 hover:opacity-85 transition-opacity">
+          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+          <div><span class="text-slate-700">Persona</span><span class="text-orange-500">Ops</span></div>
+        </a>
 
-    <div class="relative flex-1" id="project-menu-container">
-      <button onclick="toggleProjectMenu()"
-        class="flex items-center gap-1.5 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-all active:scale-95 group">
-        <span class="font-bold text-sm text-slate-700">
-          <%= activeProject.name %>
-        </span>
-        <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 group-hover:text-slate-600" fill="none"
-          stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
-
-      <div id="project-dropdown"
-        class="hidden absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col max-h-[70vh]">
-        <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Projects</div>
-        <div class="overflow-y-auto">
-          <% mockProjects.forEach(function(p) { %>
-            <div
-              class="flex items-center group/item hover:bg-slate-50 <%= p.id === activeProjectId ? 'bg-orange-50/50' : '' %>">
-              <button type="button" onclick="switchProject('<%= p.id %>')"
-                class="flex-1 text-left px-4 py-2 text-sm flex items-center justify-between transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold' : 'text-slate-700' %>">
-                <span class="truncate">
-                  <%= p.name %>
-                </span>
-                <% if(p.id===activeProjectId) { %>
-                  <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 shrink-0 ml-2" fill="none" stroke="currentColor"
-                    stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
-                  </svg>
-                  <% } %>
-              </button>
-              <div class="flex items-center pr-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                <button onclick="renameProject(event, '<%= p.id %>', '<%= p.name %>')" type="button"
-                  class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors"
-                  title="名前を変更">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
-                    </path>
-                  </svg>
-                </button>
-                <button onclick="deleteProject(event, '<%= p.id %>')" type="button"
-                  class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
-                  title="削除">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                    </path>
-                  </svg>
-                </button>
-              </div>
-            </div>
-            <% }); %>
-        </div>
-        <div class="border-t border-slate-100 mt-2 pt-2 shrink-0">
-          <button onclick="createProject()"
-            class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:text-orange-600 hover:bg-slate-50 flex items-center transition-all active:scale-95 font-medium">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-            </svg> 新規プロジェクト作成
+        <div class="relative flex-1" id="project-menu-container">
+          <button 
+            onclick="toggleProjectMenu()"
+            class="flex items-center gap-1.5 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-all active:scale-95 group"
+          >
+            <span class="font-bold text-sm text-slate-700"><%= activeProject.name %></span>
+            <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
           </button>
+          
+          <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col max-h-[70vh]">
+            <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Projects</div>
+            <div class="overflow-y-auto">
+              <% projects.forEach(function(p) { %>
+                <div class="flex items-center group/item hover:bg-slate-50 <%= p.id === activeProjectId ? 'bg-orange-50/50' : '' %>">
+                  <button 
+                    type="button"
+                    onclick="switchProject('<%= p.id %>')"
+                    class="flex-1 text-left px-4 py-2 text-sm flex items-center justify-between transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold' : 'text-slate-700' %>"
+                  >
+                    <span class="truncate"><%= p.name %></span>
+                    <% if(p.id === activeProjectId) { %>
+                      <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                    <% } %>
+                  </button>
+                  <div class="flex items-center pr-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <button onclick="renameProject(event, '<%= p.id %>', '<%= p.name %>')" type="button" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors" title="名前を変更">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    </button>
+                    <button onclick="deleteProject(event, '<%= p.id %>')" type="button" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors" title="削除">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+            <div class="border-t border-slate-100 mt-2 pt-2 shrink-0">
+              <button 
+                onclick="createProject()"
+                class="w-full text-left px-4 py-2 text-sm text-slate-600 hover:text-orange-600 hover:bg-slate-50 flex items-center transition-all active:scale-95 font-medium"
+              >
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg> 新規プロジェクト作成
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</header>
+    </header>

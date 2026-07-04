@@ -22,3 +22,13 @@ output "uploads_bucket" {
   description = "Private bucket used for user-provided source material."
   value       = module.application_data.uploads_bucket
 }
+
+output "simulation_queue_name" {
+  description = "Cloud Tasks queue used for persona simulations."
+  value       = module.simulation_tasks.queue_name
+}
+
+output "simulation_task_dispatcher_service_account" {
+  description = "Identity used to invoke private API simulation tasks."
+  value       = module.simulation_tasks.dispatcher_service_account
+}

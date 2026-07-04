@@ -28,6 +28,11 @@ variable "vertex_ai_model" {
   type        = string
 }
 
+variable "simulation_queue_name" {
+  description = "Cloud Tasks queue used for persona simulations."
+  type        = string
+}
+
 variable "invoker_members" {
   description = "IAM members allowed to invoke the private API service."
   type        = set(string)
