@@ -76,10 +76,14 @@ exports.streamChat = async (req, res) => {
     }
   });
 
-  const history = activeChat.messages.slice(0, -1).map(m => ({
-    role: m.role,
-    text: m.text
-  }));
+  const allowedRoles = ['user', 'agent', 'persona'];
+  const history = activeChat.messages
+    .slice(0, -1)
+    .filter(m => allowedRoles.includes(m.role))
+    .map(m => ({
+      role: m.role,
+      text: m.text
+    }));
 
   try {
     const apiRes = await requestPrivateApiStream('/api/v1/chat/stream', {
