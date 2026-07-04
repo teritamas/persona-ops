@@ -39,4 +39,13 @@ export class ProjectService {
   async getProjectById(id: string): Promise<Project | null> {
     return this.projectRepository.findById(id);
   }
+
+  /**
+   * プロジェクトを更新する
+   * @param project 更新するプロジェクト
+   */
+  async updateProject(project: Project): Promise<void> {
+    project.updatedAt = new Date();
+    await this.projectRepository.save(project);
+  }
 }

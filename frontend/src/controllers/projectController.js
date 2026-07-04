@@ -1,5 +1,6 @@
 const projectService = require('../services/projectService');
 const { state, mockProjects, getActiveProject } = require('../services/dummy_data/store');
+const { marked } = require('marked');
 
 exports.createProject = async (req, res) => {
   await projectService.createProject();
@@ -32,7 +33,8 @@ exports.getDashboard = async (req, res) => {
     activeProjectId: state.activeProjectId,
     isInitial: activeProject.isInitial,
     selectedPersonaId: state.selectedPersonaId,
-    simulationDone: state.simulationDone
+    simulationDone: state.simulationDone,
+    marked: marked.parse
   });
 };
 

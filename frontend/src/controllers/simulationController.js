@@ -12,24 +12,29 @@ exports.getSuggestSim = (req, res) => {
   });
 };
 
-exports.simulate = async (req, res) => {
-  const text = req.body.inputText || '新機能のシミュレーション';
-  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  const result = await simulationService.simulate(text, time);
-
-  if (result.isInitial) {
-    res.set('HX-Redirect', '/');
-    return res.send();
+exports.resetReactions = (req, res) => {
+  const { state, getActiveProject, initialPersonas } = require('../services/dummy_data/store');
+  const activeProject = getActiveProject();
+  
+  // Create initial personas if they don't exist
+  if (!activeProject.personas || activeProject.personas.length === 0) {
+    activeProject.personas = JSON.parse(JSON.stringify(initialPersonas));
   }
 
-  const { activeProject, userMsg, agentMsg, selectedPersonaId, simulationDone } = result;
-
-  res.render('partials/simulation-response-oob', {
+  state.simulationDone = false;
+  
+  res.render('partials/sandbox-characters', {
     activeProject,
-    userMsg,
-    agentMsg,
-    selectedPersonaId,
-    simulationDone
+    simulationDone: false,
+    selectedPersonaId: state.selectedPersonaId
+  });
+};
+
+exports.simulateReactions = async (req, res) => {
+  const activeProject = await simulationService.simulateReactions();
+  res.render('partials/sandbox-characters', {
+    activeProject,
+    simulationDone: true,
+    selectedPersonaId: null
   });
 };

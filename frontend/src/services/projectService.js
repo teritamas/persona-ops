@@ -37,7 +37,6 @@ class ProjectService {
       const response = await requestPrivateApi('/api/v1/projects');
       if (response.ok && Array.isArray(response.data)) {
         const apiProjects = response.data;
-
         await Promise.all(
           apiProjects.map(async (apiProj) => {
             let personas = [];
@@ -58,17 +57,24 @@ class ProjectService {
             const mockProj = mockProjects.find((p) => p.id === apiProj.id);
             if (mockProj) {
               mockProj.name = apiProj.name;
-              // APIから取得したペルソナをマージ（APIから取得できた場合はそれを正とする）
+              if (apiProj.chats !== undefined) mockProj.chats = apiProj.chats;
+              if (apiProj.activeChatId !== undefined) mockProj.activeChatId = apiProj.activeChatId;
+              
               if (personas.length > 0) {
                 mockProj.personas = personas;
+              }
+              
+              if (mockProj.chats && mockProj.chats.length > 0) {
+                mockProj.isInitial = false;
               }
             } else {
               mockProjects.push({
                 id: apiProj.id,
                 name: apiProj.name,
+                isInitial: apiProj.chats && apiProj.chats.length > 0 ? false : true,
                 personas: personas,
-                chats: [],
-                activeChatId: null,
+                chats: apiProj.chats || [],
+                activeChatId: apiProj.activeChatId || null
               });
             }
           }),
@@ -79,6 +85,21 @@ class ProjectService {
       console.error('Failed to fetch projects via API', err);
     }
     return [];
+  }
+
+  async syncProject(project) {
+    try {
+      await requestPrivateApi(`/api/v1/projects/${project.id}`, {
+        method: 'PUT',
+        body: {
+          name: project.name,
+          chats: project.chats,
+          activeChatId: project.activeChatId
+        }
+      });
+    } catch (err) {
+      console.error('Failed to sync project via API', err);
+    }
   }
 }
 

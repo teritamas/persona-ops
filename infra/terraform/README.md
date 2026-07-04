@@ -27,8 +27,8 @@ Terraformリソースは`modules/`配下で責務ごとに分割する。`bootst
 本ドキュメントで使用する環境変数を設定する。
 
 ```sh
-export PROJECT_ID="YOUR_GCP_PROJECT_ID"
-export USER_EMAIL="YOUR_EMAIL"
+export PROJECT_ID="persona-ops"
+export USER_EMAIL="sayako.o21@gmail.com"
 ```
 
 Google Cloudへログインし、対象プロジェクトを選択する。
