@@ -1,6 +1,6 @@
 import type { Firestore } from '@google-cloud/firestore';
 import type { Project, Chat } from '../../domain/project.js';
-import type { ProjectRepositoryPort } from '../../application/ports/project-repository-port.js';
+import type { ProjectRepositoryPort } from '../../application/ports/infra/database/project-repository-port.js';
 
 export class FirestoreProjectRepository implements ProjectRepositoryPort {
   private readonly collectionName = 'projects';

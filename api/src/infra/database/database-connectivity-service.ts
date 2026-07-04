@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { Firestore } from '@google-cloud/firestore';
 
-import { type DatabaseConnectivityPort } from '../../application/ports/database-connectivity-port.js';
+import { type DatabaseConnectivityPort } from '../../application/ports/infra/database/database-connectivity-port.js';
 
 export interface ConnectivityDocument {
   delete(): Promise<unknown>;

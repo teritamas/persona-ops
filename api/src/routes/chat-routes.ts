@@ -1,86 +1,70 @@
 import type { FastifyInstance } from 'fastify';
-interface ChatMessage {
-  role: 'user' | 'agent' | 'persona';
-  text: string;
-}
 
-interface RunEphemeralArgs {
-  newMessage: { parts: { text: string }[]; role: string };
-  runConfig?: { maxLlmCalls?: number };
-  userId: string;
-}
+import type { PersonaOpsChatService } from '../application/persona-ops-chat-service.js';
 
-interface PersonaOpsAgent {
-  runEphemeral(args: RunEphemeralArgs): AsyncIterable<{
-    content?: { parts?: { text?: string }[] };
-  }>;
-}
+const chatBodySchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['message', 'projectId'],
+  properties: {
+    projectId: { type: 'string', minLength: 1 },
+    message: { type: 'string', minLength: 1 },
+    history: {
+      type: 'array',
+      default: [],
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['role', 'text'],
+        properties: {
+          role: { type: 'string', enum: ['user', 'agent', 'persona'] },
+          text: { type: 'string' },
+        },
+      },
+    },
+  },
+} as const;
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function chatRoutes(
   app: FastifyInstance,
-  options: { defaultModel: string; personaOpsAgent: PersonaOpsAgent },
+  options: { personaOpsChatService: PersonaOpsChatService },
 ): Promise<void> {
-  const { personaOpsAgent } = options;
+  app.post(
+    '/api/v1/chat/stream',
+    { schema: { body: chatBodySchema } },
+    async (request, reply) => {
+      const body = request.body as {
+        projectId: string;
+        message: string;
+        history?: Array<{
+          role: 'user' | 'agent' | 'persona';
+          text: string;
+        }>;
+      };
 
-  app.post('/api/v1/chat/stream', async (request, reply) => {
-    const { message, projectId, existingPersonas } = request.body as {
-      message: string;
-      history: ChatMessage[];
-      projectId?: string;
-      existingPersonas?: { name: string; role: string }[];
-    };
-
-    // プロジェクトごとにコンテキストを保持するため、sessionId に projectId を使用する
-    // 指定がない場合はデフォルトのセッションにフォールバックする
-    const sessionId = projectId || 'default-chat-session';
-
-    // ツール呼び出し時のコンテキストとして、エージェントのプロンプト（System Note）に projectId と既存のペルソナ情報を追加する
-    const existingPersonasContext =
-      existingPersonas && existingPersonas.length > 0
-        ? `\n\n[Current Personas]: ${JSON.stringify(existingPersonas.map((p) => ({ name: p.name, role: p.role })))}`
-        : '';
-
-    const fullPrompt = projectId
-      ? `[System Note: The current projectId is "${projectId}". Use this ID implicitly when saving personas.${existingPersonasContext}]\n\n${message}`
-      : message;
-
-    // Set headers for streaming
-    reply.raw.writeHead(200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-    });
-
-    try {
-      const events = personaOpsAgent.runEphemeral({
-        newMessage: {
-          parts: [{ text: fullPrompt }],
-          role: 'user',
-        },
-        runConfig: {
-          maxLlmCalls: 5, // Allow multiple calls for tool execution
-        },
-        userId: sessionId, // This tells the agent to use this session's memory
+      reply.raw.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
       });
 
-      for await (const event of events) {
-        if (event.content?.parts) {
-          for (const part of event.content.parts) {
-            if (part.text) {
-              reply.raw.write(part.text);
-            }
-          }
+      try {
+        const stream = await options.personaOpsChatService.stream({
+          projectId: body.projectId,
+          message: body.message,
+          history: body.history ?? [],
+        });
+        for await (const text of stream) {
+          reply.raw.write(text);
         }
+      } catch (error) {
+        request.log.error({ err: error }, 'PersonaOps chat failed');
+        reply.raw.write('\n[ERROR: Failed to generate response]');
+      } finally {
+        reply.raw.end();
       }
-    } catch (error) {
-      app.log.error({ err: error }, 'Chat stream error');
-      reply.raw.write(
-        '\n[Error] I apologize, but an error occurred while processing your request.',
-      );
-    } finally {
-      reply.raw.end();
-    }
-  });
+    },
+  );
 }

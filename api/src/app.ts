@@ -8,6 +8,9 @@ import { healthRoutes } from './routes/health-routes.js';
 import { projectRoutes } from './routes/project-routes.js';
 import { personaRoutes } from './routes/persona-routes.js';
 import { chatRoutes } from './routes/chat-routes.js';
+import { requirementRoutes } from './routes/requirement-routes.js';
+import { simulationRoutes } from './routes/simulation-routes.js';
+import { internalSimulationRoutes } from './routes/internal/simulation-routes.js';
 import { type AppConfig } from './config.js';
 
 /**
@@ -42,8 +45,19 @@ export function buildApp({
   });
 
   void app.register(chatRoutes, {
-    defaultModel: config.VERTEX_AI_MODEL,
-    personaOpsAgent: container.personaOpsAgent,
+    personaOpsChatService: container.personaOpsChatService,
+  });
+
+  void app.register(requirementRoutes, {
+    requirementService: container.requirementService,
+  });
+
+  void app.register(simulationRoutes, {
+    simulationService: container.simulationService,
+  });
+
+  void app.register(internalSimulationRoutes, {
+    simulationService: container.simulationService,
   });
 
   return app;

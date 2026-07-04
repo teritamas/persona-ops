@@ -30,6 +30,30 @@ curl http://127.0.0.1:8080/api/v1/healthz
 curl http://127.0.0.1:8080/api/v1/healthz/vertexai
 ```
 
+## シミュレーションTaskのローカル実行
+
+Cloud Tasksにはローカルエミュレータがないため、`.env.local`では次を設定する。
+
+```sh
+SIMULATION_QUEUE_DRIVER=local
+SIMULATION_QUEUE=persona-simulations
+LOCAL_TASK_BASE_URL=http://127.0.0.1:8080
+```
+
+`pnpm dev`でAPIを起動し、通常どおりチャットで要件を作成・承認する。Task登録時にLocal Adapterが同じAPIの内部Taskルートを非同期で呼び出すため、Cloud Tasksなしで一連の処理を確認できる。
+
+Taskの受信、lease競合、完了時の成功・失敗件数、実行失敗はAPIの構造化ログへ出力される。ローカルでは`pnpm dev`を実行したターミナル、Cloud RunではCloud Loggingで確認する。
+
+保存済みSimulationを手動で再実行する場合は、別ターミナルから内部ルートを呼び出す。
+
+```sh
+curl \
+  -X POST \
+  http://127.0.0.1:8080/api/v1/internal/projects/PROJECT_ID/simulations/SIMULATION_ID/run
+```
+
+本番では`SIMULATION_QUEUE_DRIVER`を省略し、Cloud Tasks Adapterを使用する。
+
 ## 備考: Cloud RunにデプロイされたAPIの動作確認
 
 Cloud Runはインターネットにオープンにしていないため、通常の手順ではcurlコマンドなどで動作確認ができないので、Cloud Runのサービスアカウントをimpersonationして確認を行う。

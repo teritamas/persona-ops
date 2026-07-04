@@ -6,6 +6,7 @@ const validEnvironment = {
   GOOGLE_CLOUD_LOCATION: 'asia-northeast1',
   GOOGLE_CLOUD_PROJECT: 'persona-ops-stg-project',
   GOOGLE_GENAI_USE_VERTEXAI: 'true',
+  SIMULATION_QUEUE: 'persona-simulations',
   UPLOADS_BUCKET: 'persona-ops-stg-project-persona-ops-uploads',
   VERTEX_AI_MODEL: 'gemini-2.5-flash',
 };

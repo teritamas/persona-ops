@@ -24,29 +24,33 @@
 routes/        ← HTTP / Fastify 固有の責務（コントローラー層）
     ↓ DTO
 application/   ← ユースケースのオーケストレーション（Fastify・GCP 非依存）
-    ↓ Ports（Interface）
+    ↓ Ports（`application/ports/agents`, `application/ports/infra`）
 domain/        ← ビジネスルールのみ（外部技術への依存ゼロ）
     ↑ Adapters（実装）
+agents/        ← ADK Agent・Tool の実装（application の Port を実装・利用）
 infra/         ← Port の具象実装（Firestore, ADK/VertexAI など）
 ```
 
 ### 各層の責務
 
-| 層             | ディレクトリ       | 責務                                                                               |
-| -------------- | ------------------ | ---------------------------------------------------------------------------------- |
-| コントローラー | `src/routes/`      | リクエスト受付・Zodバリデーション・DTOへの変換・application への委譲               |
-| ユースケース   | `src/application/` | ユースケースのオーケストレーション。Port（Interface）経由で外部システムを操作      |
-| ドメイン       | `src/domain/`      | エンティティ・値オブジェクト・リポジトリインターフェースの定義。ビジネスルールのみ |
-| インフラ       | `src/infra/`       | Port の具象実装。Firestore (`firestore/`)・ADK/VertexAI (`ai/`) などに分類         |
+| 層             | ディレクトリ       | 責務                                                                           |
+| -------------- | ------------------ | ------------------------------------------------------------------------------ |
+| コントローラー | `src/routes/`      | リクエスト受付・Zodバリデーション・DTOへの変換・application への委譲           |
+| ユースケース   | `src/application/` | ユースケースのオーケストレーション。Port（Interface）経由で外部システムを操作  |
+| ドメイン       | `src/domain/`      | エンティティ・値オブジェクト・純粋なビジネスルール                             |
+| Agent          | `src/agents/`      | ADK Agent・Tool・instruction。application Service/Port経由でユースケースを実行 |
+| インフラ       | `src/infra/`       | Port の具象実装。Firestore、Cloud Tasks、汎用Vertex AI接続などに分類           |
 
 ### 依存関係ルール（必ず守ること）
 
 1. **Fastify の型・API は `src/routes/` のみが使用する。** `application/`・`domain/` 層は `FastifyRequest` 等を import してはならない。
-2. **`application/` 層は `domain/` のリポジトリインターフェースと `application/ports/` のポートインターフェースのみに依存する。** `infra/` の具象クラスを直接 import してはならない。
+2. **`application/` 層は `domain/` のモデルと `application/ports/` のポートインターフェースのみに依存する。** `infra/` の具象クラスを直接 import してはならない。
 3. **`domain/` 層は外部パッケージに依存しない。** `@google-cloud/*`・`@google/adk`・`fastify` 等は import 禁止。純粋なビジネスモデルのみを持つ。
-4. **`infra/` の具象クラスはドメインまたは application ポートのインターフェースを実装する（依存性逆転の原則）。** GCP固有コードは `infra/` に閉じる。
+4. **`infra/` の具象クラスは application ポートのインターフェースを実装する（依存性逆転の原則）。** GCP固有コードは `infra/` に閉じる。
 5. **DI の構築は `src/infra/container.ts` の `buildContainer()` 関数に集約する。** `app.ts` はこの関数を呼ぶだけにする。
 6. **AI・DBが別の実装に置き換わっても `application/` 以上のコードを変更しなくて済む設計を維持する。**
+7. **`agents/` はRepositoryを直接操作せず、application ServiceまたはPortを利用する。** Agent固有型をapplication/domainへ漏らさない。
+8. **Cloud Tasksなど内部サービス専用のRouteは`src/routes/internal/`へ配置する。** 公開APIと同じRouteファイルへ混在させず、`/api/v1/internal/` prefixを使用する。
 
 ### DTO の方針
 
@@ -58,17 +62,22 @@ infra/         ← Port の具象実装（Firestore, ADK/VertexAI など）
 
 ### ポート（Port）の配置方針
 
-- **リポジトリインターフェース**（DBアクセス）は `domain/<aggregate>/xxx-repository.ts` に配置する。
-- **外部サービス接続ポート**（AI・通知など、ドメイン概念ではないもの）は `application/ports/` に配置する。
-  - 例: `LanguageModelPort` は AI プロバイダーへの接続ポートであるため `application/ports/language-model-port.ts` に置く。
+- **Agentポート**は `application/ports/agents/` に配置する。
+  - 例: `PersonaSimulationAgentPort` は `application/ports/agents/persona-simulation-agent-port.ts` に置く。
+- **インフラポート**は `src/infra/` の分類と対応するサブディレクトリへ配置する。
+  - AI: `application/ports/infra/ai/`
+  - DB: `application/ports/infra/database/`
+  - Queue: `application/ports/infra/queue/`
+  - Storage: `application/ports/infra/storage/`
+  - 例: `PersonaStorePort` は `application/ports/infra/database/persona-store-port.ts` に置く。
 
 ### 命名規則
 
-| 対象                   | 規則                             | 例                                               |
-| ---------------------- | -------------------------------- | ------------------------------------------------ |
-| インターフェース       | `I` プレフィックス**なし**       | `ProjectRepository`, `LanguageModelPort`         |
-| インフラ具象クラス     | `<技術名><役割>`                 | `FirestoreProjectRepository`, `AdkLanguageModel` |
-| リポジトリ実装ファイル | `<domain>-repository.<store>.ts` | `project-repository.firestore.ts`                |
-| ユースケースクラス     | `<ドメイン名>Service`            | `ProjectService`, `ChatService`                  |
-| ドメインエンティティ   | そのまま                         | `Project`, `ChatSession`, `Message`              |
-| DTO                    | `<動詞><対象><Request            | Response>`                                       | `CreateProjectRequest`, `SendMessageResponse` |
+| 対象                   | 規則                               | 例                                               |
+| ---------------------- | ---------------------------------- | ------------------------------------------------ |
+| インターフェース       | `I` プレフィックス**なし**         | `ProjectStorePort`, `LanguageModelPort`          |
+| インフラ具象クラス     | `<技術名><役割>`                   | `FirestoreProjectRepository`, `AdkLanguageModel` |
+| リポジトリ実装ファイル | `firestore-<domain>-repository.ts` | `firestore-project-repository.ts`                |
+| ユースケースクラス     | `<ドメイン名>Service`              | `ProjectService`, `ChatService`                  |
+| ドメインエンティティ   | そのまま                           | `Project`, `ChatSession`, `Message`              |
+| DTO                    | `<動詞><対象><Request              | Response>`                                       | `CreateProjectRequest`, `SendMessageResponse` |

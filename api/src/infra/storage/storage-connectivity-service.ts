@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { Storage } from '@google-cloud/storage';
 
-import { type StorageConnectivityPort } from '../../application/ports/storage-connectivity-port.js';
+import { type StorageConnectivityPort } from '../../application/ports/infra/storage/storage-connectivity-port.js';
 
 export interface ConnectivityObject {
   delete(options?: { ignoreNotFound?: boolean }): Promise<unknown>;
