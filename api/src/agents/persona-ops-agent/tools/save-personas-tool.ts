@@ -16,6 +16,7 @@ export function createSavePersonasTool(
           role: z.string().min(1),
           traits: z.array(z.string()),
           background: z.string(),
+          avatarSeed: z.string().describe("DiceBear URLのseedとなる英数字。ペルソナの特徴（性別、髪型、表情などのキーワード）をカンマなしの英数字で自由に指定して、最適なアイコンを生成してください。").optional(),
         }),
       )
       .min(1),

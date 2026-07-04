@@ -11,7 +11,7 @@
     if (typeof activeProject !== 'undefined' && activeProject && activeProject.activeChat && activeProject.activeChat.type === 'persona') {
       const p = activeProject.personas.find(p => p.id === activeProject.activeChat.personaId);
       if (p) {
-        avatarHtml = `<img src="https://api.dicebear.com/7.x/micah/svg?seed=${p.avatarSeed}&backgroundColor=f8fafc" class="w-full h-full object-cover scale-110" />`;
+        avatarHtml = `<img src="https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarSeed}&backgroundColor=f8fafc" class="w-full h-full object-cover scale-110" />`;
         avatarContainerClass = 'bg-slate-100 border-2 border-orange-200 overflow-hidden';
       }
     }
