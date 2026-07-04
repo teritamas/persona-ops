@@ -15,6 +15,7 @@
     "start": "node server.js",
     "dev": "concurrently \"pnpm watch:css\" \"nodemon --watch server.js --watch src --ext js server.js\"",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "node --test"
   },
   "dependencies": {

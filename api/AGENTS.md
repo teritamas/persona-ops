@@ -2,27 +2,19 @@
 
 ## ドキュメント参照
 
-- 開発前に必ず [./README.md](./README.md) の構成や開発コマンドなどを参照してください。
+- 実装に関する全体方針は[AGENTS.md](../AGENTS.md)を参照する
+- 動作確認手順などは [README.md](./README.md) の構成や開発コマンドなどを参照する
+- 設計ドキュメントは`docs/`フォルダ内を参照する
 
-## テストの記述規則
+## テスト/静的解析
 
-- テストファイル (`tests/**/*.ts`) 内の タイトル（説明文）は、必ず**日本語**で記述し、仕様書として機能させてください。
+- テストファイル (`tests/**/*.ts`) 内の タイトル（説明文）は、必ず**日本語**で記述し、仕様書として機能させる
+- ソースコードの修正作業が完了したら、**必ずCIと同じチェック（`pnpm lint`, `pnpm typecheck`, `pnpm test`）を手元で実行**し成功させる。失敗した場合は修正した上で成功するまで改善を繰り返す
+- ESLint、Prettierによるフォーマットを徹底し、Vitestによる単体テスト（`tests/**/*.ts`）を必ず実装し、必要に応じて既存のものを更新する
 
-## バックエンド API (Node.js/TypeScript) のベストプラクティス
+## バックエンド API (Node.js/TypeScript) の開発方針
 
 - **技術選定**: Fastify と Google Agent Development Kit (ADK) を標準とする。
-- **品質・テスト**: ESLint、Prettierによるフォーマットを徹底し、Vitestによる単体テスト（`tests/**/*.ts`）を必ず実装し、必要に応じて既存のものを更新すること。
-
-## CI/CDパイプライン (API)
-
-- **CI (継続的インテグレーション)**: GitHub Actions で `pnpm test` 等を実行し品質を担保する。
-- **CD (継続的デプロイメント)**: Cloud Build 経由で Artifact Registry へのPushとCloud Runへのデプロイを自動で行う。
-- **実装後の検証ルール**: CIでの頻繁な失敗を防ぐため、実装や処理を修正した後は**必ずCIと同じチェック（`pnpm lint`, `pnpm typecheck`, `pnpm test`）を手元で実行**し、全てパスすることを確認してからコミットすること。
-
-## コーディング・設計指針
-
-- ルートディレクトリの `AGENTS.md` に記載されている基本指針とMVPスコープを意識して開発してください。
-- SOLID原則、YAGNI、DRY、KISS などのベストプラクティスを遵守し、クリーンな設計を維持してください。
 
 ## アーキテクチャ: DDD + Ports & Adapters（Hexagonal Architecture）
 

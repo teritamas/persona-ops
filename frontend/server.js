@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
   const connectLiveReload = require('connect-livereload');
 
   const liveReloadServer = livereload.createServer();
-  liveReloadServer.watch(path.join(__dirname, 'views'));
+  liveReloadServer.watch(path.join(__dirname, 'src', 'views'));
   liveReloadServer.watch(path.join(__dirname, 'public', 'dist'));
 
   liveReloadServer.server.once('connection', () => {
@@ -32,7 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // EJS Setup
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, 'src', 'views'));
 
 // Serve htmx locally
 app.use('/js/htmx.min.js', express.static(path.join(__dirname, 'node_modules/htmx.org/dist/htmx.min.js')));

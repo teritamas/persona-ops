@@ -39,7 +39,7 @@
           ========================================== -->
             <aside id="left-panel-content"
               class="<%= isInitial ? 'w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out' : 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0' %>"
-              hx-get="/menu/chat" hx-trigger="load" hx-swap="innerHTML">
+              hx-get="/view/chat" hx-trigger="load" hx-swap="innerHTML">
               <!-- ロード中に表示されるプレースホルダー -->
               <div class="h-10 border-b border-slate-100 bg-white shrink-0"></div>
               <div class="flex-1 flex items-center justify-center bg-slate-50/50">
@@ -90,99 +90,8 @@
                 <!-- ユーザー入力要件のホログラム的表示 -->
                 <div id="simulation-hologram-title"></div>
 
-                <!-- ペルソナのアバター群 (htmx ターゲット) -->
                 <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10">
-
-                  <!-- p1: 鈴木健太 -->
-                  <div hx-get="/api/persona/p1" hx-target="#detail-panel" hx-swap="outerHTML"
-                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
-                    style="left: 20%; top: 30%; transform: translate(-50%, -50%)">
-                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 0s">
-                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
-                      <div
-                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f8fafc" alt="鈴木 健太"
-                          class="w-full h-full object-cover scale-110" />
-                      </div>
-                      <div
-                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
-                        現場セールス
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- p2: 佐藤真由美 -->
-                  <div hx-get="/api/persona/p2" hx-target="#detail-panel" hx-swap="outerHTML"
-                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
-                    style="left: 70%; top: 40%; transform: translate(-50%, -50%)">
-                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 0.5s">
-                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
-                      <div
-                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f8fafc" alt="佐藤 真由美"
-                          class="w-full h-full object-cover scale-110" />
-                      </div>
-                      <div
-                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
-                        マネージャー
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- p3: 田中宏 -->
-                  <div hx-get="/api/persona/p3" hx-target="#detail-panel" hx-swap="outerHTML"
-                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
-                    style="left: 45%; top: 60%; transform: translate(-50%, -50%)">
-                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 1s">
-                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
-                      <div
-                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f8fafc" alt="田中 宏"
-                          class="w-full h-full object-cover scale-110" />
-                      </div>
-                      <div
-                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
-                        内勤営業
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- p4: 高橋涼子 -->
-                  <div hx-get="/api/persona/p4" hx-target="#detail-panel" hx-swap="outerHTML"
-                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
-                    style="left: 80%; top: 70%; transform: translate(-50%, -50%)">
-                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 1.5s">
-                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
-                      <div
-                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=f8fafc" alt="高橋 涼子"
-                          class="w-full h-full object-cover scale-110" />
-                      </div>
-                      <div
-                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
-                        営業企画
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- p5: 伊藤健 -->
-                  <div hx-get="/api/persona/p5" hx-target="#detail-panel" hx-swap="outerHTML"
-                    class="absolute cursor-pointer group flex flex-col items-center transition-all duration-300 z-10"
-                    style="left: 30%; top: 80%; transform: translate(-50%, -50%)">
-                    <div class="relative animate-float flex flex-col items-center" style="animation-delay: 2s">
-                      <div class="absolute -bottom-4 w-10 h-2 bg-black/10 rounded-[100%] blur-sm"></div>
-                      <div
-                        class="w-14 h-14 bg-white rounded-full border-4 border-white shadow-md overflow-hidden relative z-10 flex items-center justify-center transition-colors">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Leo&backgroundColor=f8fafc" alt="伊藤 健"
-                          class="w-full h-full object-cover scale-110" />
-                      </div>
-                      <div
-                        class="mt-2 bg-slate-800/80 backdrop-blur-sm text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap transition-all shadow-sm text-white opacity-70 group-hover:opacity-100">
-                        若手セールス
-                      </div>
-                    </div>
-                  </div>
-
+                  <%- include('partials/sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
                 </div>
               </div>
             </main>
@@ -200,6 +109,7 @@
 
           </div>
       </div>
+  </div>
 
       <script>
         // プロジェクトメニューのトグル
@@ -218,7 +128,7 @@
 
         // プロジェクト切り替え
         function switchProject(projectId) {
-          fetch('/api/project/switch', {
+          fetch('/action/project/switch', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
@@ -235,7 +145,7 @@
 
         // 新規プロジェクト作成
         function createProject() {
-          fetch('/api/project/create', {
+          fetch('/action/project/create', {
             method: 'POST'
           }).then(res => {
             if (res.headers.get('hx-redirect')) {
@@ -248,12 +158,12 @@
 
         // htmx 送信中のロード画面自動トグル用の追加ロジック
         document.body.addEventListener('htmx:beforeRequest', function (evt) {
-          if (evt.detail.pathInfo.requestPath === '/api/simulate') {
+          if (evt.detail.pathInfo.requestPath === '/action/simulate') {
             document.getElementById('loading-overlay').style.display = 'flex';
           }
         });
         document.body.addEventListener('htmx:afterRequest', function (evt) {
-          if (evt.detail.pathInfo.requestPath === '/api/simulate') {
+          if (evt.detail.pathInfo.requestPath === '/action/simulate') {
             document.getElementById('loading-overlay').style.display = 'none';
           }
         });
@@ -283,8 +193,8 @@
 
             // 対象のボタンをアクティブ（オレンジ）にする
             let activeBtnId = null;
-            if (path.startsWith('/menu/chat')) activeBtnId = 'nav-chat';
-            if (path.startsWith('/menu/resources')) activeBtnId = 'nav-resources';
+            if (path.startsWith('/view/chat')) activeBtnId = 'nav-chat';
+            if (path.startsWith('/view/resources')) activeBtnId = 'nav-resources';
 
             if (activeBtnId) {
               const btn = document.getElementById(activeBtnId);

@@ -1,0 +1,5 @@
+<%- include('persona-detail', { p, simulationDone }) %>
+
+<div id="sandbox-characters" hx-swap-oob="innerHTML">
+  <%- include('sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
+</div>

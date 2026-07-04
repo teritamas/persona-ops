@@ -13,3 +13,17 @@
 - [MVPユーザーストーリー](./docs/user_story_mvp.md)
 
 現時点ではユーザーストリーのうちのPh1を実装予定だが、他のステークホルダが困っている課題の解決につながりそうであれば、柔軟にスコープを広げることも検討する。
+
+## 実装ルール
+
+各環境の実装ルールはそれぞれのフォルダのルートのAGENTS.mdを確認してください
+
+- フロントエンド: [frontend/AGENTS.md](./frontend/AGENTS.md)
+- API: [api/AGENTS.md](./api/AGENTS.md)
+- インフラ: [infra/terraform/AGENTS.md](./infra/terraform/AGENTS.md)
+
+## 共通ルール
+
+- SOLID、YAGNI、DRY、KISSを守り、現行MVPに必要な最小の実装にする。
+- 意味のある名前を使い、複雑な実装には処理内容ではなく採用理由をコメントする。
+- テストファイル内のタイトルや説明文は、`api` と同様に必ず日本語で記述する。

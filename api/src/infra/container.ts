@@ -1,6 +1,9 @@
 import { type AppConfig } from '../config.js';
 import { type AiAgentPort } from '../application/ports/ai-agent-port.js';
 import { AdkAiAgent } from './ai/adk-ai-agent.js';
+import { Firestore } from '@google-cloud/firestore';
+import { ProjectService } from '../application/project-service.js';
+import { FirestoreProjectRepository } from './database/firestore-project-repository.js';
 
 /**
  * アプリケーション全体の依存オブジェクトをまとめた型
@@ -10,6 +13,7 @@ import { AdkAiAgent } from './ai/adk-ai-agent.js';
  */
 export type Container = {
   aiAgent: AiAgentPort;
+  projectService: ProjectService;
 };
 
 /**
@@ -19,9 +23,13 @@ export type Container = {
  * テスト時にコンテナをモックに差し替えやすくする。
  */
 export function buildContainer(config: AppConfig): Container {
+  const firestore = new Firestore({ projectId: config.GOOGLE_CLOUD_PROJECT });
+  const projectRepository = new FirestoreProjectRepository(firestore);
+
   return {
     aiAgent: new AdkAiAgent({
       model: config.VERTEX_AI_MODEL,
     }),
+    projectService: new ProjectService(projectRepository),
   };
 }

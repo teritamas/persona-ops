@@ -5,6 +5,7 @@ import Fastify, {
 
 import type { Container } from './infra/container.js';
 import { healthRoutes } from './routes/health-routes.js';
+import { projectRoutes } from './routes/project-routes.js';
 import { type AppConfig } from './config.js';
 
 /**
@@ -28,6 +29,10 @@ export function buildApp({
   void app.register(healthRoutes, {
     aiAgent: container.aiAgent,
     model: config.VERTEX_AI_MODEL,
+  });
+
+  void app.register(projectRoutes, {
+    projectService: container.projectService,
   });
 
   return app;

@@ -1,0 +1,7 @@
+<aside id="detail-panel" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: none;">
+</aside>
+
+<!-- OOB Update sandbox to remove selected border -->
+<div id="sandbox-characters" hx-swap-oob="innerHTML">
+  <%- include('sandbox-characters', { activeProject, simulationDone, selectedPersonaId }) %>
+</div>

@@ -2,34 +2,11 @@
 
 FastifyとGoogle Agent Development Kit（ADK）で構築したバックエンド。
 
-## エンドポイント
-
-- `GET /api/v1/healthz`：外部サービスへ接続しないliveness check
-- `GET /api/v1/healthz/vertexai`：ADKからVertex AIへ実際に推論を行う手動疎通確認
-
-`/api/v1/healthz/vertexai`は呼び出すたびにVertex AI利用料が発生するため、Cloud Runのstartup probeやreadiness probeには設定しないこと。
-
 ## 事前準備
 
-先にbootstrapとstg Terraformをapplyし、Firestore、Cloud Storage、Cloud Runサービスアカウントを作成する。Terraformの手順は[`infra/terraform/README.md`](../infra/terraform/README.md)を参照する。（実行済みなので原則不要）
+先にbootstrapとstg Terraformをapplyし、Firestore、Cloud Storage、Cloud Runサービスアカウントを作成する。
 
-開発者へCloud RunサービスアカウントのToken Creator権限を付与する。
-
-```sh
-gcloud iam service-accounts add-iam-policy-binding \
-  persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com \
-  --member="user:YOUR_EMAIL" \
-  --role="roles/iam.serviceAccountTokenCreator"
-```
-
-サービスアカウントキーは発行せず、impersonationを使ってローカルADCを作成する。
-
-```sh
-gcloud auth login
-gcloud config set project YOUR_STG_PROJECT_ID
-gcloud auth application-default login \
-  --impersonate-service-account=persona-ops-private-api@YOUR_STG_PROJECT_ID.iam.gserviceaccount.com
-```
+Terraformの手順は[`infra/terraform/README.md`](../infra/terraform/README.md)を参照する。（実行済みのため、20260704現在は原則不要）
 
 ## ローカル起動
 
@@ -53,7 +30,34 @@ curl http://127.0.0.1:8080/api/v1/healthz
 curl http://127.0.0.1:8080/api/v1/healthz/vertexai
 ```
 
-## Cloud Runでの確認
+## 備考: Cloud RunにデプロイされたAPIの動作確認
+
+Cloud Runはインターネットにオープンにしていないため、通常の手順ではcurlコマンドなどで動作確認ができないので、Cloud Runのサービスアカウントをimpersonationして確認を行う。
+
+環境変数を設定する。
+
+```sh
+export PROJECT_ID="YOUR_GCP_PROJECT_ID"
+export USER_EMAIL="YOUR_EMAIL"
+```
+
+開発者へCloud RunサービスアカウントのToken Creator権限を付与する。
+
+```sh
+gcloud iam service-accounts add-iam-policy-binding \
+  persona-ops-private-api@${PROJECT_ID}.iam.gserviceaccount.com \
+  --member="user:${USER_EMAIL}" \
+  --role="roles/iam.serviceAccountTokenCreator"
+```
+
+サービスアカウントキーは発行せず、impersonationを使ってローカルADCを作成する。
+
+```sh
+gcloud auth login
+gcloud config set project ${PROJECT_ID}
+gcloud auth application-default login \
+  --impersonate-service-account=persona-ops-private-api@${PROJECT_ID}.iam.gserviceaccount.com
+```
 
 Cloud Runは外部からの通信を遮断しているため、動作確認にはIAM認証が必須。呼び出すユーザーには対象サービスの`roles/run.invoker`が必要になる。
 
