@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { ProjectService } from '../application/project-service.js';
+import type { ProjectService } from '../application/project-service.js';
 
 const PROJECT_ROUTE_PREFIX = '/api/v1/projects';
 
@@ -22,6 +22,7 @@ const createProjectBodySchema = {
   },
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function projectRoutes(
   app: FastifyInstance,
   options: { projectService: ProjectService },

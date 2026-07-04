@@ -1,4 +1,4 @@
-import { Project } from '../../domain/project';
+import type { Project } from '../../domain/project.js';
 
 export interface ProjectRepositoryPort {
   /**

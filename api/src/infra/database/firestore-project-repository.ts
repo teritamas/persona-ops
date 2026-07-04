@@ -1,6 +1,6 @@
-import { Firestore } from '@google-cloud/firestore';
-import { Project } from '../../domain/project.js';
-import { ProjectRepositoryPort } from '../../application/ports/project-repository-port.js';
+import type { Firestore } from '@google-cloud/firestore';
+import type { Project } from '../../domain/project.js';
+import type { ProjectRepositoryPort } from '../../application/ports/project-repository-port.js';
 
 export class FirestoreProjectRepository implements ProjectRepositoryPort {
   private readonly collectionName = 'projects';
@@ -21,7 +21,7 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
   async findAll(): Promise<Project[]> {
     const snapshot = await this.firestore.collection(this.collectionName).get();
     return snapshot.docs.map((doc) => {
-      const data = doc.data();
+      const data = doc.data() as { name: string; createdAt: string; updatedAt: string };
       return {
         id: doc.id,
         name: data.name,
@@ -39,7 +39,7 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
       return null;
     }
 
-    const data = snapshot.data()!;
+    const data = snapshot.data() as { name: string; createdAt: string; updatedAt: string };
     return {
       id: snapshot.id,
       name: data.name,

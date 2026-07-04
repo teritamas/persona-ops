@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
-import { Project } from '../domain/project';
-import { ProjectRepositoryPort } from './ports/project-repository-port';
+import type { Project } from '../domain/project.js';
+import type { ProjectRepositoryPort } from './ports/project-repository-port.js';
 
 export class ProjectService {
   constructor(private readonly projectRepository: ProjectRepositoryPort) {}
