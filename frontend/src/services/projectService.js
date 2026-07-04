@@ -51,24 +51,64 @@ class ProjectService {
               id: apiProj.id,
               name: apiProj.name,
               isInitial: apiProj.chats && apiProj.chats.length > 0 ? false : true,
-              personas: [
-                { id: 'p1', name: '鈴木 健太', role: '現場セールス', x: 20, y: 30, avatarSeed: 'Felix', traits: ['効率重視', '外出多い'], reaction: null },
-                { id: 'p2', name: '佐藤 真由美', role: 'マネージャー', x: 70, y: 40, avatarSeed: 'Aneka', traits: ['データ重視', '管理職'], reaction: null },
-                { id: 'p3', name: '田中 宏', role: '内勤営業', x: 45, y: 60, avatarSeed: 'Jasper', traits: ['効率重視', 'PC作業中心'], reaction: null },
-                { id: 'p4', name: '高橋 涼子', role: '営業企画', x: 80, y: 70, avatarSeed: 'Avery', traits: ['改善意欲', '分析好き'], reaction: null },
-                { id: 'p5', name: '伊藤 健', role: '若手セールス', x: 30, y: 80, avatarSeed: 'Leo', traits: ['学習意欲', 'スマホ世代'], reaction: null }
-              ],
+              personas: [],
               chats: apiProj.chats || [],
               activeChatId: apiProj.activeChatId || null
             });
           }
         });
+
+        // Remove local mockProjects that don't exist in API anymore
+        for (let i = mockProjects.length - 1; i >= 0; i--) {
+          if (!apiProjects.find(ap => ap.id === mockProjects[i].id)) {
+            mockProjects.splice(i, 1);
+          }
+        }
         return apiProjects;
       }
     } catch (err) {
-      console.error('Failed to fetch projects via API', err);
+      console.error('Failed to fetch projects', err);
     }
     return [];
+  }
+
+  async updateProjectName(id, name) {
+    try {
+      const response = await requestPrivateApi(`/api/v1/projects/${id}`, {
+        method: 'PUT',
+        body: { name }
+      });
+      if (response.ok) {
+        const mockProj = mockProjects.find(p => p.id === id);
+        if (mockProj) {
+          mockProj.name = name;
+        }
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to update project name', err);
+      return false;
+    }
+  }
+
+  async deleteProject(id) {
+    try {
+      const response = await requestPrivateApi(`/api/v1/projects/${id}`, {
+        method: 'DELETE'
+      });
+      if (response.ok) {
+        const idx = mockProjects.findIndex(p => p.id === id);
+        if (idx !== -1) {
+          mockProjects.splice(idx, 1);
+        }
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to delete project', err);
+      return false;
+    }
   }
 
   async syncProject(project) {

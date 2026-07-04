@@ -65,4 +65,9 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
       activeChatId: data.activeChatId || null,
     };
   }
+
+  async delete(id: string): Promise<void> {
+    const docRef = this.firestore.collection(this.collectionName).doc(id);
+    await docRef.delete();
+  }
 }

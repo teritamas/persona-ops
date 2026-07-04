@@ -48,4 +48,12 @@ export class ProjectService {
     project.updatedAt = new Date();
     await this.projectRepository.save(project);
   }
+
+  /**
+   * プロジェクトを削除する
+   * @param id プロジェクトID
+   */
+  async deleteProject(id: string): Promise<void> {
+    await this.projectRepository.delete(id);
+  }
 }

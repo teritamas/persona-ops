@@ -27,6 +27,11 @@ class MockProjectRepository implements ProjectRepositoryPort {
     if (this.shouldFail) throw new Error('Mock Error');
     return this.projects.find((p) => p.id === id) || null;
   }
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async delete(id: string): Promise<void> {
+    if (this.shouldFail) throw new Error('Mock Error');
+    this.projects = this.projects.filter((p) => p.id !== id);
+  }
 }
 
 describe('プロジェクトルーター', () => {
@@ -149,6 +154,33 @@ describe('プロジェクトルーター', () => {
       method: 'PUT',
       url: '/api/v1/projects/some-id',
       payload: { name: 'New Name' },
+    });
+    repository.shouldFail = false;
+    expect(response.statusCode).toBe(500);
+  });
+  it('DELETE /api/v1/projects/:id でプロジェクトを削除し204を返す', async () => {
+    // 既存のプロジェクトを取得してIDを特定
+    const getRes = await app.inject({
+      method: 'GET',
+      url: '/api/v1/projects',
+    });
+    const projects = getRes.json<Project[]>();
+    const projectId = projects[0]?.id;
+    expect(projectId).toBeDefined();
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/projects/${projectId}`,
+    });
+
+    expect(response.statusCode).toBe(204);
+  });
+
+  it('DELETE /api/v1/projects/:id でエラーが発生した場合は500を返す', async () => {
+    repository.shouldFail = true;
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/projects/some-id',
     });
     repository.shouldFail = false;
     expect(response.statusCode).toBe(500);
