@@ -7,7 +7,7 @@ interface ChatMessage {
 interface RunEphemeralArgs {
   newMessage: { parts: { text: string }[]; role: string };
   runConfig?: { maxLlmCalls?: number };
-  userId?: string;
+  userId: string;
 }
 
 interface PersonaOpsAgent {
