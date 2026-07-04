@@ -1,24 +1,34 @@
 import type { FastifyInstance } from 'fastify';
-import type { AgentRunner } from '../infra/ai/adk-ai-agent.js';
-
 interface ChatMessage {
   role: 'user' | 'agent' | 'persona';
   text: string;
 }
 
+interface RunEphemeralArgs {
+  newMessage: { parts: { text: string }[]; role: string };
+  runConfig?: { maxLlmCalls?: number };
+  userId?: string;
+}
+
+interface PersonaOpsAgent {
+  runEphemeral(args: RunEphemeralArgs): AsyncIterable<{
+    content?: { parts?: { text?: string }[] };
+  }>;
+}
+
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function chatRoutes(
   app: FastifyInstance,
-  options: { defaultModel: string; personaOpsAgent: any }, // using any to avoid direct type coupling if runner export is not easy, or we can use the AgentRunner type
+  options: { defaultModel: string; personaOpsAgent: PersonaOpsAgent },
 ): Promise<void> {
   const { personaOpsAgent } = options;
 
   app.post('/api/v1/chat/stream', async (request, reply) => {
-    const { message, history, projectId, existingPersonas } = request.body as {
+    const { message, projectId, existingPersonas } = request.body as {
       message: string;
       history: ChatMessage[];
       projectId?: string;
-      existingPersonas?: any[];
+      existingPersonas?: { name: string; role: string }[];
     };
 
     // プロジェクトごとにコンテキストを保持するため、sessionId に projectId を使用する
@@ -44,7 +54,6 @@ export async function chatRoutes(
     });
 
     try {
-      // @ts-ignore
       const events = personaOpsAgent.runEphemeral({
         newMessage: {
           parts: [{ text: fullPrompt }],

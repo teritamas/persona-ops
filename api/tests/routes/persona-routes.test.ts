@@ -5,6 +5,8 @@ import { PersonaService } from '../../src/application/persona-service.js';
 import type { PersonaRepositoryPort } from '../../src/application/ports/persona-repository-port.js';
 import type { Persona } from '../../src/domain/persona.js';
 
+import type { AiAgentPort } from '../../src/application/ports/ai-agent-port.js';
+
 class MockPersonaRepository implements PersonaRepositoryPort {
   private personas: Persona[] = [];
 
@@ -27,7 +29,7 @@ class MockPersonaRepository implements PersonaRepositoryPort {
 describe('ペルソナ ルーター', () => {
   const app = Fastify();
   const repository = new MockPersonaRepository();
-  const aiAgent = {} as any; // Mock unused AiAgent
+  const aiAgent = {} as unknown as AiAgentPort; // Mock unused AiAgent
   const personaService = new PersonaService(repository, aiAgent);
 
   void app.register(personaRoutes, { personaService });

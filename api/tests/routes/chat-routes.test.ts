@@ -28,7 +28,7 @@ vi.mock('@google/adk', () => {
 
 describe('チャットストリーミングルーター', () => {
   const mockPersonaOpsAgent = {
-    runEphemeral: (input: any) => {
+    runEphemeral: (input: { newMessage: { parts: { text?: string }[] } }) => {
       const text = input.newMessage.parts[0]?.text || '';
       if (text.includes('fail')) {
         throw new Error('LLM Error');
