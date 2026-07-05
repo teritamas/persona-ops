@@ -117,6 +117,9 @@ exports.saveRequirement = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(
     req.activeProject.id,
   );
+  if (req.headers['hx-request']) {
+    res.setHeader('HX-Trigger', 'refreshSandbox');
+  }
   res.render('partials/requirement-dashboard', {
     activeProject: req.activeProject,
     requirements,
@@ -160,6 +163,9 @@ exports.deleteRequirement = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(
     req.activeProject.id,
   );
+  if (req.headers['hx-request']) {
+    res.setHeader('HX-Trigger', 'refreshSandbox');
+  }
   res.render('partials/requirement-dashboard', {
     activeProject: req.activeProject,
     requirements,
