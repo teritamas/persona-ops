@@ -4,9 +4,13 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import type { ProjectApiClient } from './api/project-api-client.js';
 import type { RequirementApiClient } from './api/requirement-api-clients.js';
+import type { SimulationApiClient } from './api/simulation-api-client.js';
+import type { PersonaApiClient } from './api/persona-api-client.js';
 import type { HealthApiClient } from './api/health-api-client.js';
 import { projectTools } from './tools/project-tools.js';
 import { requirementTools } from './tools/requirement-tools.js';
+import { simulationTools } from './tools/simulation-tools.js';
+import { personaTools } from './tools/persona-tools.js';
 
 function log(message: string, ...args: unknown[]) {
   console.error(`[MCP Log] ${message}`, ...args);
@@ -15,6 +19,8 @@ function log(message: string, ...args: unknown[]) {
 function createMcpServer(
   projectApiClient: ProjectApiClient,
   requirementApiClient: RequirementApiClient,
+  simulationApiClient: SimulationApiClient,
+  personaApiClient: PersonaApiClient,
 ) {
   const mcpServer = new McpServer({
     name: 'PersonaOps MCP Server',
@@ -23,6 +29,8 @@ function createMcpServer(
 
   projectTools(mcpServer, { projectApiClient });
   requirementTools(mcpServer, { requirementApiClient });
+  simulationTools(mcpServer, { simulationApiClient });
+  personaTools(mcpServer, { personaApiClient });
 
   return mcpServer;
 }
@@ -30,6 +38,8 @@ function createMcpServer(
 export function createServer(
   projectApiClient: ProjectApiClient,
   requirementApiClient: RequirementApiClient,
+  simulationApiClient: SimulationApiClient,
+  personaApiClient: PersonaApiClient,
   healthApiClient: HealthApiClient,
 ) {
   interface Session {
@@ -152,6 +162,8 @@ export function createServer(
           const mcpServer = createMcpServer(
             projectApiClient,
             requirementApiClient,
+            simulationApiClient,
+            personaApiClient,
           );
 
           mcpServer.connect(transport).catch((err) => {
