@@ -1,6 +1,7 @@
-import express from 'express';
+import http from 'node:http';
+import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
 import type { ApiClient } from './api-client.js';
 
@@ -8,7 +9,7 @@ function log(message: string, ...args: unknown[]) {
   console.error(`[MCP Log] ${message}`, ...args);
 }
 
-export function createMcpServer(apiClient: ApiClient) {
+function createMcpServer(apiClient: ApiClient) {
   const mcpServer = new McpServer({
     name: 'PersonaOps MCP Server',
     version: '1.0.0',
@@ -141,28 +142,26 @@ export function createMcpServer(apiClient: ApiClient) {
 
 export function createServer(apiClient: ApiClient) {
   const mcpServer = createMcpServer(apiClient);
-
-  const app = express();
-  let transport: SSEServerTransport | null = null;
-
-  app.get('/mcp/sse', (req, res) => {
-    log('SSE endpoint hit: /mcp/sse');
-    transport = new SSEServerTransport('/mcp/message', res);
-    mcpServer.server.connect(transport).catch((err) => {
-      console.error('Failed to connect to transport:', err);
-    });
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
   });
 
-  app.post('/mcp/message', (req, res) => {
-    log('POST /mcp/message endpoint hit');
-    if (!transport) {
-      res.status(400).send({ error: 'SSE connection not established' });
-      return;
+  mcpServer.connect(transport).catch((err) => {
+    console.error('Failed to connect to Streamable HTTP transport:', err);
+  });
+
+  const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+    log(`HTTP ${req.method} ${req.url} request received`);
+    
+    if (req.url?.startsWith('/mcp')) {
+      transport.handleRequest(req, res).catch((err) => {
+        console.error('Error handling MCP request:', err);
+      });
+    } else {
+      res.writeHead(404);
+      res.end('Not Found');
     }
-    transport.handlePostMessage(req, res).catch((err) => {
-      console.error('Failed to handle post message:', err);
-    });
   });
 
-  return app;
+  return server;
 }

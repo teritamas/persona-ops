@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ApiClient } from '../src/api-client.js';
 import { createServer } from '../src/server.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import type { AddressInfo } from 'net';
 
@@ -41,7 +41,7 @@ describe('MCP Server E2E', () => {
     const address = server.address() as AddressInfo;
     const port = address.port;
 
-    const transport = new SSEClientTransport(new URL(`http://localhost:${port}/mcp/sse`));
+    const transport = new StreamableHTTPClientTransport(new URL(`http://localhost:${port}/mcp`));
     const client = new Client(
       { name: 'test-client', version: '1.0.0' },
       { capabilities: {} }
