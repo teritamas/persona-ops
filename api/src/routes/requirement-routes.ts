@@ -116,10 +116,13 @@ export async function requirementRoutes(
       const relatedSimulations = simulations.filter(
         (sim) => sim.requirementId === requirementId,
       );
-      
+
       const response = await Promise.all(
         relatedSimulations.map(async (sim) => {
-          const detail = await options.simulationService.getDetail(projectId, sim.id);
+          const detail = await options.simulationService.getDetail(
+            projectId,
+            sim.id,
+          );
           return {
             ...toSimulationResponse(detail.simulation),
             reactions: detail.reactions.map((r) => {
@@ -139,7 +142,7 @@ export async function requirementRoutes(
               };
             }),
           };
-        })
+        }),
       );
 
       return reply.send(response);

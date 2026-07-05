@@ -5,7 +5,10 @@ import type { RequirementService } from '../../src/application/requirement-servi
 import type { SimulationService } from '../../src/application/simulation-service.js';
 import { NotFoundError, ValidationError } from '../../src/domain/errors.js';
 import type { Requirement } from '../../src/domain/requirement.js';
-import type { Simulation, PersonaReaction } from '../../src/domain/simulation.js';
+import type {
+  Simulation,
+  PersonaReaction,
+} from '../../src/domain/simulation.js';
 import { requirementRoutes } from '../../src/routes/requirement-routes.js';
 
 const requirement: Requirement = {
@@ -22,7 +25,10 @@ const requirement: Requirement = {
   updatedAt: new Date('2026-01-01T00:00:00Z'),
 };
 
-function createApp(service: Partial<RequirementService>, simulationService?: Partial<SimulationService>) {
+function createApp(
+  service: Partial<RequirementService>,
+  simulationService?: Partial<SimulationService>,
+) {
   const app = Fastify();
   void app.register(requirementRoutes, {
     requirementService: service as RequirementService,
@@ -183,7 +189,7 @@ describe('要件ルーター', () => {
             simulation: mockSimulation as unknown as Simulation,
             reactions: [mockReaction as unknown as PersonaReaction],
           }),
-      }
+      },
     );
 
     const response = await app.inject({
