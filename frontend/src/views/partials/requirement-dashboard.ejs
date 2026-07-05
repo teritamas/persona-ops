@@ -13,11 +13,7 @@
         <p class="text-xs font-bold text-slate-400 text-center leading-relaxed max-w-[240px]">
           機能要件を作成するか、チャットにてAIアシスタントに要件定義を依頼してください。
         </p>
-        <button hx-get="/<%= activeProject.id %>/view/requirements/new-form" hx-target="#requirement-detail-container"
-          hx-swap="innerHTML"
-          class="mt-6 bg-slate-800 hover:bg-slate-900 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5 mx-auto">
-          最初の要件を作成
-        </button>
+
       </div>
     </div>
   <% } else { %>
