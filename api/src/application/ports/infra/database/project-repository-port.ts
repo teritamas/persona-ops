@@ -1,4 +1,4 @@
-import type { Project } from '../../../../domain/project.js';
+import type { Chat, Message, Project } from '../../../../domain/project.js';
 
 export interface ProjectRepositoryPort {
   /**
@@ -18,10 +18,19 @@ export interface ProjectRepositoryPort {
    * @param id プロジェクトID
    */
   findById(id: string): Promise<Project | null>;
+  updateName(projectId: string, name: string, updatedAt: Date): Promise<void>;
 
   /**
    * プロジェクトを削除する
    * @param id プロジェクトID
    */
   delete(id: string): Promise<void>;
+
+  createChat(projectId: string, chat: Chat): Promise<Project>;
+  setActiveChat(projectId: string, chatId: string): Promise<Project>;
+  appendChatMessages(
+    projectId: string,
+    chatId: string,
+    messages: Message[],
+  ): Promise<Project>;
 }

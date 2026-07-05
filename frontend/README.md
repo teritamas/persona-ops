@@ -65,7 +65,7 @@ pnpm dev
 | `pnpm build:css` | Tailwind CSSを一度だけ生成する                                             |
 | `pnpm watch:css` | Tailwind CSSを監視して継続的に生成する                                     |
 | `pnpm lint`      | ESLintでJavaScriptを静的解析する                                           |
-| `pnpm test`      | Node.js標準テストランナーで単体テストを実行する                            |
+| `pnpm test`      | Node.js標準テストランナーで単体テストとカバレッジ計測を実行する             |
 
 VS Codeでは「ターミナル: タスクの実行」から、同名の`frontend: ...`タスクを実行できる。
 
@@ -79,7 +79,6 @@ frontend/
 │   ├── controllers/       # HTTPリクエスト処理とレスポンス返却
 │   ├── routes/            # HTTPルーティング
 │   ├── services/          # ビジネスロジックと外部API通信
-│   │   └── projectState.js # API取得済みデータの画面状態
 │   └── views/             # EJSテンプレート
 │       ├── index.ejs      # 画面全体のテンプレート
 │       └── partials/      # 再利用するEJSパーツ

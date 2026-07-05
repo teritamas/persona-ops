@@ -16,6 +16,7 @@ export function createSavePersonasTool(
           role: z.string().min(1),
           traits: z.array(z.string()),
           background: z.string(),
+          sourceDocumentIds: z.array(z.string().min(1)).optional(),
           avatarSeed: z
             .string()
             .describe(
@@ -24,7 +25,8 @@ export function createSavePersonasTool(
             .optional(),
         }),
       )
-      .min(1),
+      .min(1)
+      .max(10),
   });
 
   return new FunctionTool({

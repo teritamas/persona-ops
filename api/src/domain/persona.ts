@@ -5,6 +5,7 @@ export interface Persona {
   role: string;
   traits: string[];
   background: string;
+  sourceDocumentIds: string[];
   avatarSeed: string;
   x: number;
   y: number;
@@ -18,6 +19,7 @@ export interface PersonaSnapshot {
   role: string;
   traits: string[];
   background: string;
+  sourceDocumentIds: string[];
   updatedAt: string;
 }
 
@@ -28,6 +30,7 @@ export function createPersonaSnapshot(persona: Persona): PersonaSnapshot {
     role: persona.role,
     traits: [...persona.traits],
     background: persona.background,
+    sourceDocumentIds: [...persona.sourceDocumentIds],
     updatedAt: persona.updatedAt.toISOString(),
   };
 }

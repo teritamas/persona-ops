@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import type { SourceDocumentRepositoryPort } from '../../domain/source-document/source-document-repository.js';
+import { NotFoundError } from '../../domain/errors.js';
+import type { SourceDocumentRepositoryPort } from '../ports/infra/database/source-document-repository-port.js';
 import type { DocumentFetcherPort } from '../ports/document-fetcher-port.js';
 import type { AddSourceDocumentRequest } from './dto/add-source-document-request.js';
 import type { SourceDocument } from '../../domain/source-document/source-document.js';
@@ -41,8 +42,8 @@ export class SourceDocumentService {
       document.updatedAt = new Date();
       await this.sourceDocumentRepository.save(document);
     } else if (request.type === 'chat') {
-      // チャットの場合はフェッチ処理をスキップし、そのまま success とする（必要に応じて変更）
       document.fetchStatus = 'success';
+      document.contentSnapshot = request.reference;
       document.updatedAt = new Date();
       await this.sourceDocumentRepository.save(document);
     }
@@ -54,7 +55,30 @@ export class SourceDocumentService {
     return this.sourceDocumentRepository.findByProjectId(projectId);
   }
 
-  async deleteDocument(id: string): Promise<void> {
-    await this.sourceDocumentRepository.deleteById(id);
+  async getReusableContext(projectId: string): Promise<SourceDocument[]> {
+    const documents =
+      await this.sourceDocumentRepository.findByProjectId(projectId);
+    return documents
+      .filter(
+        (document) =>
+          document.fetchStatus === 'success' &&
+          typeof document.contentSnapshot === 'string',
+      )
+      .slice(0, 5)
+      .map((document) => ({
+        ...document,
+        contentSnapshot: document.contentSnapshot!.slice(0, 6_000),
+      }));
+  }
+
+  async deleteDocument(projectId: string, documentId: string): Promise<void> {
+    const document = await this.sourceDocumentRepository.findById(
+      projectId,
+      documentId,
+    );
+    if (!document) {
+      throw new NotFoundError('SourceDocument', documentId);
+    }
+    await this.sourceDocumentRepository.deleteById(projectId, documentId);
   }
 }

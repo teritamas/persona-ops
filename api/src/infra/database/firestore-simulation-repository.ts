@@ -7,6 +7,7 @@ import {
   type SimulationStatus,
   type SimulationSummary,
 } from '../../domain/simulation.js';
+import { NotFoundError } from '../../domain/errors.js';
 import type {
   SimulationClaimResult,
   SimulationStorePort,
@@ -70,7 +71,7 @@ export class FirestoreSimulationRepository implements SimulationStorePort {
     return this.firestore.runTransaction(async (transaction) => {
       const document = await transaction.get(reference);
       if (!document.exists) {
-        throw new Error(`Simulation "${simulationId}" was not found.`);
+        throw new NotFoundError('Simulation', simulationId);
       }
       const data = document.data() ?? {};
       const status = String(data.status) as SimulationStatus;

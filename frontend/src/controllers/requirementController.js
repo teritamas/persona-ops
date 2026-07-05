@@ -19,24 +19,6 @@ exports.getRequirementsDashboard = async (req, res) => {
   });
 };
 
-exports.getRequirementCard = async (req, res) => {
-  if (!req.activeProject) {
-    return res.status(404).send('Project not found');
-  }
-  const { requirementId } = req.params;
-  const requirement = await requirementService.fetchRequirementById(
-    req.activeProject.id,
-    requirementId,
-  );
-  if (!requirement) {
-    return res.status(404).send('Requirement not found');
-  }
-  res.render('partials/requirement-card', {
-    activeProject: req.activeProject,
-    requirement,
-  });
-};
-
 exports.getRequirementEditForm = async (req, res) => {
   if (!req.activeProject) {
     return res.status(404).send('Project not found');

@@ -16,7 +16,7 @@
     "dev": "concurrently \"pnpm watch:css\" \"nodemon --watch server.js --watch src --ext js server.js\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "node --test"
+    "test": "node --test --experimental-test-coverage"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

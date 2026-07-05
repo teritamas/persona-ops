@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { NotFoundError } from '../domain/errors.js';
 import type { Persona } from '../domain/persona.js';
 import type { PersonaStorePort } from './ports/infra/database/persona-store-port.js';
+import type { SourceDocumentRepositoryPort } from './ports/infra/database/source-document-repository-port.js';
+import { validateSourceDocumentReferences } from './source-document/validate-source-document-references.js';
 
 export interface SavePersonaInput {
   id?: string | undefined;
@@ -10,6 +12,7 @@ export interface SavePersonaInput {
   role: string;
   traits: string[];
   background: string;
+  sourceDocumentIds?: string[] | undefined;
   avatarSeed?: string | undefined;
 }
 
@@ -23,7 +26,10 @@ const COORDINATES = [
 ] as const;
 
 export class PersonaService {
-  constructor(private readonly personaRepository: PersonaStorePort) {}
+  constructor(
+    private readonly personaRepository: PersonaStorePort,
+    private readonly sourceDocumentRepository: SourceDocumentRepositoryPort,
+  ) {}
 
   async getPersonasByProjectId(projectId: string): Promise<Persona[]> {
     return this.personaRepository.findByProjectId(projectId);
@@ -45,6 +51,13 @@ export class PersonaService {
             (persona) =>
               persona.name === input.name && persona.role === input.role,
           );
+      const sourceDocumentIds =
+        input.sourceDocumentIds ?? matched?.sourceDocumentIds ?? [];
+      await validateSourceDocumentReferences(
+        this.sourceDocumentRepository,
+        projectId,
+        sourceDocumentIds,
+      );
 
       if (matched) {
         await this.personaRepository.save({
@@ -53,6 +66,7 @@ export class PersonaService {
           role: input.role,
           traits: [...input.traits],
           background: input.background,
+          sourceDocumentIds: [...sourceDocumentIds],
           avatarSeed: input.avatarSeed || matched.avatarSeed,
           updatedAt: now,
         });
@@ -68,6 +82,7 @@ export class PersonaService {
         role: input.role,
         traits: [...input.traits],
         background: input.background,
+        sourceDocumentIds: [...sourceDocumentIds],
         avatarSeed: input.avatarSeed || AVATARS[index % AVATARS.length]!,
         x: coordinate.x,
         y: coordinate.y,

@@ -85,7 +85,7 @@ export async function healthRoutes(
           { timeoutMs: 15_000 },
         );
 
-        if (!response.includes('ok')) {
+        if (response.trim().toLowerCase() !== 'ok') {
           throw new Error(`Unexpected AI response: ${response}`);
         }
 

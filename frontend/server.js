@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const projectContext = require('./src/middlewares/projectContext');
 const app = express();
 const DEFAULT_PORT = 3000;
 const MAX_PORT_RETRIES = 10;
@@ -49,13 +48,13 @@ app.set('views', path.join(__dirname, 'src', 'views'));
 
 // Serve htmx locally
 app.use('/js/htmx.min.js', express.static(path.join(__dirname, 'node_modules/htmx.org/dist/htmx.min.js')));
+app.use('/js/marked.js', express.static(path.join(__dirname, 'node_modules/marked/lib/marked.umd.js')));
 
 
 const healthRoutes = require('./src/routes/health');
 const routes = require('./src/routes/index');
 
 app.use('/', healthRoutes);
-app.use(projectContext);
 app.use('/', routes);
 
 function startServer(port, retriesRemaining) {

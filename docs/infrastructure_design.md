@@ -44,6 +44,14 @@ PH1では、次のproperty graph相当のモデルをFirestoreに保存する。
 
 nodeとedgeには必ず`schemaVersion`と`evidenceSourceIds`を持たせる。LLMの出力をそのまま保存せず、アプリケーションでJSON Schema等による型検証を行ってから永続化する。これにより、生成結果の変更に追従しながら根拠を遡れる。
 
+### PH1の最小証拠リンク
+
+完全なproperty graphとRAGを導入する前段として、PH1では取得済み資料のIDを
+PersonaとRequirementの`sourceDocumentIds`へ保存する。Simulationには承認時点の
+Persona/Requirement Snapshotを保存するため、評価結果から利用資料まで遡れる。
+保存済み資料の本文は各チャットターンで件数・文字数を制限してAgent contextへ
+再投入し、ユーザーがURLを再掲しなくても再利用できるようにする。
+
 ## GCPのマネージド選択肢
 
 Google Cloudに、OWL/RDF、推論エンジン、SPARQL endpointを一体で提供する専用の「マネージド・オントロジーサービス」はない。

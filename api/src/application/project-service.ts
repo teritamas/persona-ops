@@ -1,9 +1,15 @@
-import { randomUUID } from 'crypto';
-import type { Project } from '../domain/project.js';
+import { randomUUID } from 'node:crypto';
+import { NotFoundError } from '../domain/errors.js';
+import type { Chat, Message, Project } from '../domain/project.js';
 import type { ProjectRepositoryPort } from './ports/infra/database/project-repository-port.js';
+import type { ProjectDataDeletionPort } from './ports/infra/database/project-data-deletion-port.js';
+import type { CreateChatRequest } from './project/dto/chat-requests.js';
 
 export class ProjectService {
-  constructor(private readonly projectRepository: ProjectRepositoryPort) {}
+  constructor(
+    private readonly projectRepository: ProjectRepositoryPort,
+    private readonly projectDataDeletion?: ProjectDataDeletionPort,
+  ) {}
 
   /**
    * 新しいプロジェクトを作成する
@@ -40,13 +46,45 @@ export class ProjectService {
     return this.projectRepository.findById(id);
   }
 
-  /**
-   * プロジェクトを更新する
-   * @param project 更新するプロジェクト
-   */
-  async updateProject(project: Project): Promise<void> {
-    project.updatedAt = new Date();
-    await this.projectRepository.save(project);
+  async updateProjectName(id: string, name: string): Promise<Project> {
+    const project = await this.requireProject(id);
+    const updated = {
+      ...project,
+      name,
+      updatedAt: new Date(),
+    };
+    await this.projectRepository.updateName(id, name, updated.updatedAt);
+    return updated;
+  }
+
+  async createChat(
+    projectId: string,
+    request: CreateChatRequest,
+  ): Promise<Project> {
+    const chat: Chat = {
+      id: `chat_${randomUUID()}`,
+      title: request.title,
+      type: request.type,
+      ...(request.personaId ? { personaId: request.personaId } : {}),
+      messages: request.initialMessages ?? [],
+    };
+    return this.projectRepository.createChat(projectId, chat);
+  }
+
+  async setActiveChat(projectId: string, chatId: string): Promise<Project> {
+    return this.projectRepository.setActiveChat(projectId, chatId);
+  }
+
+  async appendChatMessages(
+    projectId: string,
+    chatId: string,
+    messages: Message[],
+  ): Promise<Project> {
+    return this.projectRepository.appendChatMessages(
+      projectId,
+      chatId,
+      messages,
+    );
   }
 
   /**
@@ -54,6 +92,19 @@ export class ProjectService {
    * @param id プロジェクトID
    */
   async deleteProject(id: string): Promise<void> {
+    await this.requireProject(id);
+    if (this.projectDataDeletion) {
+      await this.projectDataDeletion.deleteProjectData(id);
+      return;
+    }
     await this.projectRepository.delete(id);
+  }
+
+  private async requireProject(id: string): Promise<Project> {
+    const project = await this.projectRepository.findById(id);
+    if (!project) {
+      throw new NotFoundError('Project', id);
+    }
+    return project;
   }
 }

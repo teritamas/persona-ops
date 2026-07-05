@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { SimulationService } from '../../application/simulation-service.js';
 import { NotFoundError } from '../../domain/errors.js';
+import { registerDomainErrorHandler } from '../domain-error-handler.js';
 
 const simulationParamsSchema = {
   type: 'object',
@@ -18,6 +19,7 @@ export async function internalSimulationRoutes(
   app: FastifyInstance,
   options: { simulationService: SimulationService },
 ): Promise<void> {
+  registerDomainErrorHandler(app);
   app.post(
     '/api/v1/internal/projects/:projectId/simulations/:simulationId/run',
     { schema: { params: simulationParamsSchema } },

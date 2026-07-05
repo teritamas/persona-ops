@@ -3,14 +3,15 @@ const globals = require("globals");
 
 module.exports = [
     {
-        ignores: ["public/**"]
+        ignores: ["public/dist/**"]
     },
     js.configs.recommended,
     {
         languageOptions: {
             globals: {
                 ...globals.node,
-                ...globals.browser
+                ...globals.browser,
+                htmx: "readonly"
             }
         },
         rules: {

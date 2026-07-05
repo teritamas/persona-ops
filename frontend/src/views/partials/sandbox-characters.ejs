@@ -337,7 +337,7 @@
               const projectId = node.dataset.projectId;
               
               try {
-                const res = await fetch(`/action/persona/${personaId}/position`, {
+                const res = await fetch(`/${projectId}/action/persona/${personaId}/position`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'

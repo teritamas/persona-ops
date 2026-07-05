@@ -63,7 +63,7 @@
 
               <div class="absolute top-2 right-2 opacity-0 group-hover/simcard:opacity-100 transition-opacity duration-150">
                 <button
-                  hx-delete="/<%= activeProject.id %>/simulations/<%= encodeURIComponent(simulation.id) %>"
+                  hx-delete="/<%= activeProject.id %>/action/simulations/<%= encodeURIComponent(simulation.id) %>"
                   hx-target="#simulation-dashboard"
                   hx-swap="outerHTML"
                   hx-confirm="このシミュレーション結果を削除しますか？"

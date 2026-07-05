@@ -125,9 +125,13 @@ function createPrivateApiClient(options = {}) {
     }
   }
 
-  async function request(path, requestOptions = {}) {
+  async function fetchPrivateApi(
+    path,
+    requestOptions,
+    fallbackTimeoutMs,
+  ) {
     const requestUrl = resolveRequestUrl(baseUrl, path);
-    const timeoutMs = requestOptions.timeoutMs ?? defaultTimeoutMs;
+    const timeoutMs = requestOptions.timeoutMs ?? fallbackTimeoutMs;
     const headers = new Headers(requestOptions.headers);
     const authenticationHeaders = await getAuthenticationHeaders(requestUrl.toString());
     let body = requestOptions.body;
@@ -150,15 +154,14 @@ function createPrivateApiClient(options = {}) {
       }
     }
 
-    let response;
-
     try {
-      response = await fetchImplementation(requestUrl, {
+      const response = await fetchImplementation(requestUrl, {
         body,
         headers,
         method: requestOptions.method ?? 'GET',
         signal: AbortSignal.timeout(timeoutMs),
       });
+      return { requestUrl, response };
     } catch (error) {
       const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError';
 
@@ -170,16 +173,27 @@ function createPrivateApiClient(options = {}) {
         },
       );
     }
+  }
 
+  async function request(path, requestOptions = {}) {
+    const { requestUrl, response } = await fetchPrivateApi(
+      path,
+      requestOptions,
+      defaultTimeoutMs,
+    );
     let data;
 
-    try {
-      data = await response.json();
-    } catch (error) {
-      throw new PrivateApiError('Private API returned a non-JSON response.', {
-        cause: error,
-        code: 'INVALID_RESPONSE',
-      });
+    if (response.status === 204) {
+      data = null;
+    } else {
+      try {
+        data = await response.json();
+      } catch (error) {
+        throw new PrivateApiError('Private API returned a non-JSON response.', {
+          cause: error,
+          code: 'INVALID_RESPONSE',
+        });
+      }
     }
 
     return {
@@ -197,42 +211,8 @@ function createPrivateApiClient(options = {}) {
   }
 
   async function requestStream(path, requestOptions = {}) {
-    const requestUrl = resolveRequestUrl(baseUrl, path);
-    const timeoutMs = requestOptions.timeoutMs ?? 60000; // Default to 60 seconds for streaming
-    const headers = new Headers(requestOptions.headers);
-    const authenticationHeaders = await getAuthenticationHeaders(requestUrl.toString());
-    let body = requestOptions.body;
-
-    for (const [name, value] of authenticationHeaders) {
-      headers.set(name, value);
-    }
-
-    if (isJsonBody(body)) {
-      body = JSON.stringify(body);
-
-      if (!headers.has('content-type')) {
-        headers.set('content-type', 'application/json');
-      }
-    }
-
-    try {
-      return await fetchImplementation(requestUrl, {
-        body,
-        headers,
-        method: requestOptions.method ?? 'GET',
-        signal: AbortSignal.timeout(timeoutMs),
-      });
-    } catch (error) {
-      const timedOut = error?.name === 'TimeoutError' || error?.name === 'AbortError';
-
-      throw new PrivateApiError(
-        timedOut ? 'Private API request timed out.' : 'Private API is unreachable.',
-        {
-          cause: error,
-          code: timedOut ? 'TIMEOUT' : 'NETWORK',
-        },
-      );
-    }
+    const { response } = await fetchPrivateApi(path, requestOptions, 60_000);
+    return response;
   }
 
   return {

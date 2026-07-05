@@ -15,6 +15,12 @@ router.use('/', projectRoutes);
 // プロジェクトIDを持つルートのためのサブルーター（パラメータ引き継ぎのため mergeParams: true に設定）
 const projectSpecificRouter = express.Router({ mergeParams: true });
 projectSpecificRouter.use(projectContext);
+projectSpecificRouter.use((req, res, next) => {
+  if (!req.activeProject || !req.activeProject.id) {
+    return res.status(404).send('Project not found');
+  }
+  next();
+});
 
 projectSpecificRouter.use('/', chatRoutes);
 projectSpecificRouter.use('/', personaRoutes);

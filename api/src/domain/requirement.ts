@@ -6,6 +6,7 @@ export interface Requirement {
   title: string;
   description: string;
   acceptanceCriteria: string[];
+  sourceDocumentIds: string[];
   sourceSimulationIds: string[];
   status: RequirementStatus;
   version: number;
@@ -19,6 +20,7 @@ export interface RequirementSnapshot {
   title: string;
   description: string;
   acceptanceCriteria: string[];
+  sourceDocumentIds: string[];
   sourceSimulationIds: string[];
   version: number;
 }
@@ -31,6 +33,7 @@ export function createRequirementSnapshot(
     title: requirement.title,
     description: requirement.description,
     acceptanceCriteria: [...requirement.acceptanceCriteria],
+    sourceDocumentIds: [...requirement.sourceDocumentIds],
     sourceSimulationIds: [...requirement.sourceSimulationIds],
     version: requirement.version,
   };

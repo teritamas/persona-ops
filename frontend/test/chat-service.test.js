@@ -1,0 +1,50 @@
+const assert = require('node:assert/strict');
+const test = require('node:test');
+
+const { ChatService } = require('../src/services/chatService');
+
+test('チャット作成とメッセージ追記に専用APIを使用する', async () => {
+  const requests = [];
+  const service = new ChatService({
+    requestPrivateApiImplementation: async (path, options) => {
+      requests.push({ path, options });
+      return {
+        ok: true,
+        data: {
+          id: 'project-1',
+          chats: [{ id: 'chat-1', messages: [] }],
+          activeChatId: 'chat-1',
+        },
+      };
+    },
+  });
+
+  await service.createNewChat({ id: 'project-1' });
+  await service.appendMessages('project-1', 'chat-1', [
+    { id: 'message-1', role: 'user', text: 'Hello', time: '10:00' },
+  ]);
+
+  assert.equal(requests[0].path, '/api/v1/projects/project-1/chats');
+  assert.equal(requests[1].path, '/api/v1/projects/project-1/chats/chat-1/messages');
+  assert.equal(requests[1].options.body.messages[0].text, 'Hello');
+});
+
+test('既存のActive Chatがある場合はAPI更新せず再利用する', async () => {
+  let requestCount = 0;
+  const service = new ChatService({
+    requestPrivateApiImplementation: async () => {
+      requestCount += 1;
+      throw new Error('API should not be called.');
+    },
+  });
+  const activeProject = {
+    id: 'project-1',
+    activeChatId: 'chat-1',
+    chats: [{ id: 'chat-1', messages: [] }],
+  };
+
+  const context = await service.ensureActiveChat(activeProject);
+
+  assert.equal(context.activeChat.id, 'chat-1');
+  assert.equal(requestCount, 0);
+});

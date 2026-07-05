@@ -1,5 +1,4 @@
 const chatService = require('../services/chatService');
-const { requestPrivateApi, requestPrivateApiStream } = require('../clients/private-api');
 const { marked } = require('marked');
 
 exports.getChatMenu = (req, res) => {
@@ -12,16 +11,21 @@ exports.getChatMenu = (req, res) => {
 };
 
 exports.newChat = async (req, res) => {
-  if (req.activeProject) {
-    await chatService.createNewChat(req.activeProject);
+  if (!req.activeProject?.id) {
+    return res.status(404).send('Project not found');
   }
+  await chatService.createNewChat(req.activeProject);
   res.set('HX-Redirect', `/${req.activeProject.id}`);
   return res.send();
 };
 
 exports.switchChat = async (req, res) => {
-  if (req.activeProject) {
-    await chatService.switchChat(req.activeProject, req.params.id);
+  if (!req.activeProject?.id) {
+    return res.status(404).send('Project not found');
+  }
+  const project = await chatService.switchChat(req.activeProject, req.params.id);
+  if (!project) {
+    return res.status(404).send('Chat not found');
   }
   res.set('HX-Redirect', `/${req.activeProject.id}`);
   return res.send();
@@ -44,34 +48,32 @@ exports.startPersonaChat = async (req, res) => {
 exports.streamChat = async (req, res) => {
   const { inputText } = req.body;
 
-  if (!req.activeProject) {
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.write('[Error: Project not found]');
-    return res.end();
+  if (!req.activeProject?.id) {
+    return res.status(404).send('Project not found');
+  }
+  if (typeof inputText !== 'string' || inputText.trim().length === 0) {
+    return res.status(400).send('inputText is required');
   }
 
-  let activeChat = req.activeProject.chats.find(c => c.id === req.activeProject.activeChatId);
-  
-  if (!activeChat) {
-    activeChat = { id: 'chat_' + Date.now(), title: 'New Chat', messages: [], type: 'general' };
-    req.activeProject.chats.push(activeChat);
-    req.activeProject.activeChatId = activeChat.id;
-    req.activeProject.isInitial = false;
+  const message = inputText.trim();
+  let activeChat;
+  try {
+    ({ activeChat } = await chatService.ensureActiveChat(req.activeProject));
+  } catch (error) {
+    console.error('Failed to resolve active chat:', error);
+    return res.status(502).send('Failed to prepare chat');
   }
-
   const userTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const userMsg = {
     id: 'msg_' + Date.now(),
     role: 'user',
-    text: inputText,
+    text: message,
     time: userTime
   };
-  activeChat.messages.push(userMsg);
-
-  // Check if text contains a URL and add system message to history
-  const hasUrl = /(https?:\/\/[^\s]+)/g.test(inputText);
+  const messages = [userMsg];
+  const hasUrl = /(https?:\/\/[^\s]+)/g.test(message);
   if (hasUrl) {
-    activeChat.messages.push({
+    messages.push({
       id: 'msg_' + (Date.now() + 1),
       role: 'system',
       text: 'リソースに登録しました',
@@ -79,17 +81,8 @@ exports.streamChat = async (req, res) => {
     });
   }
 
-  await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(req.activeProject.id)}`, {
-    method: 'PUT',
-    body: {
-      chats: req.activeProject.chats,
-      activeChatId: req.activeProject.activeChatId
-    }
-  });
-
   const allowedRoles = ['user', 'agent', 'persona'];
   const history = activeChat.messages
-    .slice(0, -1)
     .filter(m => allowedRoles.includes(m.role))
     .map(m => ({
       role: m.role,
@@ -97,14 +90,19 @@ exports.streamChat = async (req, res) => {
     }));
 
   try {
-    const apiRes = await requestPrivateApiStream('/api/v1/chat/stream', {
-      method: 'POST',
-      body: {
-        message: inputText,
-        history,
-        projectId: req.activeProject.id
-      }
-    });
+    await chatService.appendMessages(
+      req.activeProject.id,
+      activeChat.id,
+      messages,
+    );
+    const apiRes = await chatService.stream(
+      message,
+      history,
+      req.activeProject.id,
+    );
+    if (!apiRes.ok || !apiRes.body) {
+      throw new Error(`Chat API returned HTTP ${apiRes.status}.`);
+    }
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
@@ -124,46 +122,27 @@ exports.streamChat = async (req, res) => {
       res.write(value);
     }
 
-    // ストリームから受信したフルテキストからマーカーを分離
-    let textToSave = fullText;
-    let extractedFunctionCall = null;
-    
-    const marker = '__ADK_CONFIRMATION__:';
-    const markerIdx = fullText.indexOf(marker);
-    if (markerIdx !== -1) {
-      textToSave = fullText.substring(0, markerIdx).trim();
-      const jsonStr = fullText.substring(markerIdx + marker.length).trim();
-      try {
-        extractedFunctionCall = JSON.parse(jsonStr);
-      } catch (err) {
-        console.error('Failed to parse ADK confirmation JSON:', err);
-      }
-    }
-
-    // Save agent message
     const agentMsg = {
       id: 'msg_' + (Date.now() + 1),
       role: 'agent',
-      text: textToSave,
+      text: fullText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    if (extractedFunctionCall) {
-      agentMsg.functionCall = extractedFunctionCall;
-    }
-    activeChat.messages.push(agentMsg);
-
-    await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(req.activeProject.id)}`, {
-      method: 'PUT',
-      body: {
-        chats: req.activeProject.chats,
-        activeChatId: req.activeProject.activeChatId
-      }
-    });
+    await chatService.appendMessages(
+      req.activeProject.id,
+      activeChat.id,
+      [agentMsg],
+    );
 
   } catch (error) {
     console.error('Streaming error in frontend controller:', error);
+    if (!res.headersSent) {
+      return res.status(502).send('Failed to stream chat response');
+    }
     res.write('\n[Error occurred during streaming]');
   } finally {
-    res.end();
+    if (!res.writableEnded) {
+      res.end();
+    }
   }
 };
