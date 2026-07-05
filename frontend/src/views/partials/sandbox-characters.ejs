@@ -4,6 +4,8 @@
   const triggerList = ['refreshSandbox from:body'];
   if (isPolling) {
     triggerList.push('every 3s');
+  } else {
+    triggerList.push('every 5s');
   }
   const pollingAttrs = `hx-get="/${activeProject.id}/view/simulation-square${isPolling ? `?simulationId=${encodeURIComponent(selectedId)}` : ''}" hx-trigger="${triggerList.join(', ')}" hx-swap="outerHTML"`; 
 %>

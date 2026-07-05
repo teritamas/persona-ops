@@ -16,8 +16,8 @@
 
   <form 
     hx-post="/<%= activeProject.id %>/action/requirements/save"
-    hx-target="#requirement-dashboard" 
-    hx-swap="outerHTML" 
+    hx-target="#left-panel-content" 
+    hx-swap="innerHTML" 
     class="space-y-5 relative z-10"
   >
     <input type="hidden" name="id" value="<%= requirement.id || '' %>" />

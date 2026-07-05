@@ -81,7 +81,7 @@ exports.getSimulationSquare = async (req, res) => {
 exports.resetReactions = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(req.activeProject.id);
   return res.render('partials/sandbox-characters-with-oob', {
-    selectedSimulation: { status: 'running', reactions: [] },
+    selectedSimulation: { id: 'dummy', status: 'running', reactions: [] },
     requirements,
     simulations: [],
   });

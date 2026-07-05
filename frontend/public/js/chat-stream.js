@@ -252,7 +252,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             htmx.ajax('GET', `/${projectId}/view/simulation-square?t=${t}`, { target: '#sandbox-characters', swap: 'outerHTML' });
             htmx.ajax('GET', `/${projectId}/view/topnav?t=${t}`, { target: '#topnav-header', swap: 'outerHTML' });
           }
-        }, 500);
+        }, 1000);
       }
     }, 20);
 

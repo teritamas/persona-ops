@@ -87,7 +87,7 @@ class SimulationService {
         )
       : simulations[0];
 
-    if (selectedSimulationId && !selectedSummary) {
+    if (selectedSimulationId && selectedSimulationId !== 'dummy' && selectedSimulationId !== 'undefined' && !selectedSummary) {
       const error = new Error('指定されたシミュレーションが見つかりません。');
       error.code = 'NOT_FOUND';
       throw error;
