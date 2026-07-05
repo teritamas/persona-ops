@@ -134,13 +134,10 @@ function createService(options?: {
     ({
       simulate: vi.fn(async () => ({
         sentiment: 'positive' as const,
-        valueScore: 5,
-        adoptionIntentScore: 4,
-        workflowFitScore: 3,
-        feedback: '便利です',
-        benefits: ['入力が速い'],
+        shortFeedback: '便利です',
+        detailedFeedback: '移動が多い中で簡単に登録できます。',
+        workImage: '外回り中に素早くメモを取る。',
         concerns: [],
-        suggestedChanges: [],
       })),
     } satisfies PersonaSimulationAgentPort);
   const queue = {
@@ -220,13 +217,10 @@ describe('シミュレーションサービス', () => {
       .fn()
       .mockResolvedValueOnce({
         sentiment: 'positive',
-        valueScore: 5,
-        adoptionIntentScore: 5,
-        workflowFitScore: 5,
-        feedback: '便利',
-        benefits: [],
+        shortFeedback: '便利',
+        detailedFeedback: '使いやすい機能です。',
+        workImage: '業務イメージ',
         concerns: [],
-        suggestedChanges: [],
       })
       .mockRejectedValue(new Error('model error'));
     const { service, simulationStore } = createService({
