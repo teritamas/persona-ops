@@ -18,9 +18,7 @@ const healthResponseSchema = {
  * Why: app.ts からルート定義を分離してコントローラー層の責務を明確にする。
  */
 // eslint-disable-next-line @typescript-eslint/require-await
-export async function healthRoutes(
-  app: FastifyInstance,
-): Promise<void> {
+export async function healthRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     HEALTHZ_PATH,
     {
