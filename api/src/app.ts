@@ -32,10 +32,7 @@ export function buildApp({
 }): FastifyInstance {
   const app = Fastify({ logger });
 
-  void app.register(healthRoutes, {
-    aiAgent: container.aiAgent,
-    model: config.VERTEX_AI_MODEL,
-  });
+  void app.register(healthRoutes);
 
   void app.register(projectRoutes, {
     projectService: container.projectService,
