@@ -1,8 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { buildApp } from '../../src/app.js';
-
-import type { AppConfig } from '../../src/config.js';
 import type { Container } from '../../src/infra/container.js';
 
 const apps: Array<ReturnType<typeof buildApp>> = [];
@@ -10,15 +8,8 @@ const apps: Array<ReturnType<typeof buildApp>> = [];
 afterEach(async () => {
   await Promise.all(apps.splice(0).map(async (app) => app.close()));
 });
-
-// テスト用の最小限の config スタブ
-const stubConfig = {
-  VERTEX_AI_MODEL: 'test-model',
-} as unknown as AppConfig;
-
 function createApp() {
   const app = buildApp({
-    config: stubConfig,
     container: {} as unknown as Container,
     logger: false,
   });

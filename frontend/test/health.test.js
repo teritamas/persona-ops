@@ -1,9 +1,6 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const {
-  createHealthRouter,
-  handleHealthRequest,
-} = require('../src/routes/health');
+const { handleHealthRequest } = require('../src/routes/health');
 
 function createRequest({ htmx = false } = {}) {
   return {

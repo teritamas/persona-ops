@@ -1,10 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
-import type { AiAgentPort } from '../application/ports/infra/ai/ai-agent-port.js';
-
 const HEALTH_ROUTE_PREFIX = '/api/v1';
 const HEALTHZ_PATH = `${HEALTH_ROUTE_PREFIX}/healthz`;
-const VERTEX_AI_HEALTHZ_PATH = `${HEALTHZ_PATH}/vertexai`;
 
 const healthResponseSchema = {
   type: 'object',

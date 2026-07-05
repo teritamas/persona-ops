@@ -5,7 +5,6 @@ import { buildContainer } from './infra/container.js';
 const config = loadConfig();
 const container = buildContainer(config);
 const app = buildApp({
-  config,
   container,
   logger: { level: config.LOG_LEVEL },
 });

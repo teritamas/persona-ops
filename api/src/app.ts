@@ -12,7 +12,6 @@ import { requirementRoutes } from './routes/requirement-routes.js';
 import { simulationRoutes } from './routes/simulation-routes.js';
 import { internalSimulationRoutes } from './routes/internal/simulation-routes.js';
 import { sourceDocumentRoutes } from './routes/source-document-routes.js';
-import { type AppConfig } from './config.js';
 
 /**
  * Fastify アプリケーションを構築する
@@ -22,11 +21,9 @@ import { type AppConfig } from './config.js';
  * ここでは受け取ったコンテナを各プラグインに注入するだけにする。
  */
 export function buildApp({
-  config,
   container,
   logger = true,
 }: {
-  config: AppConfig;
   container: Container;
   logger?: FastifyServerOptions['logger'];
 }): FastifyInstance {
