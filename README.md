@@ -5,7 +5,7 @@
 [![Terraform CI](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml)
 
 > コードレビューの前に、 ユーザー影響をレビューする。  
-> それがペルソナOpsです。
+> それがPersonaOpsです。
 
 ## 企画
 

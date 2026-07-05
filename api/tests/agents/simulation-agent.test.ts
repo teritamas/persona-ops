@@ -41,13 +41,10 @@ describe('ADKペルソナシミュレーションAgent', () => {
   it('構造化されたペルソナ反応を返す', async () => {
     const response = JSON.stringify({
       sentiment: 'positive',
-      valueScore: 5,
-      adoptionIntentScore: 4,
-      workflowFitScore: 3,
-      feedback: '便利です',
-      benefits: ['入力が速い'],
+      shortFeedback: '便利です',
+      detailedFeedback: 'これなら移動中にも入力できて非常に助かります',
+      workImage: '電車の中でスマホに向かって話しかけている',
       concerns: [],
-      suggestedChanges: [],
     });
     const agent = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(response),
@@ -55,7 +52,7 @@ describe('ADKペルソナシミュレーションAgent', () => {
 
     await expect(agent.simulate(input)).resolves.toMatchObject({
       sentiment: 'positive',
-      valueScore: 5,
+      shortFeedback: '便利です',
     });
   });
 
@@ -63,14 +60,11 @@ describe('ADKペルソナシミュレーションAgent', () => {
     const invalidScore = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(
         JSON.stringify({
-          sentiment: 'positive',
-          valueScore: 6,
-          adoptionIntentScore: 4,
-          workflowFitScore: 3,
-          feedback: '便利です',
-          benefits: [],
+          sentiment: 'invalid', // should fail enum check
+          shortFeedback: 'test',
+          detailedFeedback: 'test',
+          workImage: 'test',
           concerns: [],
-          suggestedChanges: [],
         }),
       ),
     );

@@ -1,48 +1,48 @@
 <% const hideClass=(!activeProject || !activeProject.id) ? 'hidden' : '' ; %>
   <nav id="global-sidebar"
-    class="w-14 hover:w-48 transition-all duration-300 ease-in-out bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group <%= hideClass %>">
+    class="w-14 hover:w-48 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group <%= hideClass %>">
     <!-- Nav Items -->
-    <div class="flex flex-col space-y-2 w-full px-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
+    <div class="flex flex-col space-y-3 w-full px-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
 
       <!-- Chat Menu (Active by default) -->
       <div class="w-full relative group/chatmenu">
         <button id="nav-chat" hx-get="/<%= activeProject.id %>/view/chat" hx-target="#left-panel-content"
           hx-swap="innerHTML" onclick="showSimulationPlayground()"
-          class="nav-btn flex items-center py-3 px-2.5 rounded-xl bg-orange-50 text-orange-600 transition-all duration-200 active:scale-95 w-full group/item <%= hideClass %>">
-          <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2"
+          class="nav-btn flex items-center py-3 px-2.5 rounded-2xl bg-orange-50 text-orange-600 transition-all duration-300 active:scale-95 w-full group/item <%= hideClass %> hover:-translate-y-0.5 hover:shadow-sm hover:shadow-orange-500/10">
+          <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
             </path>
           </svg>
           <span
-            class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-orange-600">チャット</span>
+            class="ms-4 text-sm font-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-orange-600 tracking-tight">チャット</span>
         </button>
 
         <!-- Resources Menu -->
         <button id="nav-resources" hx-get="/<%= activeProject.id %>/view/resources" hx-target="#left-panel-content"
           hx-swap="innerHTML"
-          class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative <%= hideClass %>"
+          class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item relative <%= hideClass %> hover:-translate-y-0.5"
           onclick="document.getElementById('resource-notification-badge').classList.add('hidden')">
           <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
-            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round"
               d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
           </svg>
           <span id="resource-notification-badge"
             class="absolute top-1.5 right-1.5 w-3 h-3 bg-orange-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
           <span
-            class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">リソース</span>
+            class="ms-4 text-sm font-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600 tracking-tight">リソース</span>
         </button>
 
         <!-- Requirements Management -->
         <div class="w-full flex flex-col <%= hideClass %>">
           <button id="nav-requirements" hx-get="/<%= activeProject.id %>/view/requirements"
             hx-target="#left-panel-content" hx-swap="innerHTML"
-            class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative"
+            class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item relative hover:-translate-y-0.5"
             onclick="document.getElementById('requirement-notification-badge').classList.add('hidden')">
             <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
-              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
               </path>
@@ -50,7 +50,7 @@
             <span id="requirement-notification-badge"
               class="absolute top-1.5 right-1.5 w-3 h-3 bg-orange-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
             <span
-              class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">要件定義</span>
+              class="ms-4 text-sm font-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600 tracking-tight">要件定義</span>
           </button>
 
           <!-- Sub-list for Requirements -->
@@ -59,8 +59,8 @@
             <!-- 新規作成ボタン -->
             <button hx-get="/<%= activeProject.id %>/view/requirements/new-form" hx-target="#left-panel-content"
               hx-swap="innerHTML"
-              class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center gap-1 w-full text-left mb-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              class="text-orange-500 hover:text-orange-600 bg-orange-50/50 hover:bg-orange-50 px-2 py-1.5 rounded-xl text-[11px] font-black transition-all active:scale-95 flex items-center gap-1 w-full text-left mb-1.5 shadow-sm border border-orange-100/50">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
               </svg>
               新規作成
@@ -69,7 +69,7 @@
               <% requirements.forEach(req=> { %>
                 <button hx-get="/<%= activeProject.id %>/view/requirements/<%= req.id %>"
                   hx-target="#left-panel-content" hx-swap="innerHTML"
-                  class="text-xs font-medium text-slate-500 hover:text-orange-600 text-left truncate py-1.5 hover:bg-slate-50 rounded px-2 w-full transition-colors whitespace-nowrap">
+                  class="text-[11px] font-bold text-slate-400 hover:text-orange-600 text-left truncate py-1.5 hover:bg-orange-50 rounded-xl px-2 w-full transition-colors whitespace-nowrap">
                   <%= req.title %>
                 </button>
                 <% }) %>
@@ -81,15 +81,15 @@
         <div class="w-full flex flex-col <%= hideClass %>">
           <button id="nav-simulations" hx-get="/<%= activeProject.id %>/view/simulations"
             hx-target="#left-panel-content" hx-swap="innerHTML"
-            class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item">
+            class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item hover:-translate-y-0.5">
             <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
-              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round"
                 d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z">
               </path>
             </svg>
             <span
-              class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">シミュレーション</span>
+              class="ms-4 text-sm font-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600 tracking-tight">シミュレーション</span>
           </button>
 
           <!-- Sub-list for Simulations -->
@@ -99,7 +99,7 @@
               <% simulations.slice(0, 5).forEach((sim, idx)=> { %>
                 <button hx-get="/<%= activeProject.id %>/view/simulations/<%= encodeURIComponent(sim.id) %>"
                   hx-target="#left-panel-content" hx-swap="innerHTML"
-                  class="text-xs font-medium text-slate-500 hover:text-orange-600 text-left truncate py-1.5 hover:bg-slate-50 rounded px-2 w-full transition-colors whitespace-nowrap">
+                  class="text-[11px] font-bold text-slate-400 hover:text-orange-600 text-left truncate py-1.5 hover:bg-orange-50 rounded-xl px-2 w-full transition-colors whitespace-nowrap">
                   <%= sim.requirementSnapshot?.title || `履歴 ${idx + 1}` %>
                 </button>
                 <% }) %>
@@ -120,8 +120,8 @@
         btn.addEventListener('click', function () {
           // Remove active state from all
           navBtns.forEach(b => {
-            b.classList.remove('bg-orange-50', 'text-orange-600');
-            b.classList.add('text-slate-400', 'hover:bg-slate-100', 'hover:text-slate-600');
+            b.classList.remove('bg-orange-50', 'text-orange-600', 'shadow-sm', 'shadow-orange-500/10');
+            b.classList.add('text-slate-400', 'hover:bg-slate-50', 'hover:text-slate-600');
 
             const icon = b.querySelector('.nav-icon');
             if (icon) {
@@ -129,7 +129,7 @@
               icon.classList.add('text-slate-400', 'group-hover/item:text-slate-600');
             }
 
-            const textSpan = b.querySelector('span');
+            const textSpan = b.querySelector('span:not(#resource-notification-badge):not(#requirement-notification-badge)');
             if (textSpan) {
               textSpan.classList.remove('text-orange-600');
               textSpan.classList.add('text-slate-600');
@@ -137,8 +137,8 @@
           });
 
           // Add active state to clicked
-          this.classList.remove('text-slate-400', 'hover:bg-slate-100', 'hover:text-slate-600');
-          this.classList.add('bg-orange-50', 'text-orange-600');
+          this.classList.remove('text-slate-400', 'hover:bg-slate-50', 'hover:text-slate-600');
+          this.classList.add('bg-orange-50', 'text-orange-600', 'shadow-sm', 'shadow-orange-500/10');
 
           const thisIcon = this.querySelector('.nav-icon');
           if (thisIcon) {
@@ -146,7 +146,7 @@
             thisIcon.classList.add('text-orange-500');
           }
 
-          const thisTextSpan = this.querySelector('span');
+          const thisTextSpan = this.querySelector('span:not(#resource-notification-badge):not(#requirement-notification-badge)');
           if (thisTextSpan) {
             thisTextSpan.classList.remove('text-slate-600');
             thisTextSpan.classList.add('text-orange-600');

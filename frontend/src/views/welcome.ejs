@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ペルソナOps</title>
+  <title>PersonaOps</title>
 
   <!-- Google Fonts for logo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,8 @@
         <!-- ==========================================
         左サイドバー (グローバルナビ - ミニホバー展開型)
         ========================================== -->
-        <%- include('partials/sidebar', { activeProject, requirements: typeof requirements !=='undefined' ? requirements : [], simulations: typeof simulations !=='undefined' ? simulations : [] }) %>
+        <%- include('partials/sidebar', { activeProject, requirements: typeof requirements !=='undefined' ? requirements
+          : [], simulations: typeof simulations !=='undefined' ? simulations : [] }) %>
 
           <!-- ==========================================
         メインコンテンツエリア (3カラム構成)
@@ -42,7 +43,8 @@
           ========================================== -->
             <aside id="left-panel-content"
               class="w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out">
-              <%- include('partials/chat-menu-active', { activeChat: null, activeProject: activeProject, isWelcome: true }) %>
+              <%- include('partials/chat-menu-active', { activeChat: null, activeProject: activeProject, isWelcome: true
+                }) %>
             </aside>
 
             <!-- ==========================================

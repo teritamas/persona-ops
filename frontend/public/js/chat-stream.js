@@ -108,13 +108,10 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
 
   // 1. Add User message bubble
   const userHtml = `
-    <div class="flex w-full justify-end mb-4 animate-fade-in">
-      <div class="flex max-w-[85%] flex-row-reverse items-end gap-3">
-        <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-slate-800 text-white shadow-md">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-        </div>
+    <div class="flex w-full justify-end mb-3 animate-fade-in">
+      <div class="flex max-w-[85%] flex-row-reverse items-end gap-2.5">
         <div class="flex flex-col items-end">
-          <div class="px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm bg-slate-800 text-white rounded-br-sm">
+          <div class="px-4 py-2.5 text-xs leading-relaxed bg-slate-800 text-white rounded-[1.5rem] rounded-br-[0.5rem] shadow-[0_8px_20px_rgba(0,0,0,0.15)] border border-slate-700 markdown-body max-w-none">
             ${escapeHtml(text).replace(/\n/g, '<br/>')}
           </div>
           <span class="text-[10px] text-slate-400 mt-1 px-1">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -145,9 +142,9 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
   const hasUrl = /(https?:\/\/[^\s]+)/g.test(text);
   if (hasUrl) {
     const systemHtml = `
-      <div class="flex w-full justify-center mb-4 animate-fade-in">
-        <div class="bg-slate-50 text-slate-500 text-xs px-4 py-1.5 rounded-full flex items-center shadow-sm border border-slate-200">
-          <svg class="w-3.5 h-3.5 mr-1.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+      <div class="flex w-full justify-center mb-3 animate-fade-in">
+        <div class="bg-slate-50/80 backdrop-blur-sm text-slate-500 text-[10px] font-bold px-4 py-1.5 rounded-full flex items-center shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-slate-200 uppercase tracking-wider">
+          <svg class="w-3.5 h-3.5 mr-1.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
           リソースに登録しました
         </div>
       </div>
@@ -162,13 +159,13 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
   // 2. Add empty Agent message bubble with loader
   const agentMsgId = 'agent-msg-' + Date.now();
   const agentHtml = `
-    <div class="flex w-full justify-start mb-4 animate-fade-in" id="${agentMsgId}">
-      <div class="flex max-w-[85%] flex-row items-end gap-3">
-        <div class="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-md">
-          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+    <div class="flex w-full justify-start mb-3 animate-fade-in" id="${agentMsgId}">
+      <div class="flex max-w-[85%] flex-row items-end gap-2.5">
+        <div class="w-8 h-8 rounded-[1rem] shrink-0 flex items-center justify-center bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-[0_4px_15px_rgba(249,115,22,0.3)] border border-orange-400/50">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
         </div>
         <div class="flex flex-col items-start">
-          <div class="px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm bg-white text-slate-700 border border-slate-200 rounded-bl-sm markdown-body max-w-none">
+          <div class="px-4 py-2.5 text-xs leading-relaxed bg-white text-slate-700 border-2 border-slate-100 rounded-[1.5rem] rounded-bl-[0.5rem] shadow-[0_8px_30px_rgba(0,0,0,0.06)] markdown-body max-w-none">
             <span class="typing-loader text-slate-400">・・・</span>
           </div>
           <span class="text-[10px] text-slate-400 mt-1 px-1 time-label">Typing...</span>

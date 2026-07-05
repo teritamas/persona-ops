@@ -48,6 +48,11 @@ exports.getRequirementsDashboard = async (req, res) => {
     try {
       const dashboard = await simulationService.getDashboard(req.activeProject);
       unhideSimulationsForRequirement(req, res, selectedRequirement.id, dashboard.simulations);
+      
+      // If this is an HTMX request, trigger the sandbox to refresh so the unhidden requirement appears
+      if (req.headers['hx-request']) {
+        res.setHeader('HX-Trigger', 'refreshSandbox');
+      }
     } catch (err) {
       console.error('Failed to unhide simulations for requirement:', err);
     }
