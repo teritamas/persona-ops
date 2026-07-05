@@ -1,3 +1,13 @@
+if (typeof window !== "undefined" && window.marked) {
+  window.marked.use({
+    renderer: {
+      link(token) {
+        return `<a target="_blank" rel="noopener noreferrer" href="${token.href}">${token.text}</a>`;
+      }
+    }
+  });
+}
+
 function escapeHtml(string) {
   return String(string).replace(/[&<>"']/g, function (s) {
     return {
@@ -215,10 +225,27 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
         clearInterval(typeInterval);
         timeLabel.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        const hasRequirement = /要件定義/g.test(incomingText) && (/作成/g.test(incomingText) || /保存/g.test(incomingText) || /完了/g.test(incomingText) || /提案/g.test(incomingText));
+        const hasRequirement = /要件/g.test(incomingText) && /(作成|保存|完了|まとめ|提案|出|追加|登録)/g.test(incomingText);
         if (hasRequirement) {
           const reqBadge = document.getElementById('requirement-notification-badge');
           if (reqBadge) reqBadge.classList.remove('hidden');
+
+          const systemHtml = `
+            <div class="flex w-full justify-center mb-4 animate-fade-in">
+              <div class="bg-slate-50 text-slate-500 text-xs px-4 py-1.5 rounded-full flex items-center shadow-sm border border-slate-200">
+                <svg class="w-3.5 h-3.5 mr-1.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                要件定義を作成しました
+              </div>
+            </div>
+          `;
+          const chatContainer = document.getElementById('chat-messages-container');
+          if (chatContainer) {
+            chatContainer.insertAdjacentHTML('beforeend', systemHtml);
+            const scrollParent = chatContainer.parentElement;
+            if (scrollParent) {
+              scrollParent.scrollTop = scrollParent.scrollHeight;
+            }
+          }
         }
 
         setTimeout(() => {

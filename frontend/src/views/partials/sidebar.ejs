@@ -30,10 +30,52 @@
               d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
           </svg>
           <span id="resource-notification-badge"
-            class="absolute top-1.5 right-1.5 w-3 h-3 bg-pink-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
+            class="absolute top-1.5 right-1.5 w-3 h-3 bg-orange-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
           <span
             class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">リソース</span>
         </button>
+
+        <!-- Requirements Management -->
+        <div class="w-full flex flex-col <%= hideClass %>">
+          <button id="nav-requirements" hx-get="/<%= activeProject.id %>/view/requirements"
+            hx-target="#left-panel-content" hx-swap="innerHTML"
+            class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative"
+            onclick="document.getElementById('requirement-notification-badge').classList.add('hidden')">
+            <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
+              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            <span id="requirement-notification-badge"
+              class="absolute top-1.5 right-1.5 w-3 h-3 bg-orange-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
+            <span
+              class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">要件定義</span>
+          </button>
+
+          <!-- Sub-list for Requirements -->
+          <div
+            class="hidden group-hover:flex flex-col w-full pl-11 pr-2 pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
+            <!-- 新規作成ボタン -->
+            <button hx-get="/<%= activeProject.id %>/view/requirements/new-form" hx-target="#left-panel-content"
+              hx-swap="innerHTML"
+              class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center gap-1 w-full text-left mb-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+              </svg>
+              新規作成
+            </button>
+            <% if (typeof requirements !=='undefined' && requirements.length> 0) { %>
+              <% requirements.forEach(req=> { %>
+                <button hx-get="/<%= activeProject.id %>/view/requirements/<%= req.id %>"
+                  hx-target="#left-panel-content" hx-swap="innerHTML"
+                  class="text-xs font-medium text-slate-500 hover:text-orange-600 text-left truncate py-1.5 hover:bg-slate-50 rounded px-2 w-full transition-colors whitespace-nowrap">
+                  <%= req.title %>
+                </button>
+                <% }) %>
+                  <% } %>
+          </div>
+        </div>
 
         <!-- Simulation Results -->
         <div class="w-full flex flex-col <%= hideClass %>">
@@ -59,48 +101,6 @@
                   hx-target="#left-panel-content" hx-swap="innerHTML"
                   class="text-xs font-medium text-slate-500 hover:text-orange-600 text-left truncate py-1.5 hover:bg-slate-50 rounded px-2 w-full transition-colors whitespace-nowrap">
                   <%= sim.requirementSnapshot?.title || `履歴 ${idx + 1}` %>
-                </button>
-                <% }) %>
-                  <% } %>
-          </div>
-        </div>
-
-        <!-- Requirements Management -->
-        <div class="w-full flex flex-col <%= hideClass %>">
-          <button id="nav-requirements" hx-get="/<%= activeProject.id %>/view/requirements"
-            hx-target="#left-panel-content" hx-swap="innerHTML"
-            class="nav-btn flex items-center py-3 px-2.5 rounded-xl text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-all duration-200 active:scale-95 w-full group/item relative"
-            onclick="document.getElementById('requirement-notification-badge').classList.add('hidden')">
-            <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
-              stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-              </path>
-            </svg>
-            <span id="requirement-notification-badge"
-              class="absolute top-1.5 right-1.5 w-3 h-3 bg-blue-500 border-2 border-white rounded-full hidden animate-bounce shadow-sm"></span>
-            <span
-              class="ms-4 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600">要件定義</span>
-          </button>
-
-          <!-- Sub-list for Requirements -->
-          <div
-            class="hidden group-hover:flex flex-col w-full pl-11 pr-2 pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
-            <!-- 新規作成ボタン -->
-            <button hx-get="/<%= activeProject.id %>/view/requirements/new-form" hx-target="#left-panel-content"
-              hx-swap="innerHTML"
-              class="text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95 flex items-center gap-1 w-full text-left mb-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
-              </svg>
-              新規作成
-            </button>
-            <% if (typeof requirements !=='undefined' && requirements.length> 0) { %>
-              <% requirements.forEach(req=> { %>
-                <button hx-get="/<%= activeProject.id %>/view/requirements/<%= req.id %>"
-                  hx-target="#left-panel-content" hx-swap="innerHTML"
-                  class="text-xs font-medium text-slate-500 hover:text-orange-600 text-left truncate py-1.5 hover:bg-slate-50 rounded px-2 w-full transition-colors whitespace-nowrap">
-                  <%= req.title %>
                 </button>
                 <% }) %>
                   <% } %>

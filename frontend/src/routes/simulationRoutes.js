@@ -10,6 +10,7 @@ router.get('/view/simulations', simulationController.getSimulationDashboard);
 router.get('/view/simulation-square', simulationController.getSimulationSquare);
 router.post('/action/simulate/run', simulationController.runSimulation);
 router.post('/action/simulate/reset-reactions', simulationController.resetReactions);
-router.delete('/action/simulations/:simulationId', simulationController.deleteSimulation);
+router.patch('/action/simulations/:simulationId/hide', simulationController.hideSimulation);
+router.patch('/action/sandbox/requirements/:requirementId/hide', simulationController.hideSandboxRequirement);
 
 module.exports = router;

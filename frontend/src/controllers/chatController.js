@@ -1,6 +1,14 @@
 const chatService = require('../services/chatService');
 const { marked } = require('marked');
 
+marked.use({
+  renderer: {
+    link(token) {
+      return `<a target="_blank" rel="noopener noreferrer" href="${token.href}" ${token.title ? `title="${token.title}"` : ''}>${token.text}</a>`;
+    }
+  }
+});
+
 exports.getChatMenu = (req, res) => {
   const { activeChat } = chatService.getActiveChatContext(req.activeProject);
 
@@ -130,7 +138,7 @@ exports.streamChat = async (req, res) => {
     };
     const messagesToAppend = [agentMsg];
 
-    if (/要件定義/g.test(fullText) && (/作成/g.test(fullText) || /保存/g.test(fullText) || /完了/g.test(fullText) || /提案/g.test(fullText))) {
+    if (/要件/g.test(fullText) && /(作成|保存|完了|提案|まとめ|出|追加|登録)/g.test(fullText)) {
       messagesToAppend.push({
         id: 'msg_' + (Date.now() + 2),
         role: 'system',

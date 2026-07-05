@@ -60,7 +60,7 @@ class SimulationService {
       options.requestPrivateApiImplementation ?? requestPrivateApi;
   }
 
-  async getDashboard(activeProject, selectedSimulationId) {
+  async getDashboard(activeProject, selectedSimulationId, hiddenSimulations = []) {
     if (!activeProject || !activeProject.id) {
       return {
         activeProject,
@@ -77,7 +77,10 @@ class SimulationService {
       throw new Error('シミュレーション履歴を取得できませんでした。');
     }
 
-    const simulations = listResponse.data.map(presentSimulation);
+    let simulations = listResponse.data.map(presentSimulation);
+    // 隠しシミュレーションを除外
+    simulations = simulations.filter(sim => !hiddenSimulations.includes(sim.id));
+
     const selectedSummary = selectedSimulationId
       ? simulations.find(
           (simulation) => simulation.id === selectedSimulationId,
@@ -143,10 +146,13 @@ class SimulationService {
     return presentSimulation(response.data);
   }
 
-  async getSandboxContext(activeProject, simulationId) {
-    const dashboard = await this.getDashboard(activeProject, simulationId);
+  async getSandboxContext(activeProject, simulationId, hiddenSimulations = [], hiddenRequirements = []) {
+    const dashboard = await this.getDashboard(activeProject, simulationId, hiddenSimulations);
     const requirementService = require('./requirementService');
-    const requirements = await requirementService.fetchRequirements(activeProject.id);
+    let requirements = await requirementService.fetchRequirements(activeProject.id);
+    if (hiddenRequirements && hiddenRequirements.length > 0) {
+      requirements = requirements.filter(req => !hiddenRequirements.includes(req.id));
+    }
     return {
       selectedSimulation: dashboard.selectedSimulation,
       simulations: dashboard.simulations,
