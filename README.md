@@ -9,7 +9,13 @@
 
 プロダクトの概要や動作イメージは、下記のProtoPediaの記事を参照ください。
 
-- [Persona Ops（ぺるそなおぷす） | ProtoPedia](https://protopedia.net/prototype/private/85a9a750-9b5c-4b16-97f3-616ae14f8122)
+- [PersonaOps | ProtoPedia](https://protopedia.net/prototype/private/85a9a750-9b5c-4b16-97f3-616ae14f8122)
+
+## 全体構成
+
+本アプリケーションは GCP 上にデプロイされており、mainブランチへのマージでフロントエンドとバックエンドが自動でデプロイされます。
+
+![アーキテクチャ](./docs/img/persona-ops-architecture.png)
 
 ## コアとなるAIエージェント
 
