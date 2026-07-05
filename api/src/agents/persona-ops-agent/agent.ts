@@ -7,6 +7,7 @@ import type {
   PersonaOpsAgentPort,
 } from '../../application/ports/agents/persona-ops-agent-port.js';
 import type { PersonaService } from '../../application/persona-service.js';
+import type { ProjectService } from '../../application/project-service.js';
 import type { RequirementService } from '../../application/requirement-service.js';
 import type { SimulationService } from '../../application/simulation-service.js';
 import { PERSONA_OPS_AGENT_INSTRUCTION } from './instructions.js';
@@ -14,11 +15,13 @@ import { createApproveRequirementAndRequestSimulationTool } from './tools/approv
 import { createFetchDocumentTool } from './tools/fetch-document-tool.js';
 import { createSavePersonasTool } from './tools/save-personas-tool.js';
 import { createSaveRequirementTool } from './tools/save-requirement-tool.js';
+import { createUpdateProjectNameTool } from './tools/update-project-name-tool.js';
 import type { SourceDocumentService } from '../../application/source-document/source-document-service.js';
 
 export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
   constructor(
     private readonly model: string,
+    private readonly projectService: ProjectService,
     private readonly personaService: PersonaService,
     private readonly requirementService: RequirementService,
     private readonly simulationService: SimulationService,
@@ -40,6 +43,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
           this.simulationService,
         ),
         createFetchDocumentTool(input.projectId, this.sourceDocumentService),
+        createUpdateProjectNameTool(input.projectId, this.projectService),
       ],
     });
     const runner = new InMemoryRunner({
@@ -71,6 +75,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
       '<project-context-data>',
       JSON.stringify({
         projectId: input.projectId,
+        projectName: input.projectName,
         personas: input.personas,
         requirements: input.requirements,
         sourceDocuments: input.sourceDocuments.map((document) => ({

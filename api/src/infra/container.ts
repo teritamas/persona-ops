@@ -79,8 +79,14 @@ export function buildContainer(config: AppConfig): Container {
     config.VERTEX_AI_MODEL,
   );
 
+  const projectService = new ProjectService(
+    projectRepository,
+    new FirestoreProjectDataDeletion(firestore),
+  );
+
   const personaOpsAgent = new AdkPersonaOpsAgent(
     config.VERTEX_AI_MODEL,
+    projectService,
     personaService,
     requirementService,
     simulationService,
@@ -89,10 +95,7 @@ export function buildContainer(config: AppConfig): Container {
 
   return {
     aiAgent,
-    projectService: new ProjectService(
-      projectRepository,
-      new FirestoreProjectDataDeletion(firestore),
-    ),
+    projectService,
     personaService,
     requirementService,
     simulationService,
@@ -101,6 +104,7 @@ export function buildContainer(config: AppConfig): Container {
       requirementService,
       simulationService,
       sourceDocumentService,
+      projectService,
       personaOpsAgent,
     ),
     sourceDocumentService,

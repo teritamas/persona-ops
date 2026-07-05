@@ -4,6 +4,7 @@ import type { PersonaService } from './persona-service.js';
 import type { RequirementService } from './requirement-service.js';
 import type { SimulationService } from './simulation-service.js';
 import type { SourceDocumentService } from './source-document/source-document-service.js';
+import type { ProjectService } from './project-service.js';
 
 export interface SendPersonaOpsMessageRequest {
   projectId: string;
@@ -17,22 +18,25 @@ export class PersonaOpsChatService {
     private readonly requirementService: RequirementService,
     private readonly simulationService: SimulationService,
     private readonly sourceDocumentService: SourceDocumentService,
+    private readonly projectService: ProjectService,
     private readonly personaOpsAgent: PersonaOpsAgentPort,
   ) {}
 
   async stream(
     request: SendPersonaOpsMessageRequest,
   ): Promise<AsyncIterable<string>> {
-    const [personas, requirements, simulations, sourceDocuments] =
+    const [personas, requirements, simulations, sourceDocuments, project] =
       await Promise.all([
         this.personaService.getPersonasByProjectId(request.projectId),
         this.requirementService.list(request.projectId),
         this.simulationService.list(request.projectId),
         this.sourceDocumentService.getReusableContext(request.projectId),
+        this.projectService.getProjectById(request.projectId),
       ]);
 
     return this.personaOpsAgent.stream({
       ...request,
+      projectName: project?.name ?? '新しいプロジェクト',
       personas,
       requirements,
       sourceDocuments,

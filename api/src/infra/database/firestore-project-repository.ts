@@ -16,7 +16,10 @@ export class FirestoreProjectRepository implements ProjectRepositoryPort {
   }
 
   async findAll(): Promise<Project[]> {
-    const snapshot = await this.firestore.collection(this.collectionName).get();
+    const snapshot = await this.firestore
+      .collection(this.collectionName)
+      .orderBy('createdAt', 'asc')
+      .get();
     return snapshot.docs.map((document) =>
       this.mapProject(document.id, document.data()),
     );
