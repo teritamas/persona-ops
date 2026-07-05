@@ -4,6 +4,7 @@ import { personaRoutes } from '../../src/routes/persona-routes.js';
 import { PersonaService } from '../../src/application/persona-service.js';
 import type { PersonaStorePort } from '../../src/application/ports/infra/database/persona-store-port.js';
 import type { Persona } from '../../src/domain/persona.js';
+import { MemorySourceDocumentRepository } from '../helpers/memory-source-document-repository.js';
 
 class MockPersonaRepository implements PersonaStorePort {
   private personas: Persona[] = [];
@@ -27,7 +28,10 @@ class MockPersonaRepository implements PersonaStorePort {
 describe('ペルソナ ルーター', () => {
   const app = Fastify();
   const repository = new MockPersonaRepository();
-  const personaService = new PersonaService(repository);
+  const personaService = new PersonaService(
+    repository,
+    new MemorySourceDocumentRepository(),
+  );
 
   void app.register(personaRoutes, { personaService });
 
@@ -40,6 +44,7 @@ describe('ペルソナ ルーター', () => {
       role: 'デザイナー',
       traits: [],
       background: '',
+      sourceDocumentIds: [],
       avatarSeed: 'Felix',
       x: 0,
       y: 0,

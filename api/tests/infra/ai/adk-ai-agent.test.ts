@@ -17,7 +17,7 @@ function createRunner(
   };
 }
 
-describe('AdkAiAgent', () => {
+describe('ADK汎用AI Agent', () => {
   it('空でないモデルのレスポンスを正常に受け付ける', async () => {
     const runner = createRunner(async function* () {
       yield await Promise.resolve({ content: { parts: [{ text: 'ok' }] } });

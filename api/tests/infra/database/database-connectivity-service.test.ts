@@ -32,7 +32,7 @@ function createDocument({
   };
 }
 
-describe('DatabaseConnectivityService', () => {
+describe('Database接続確認サービス', () => {
   it('Firestoreのチェック用ドキュメントを作成、読み取り、削除する', async () => {
     const document = createDocument();
     const service = new DatabaseConnectivityService({
@@ -67,7 +67,7 @@ describe('DatabaseConnectivityService', () => {
     expect(document.delete).not.toHaveBeenCalled();
   });
 
-  describe('createDatabaseConnectivityService', () => {
+  describe('Database接続確認サービスの生成', () => {
     it('サービスインスタンスを生成できる', async () => {
       const service = createDatabaseConnectivityService({ projectId: 'test' });
       expect(service).toBeInstanceOf(DatabaseConnectivityService);

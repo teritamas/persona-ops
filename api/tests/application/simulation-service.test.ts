@@ -78,6 +78,7 @@ const requirement: Requirement = {
   title: '音声入力',
   description: '移動中に入力する',
   acceptanceCriteria: ['音声を文字にできる'],
+  sourceDocumentIds: [],
   sourceSimulationIds: [],
   status: 'draft',
   version: 1,
@@ -93,6 +94,7 @@ const personas: Persona[] = [
     role: '営業',
     traits: ['外勤'],
     background: '移動が多い',
+    sourceDocumentIds: [],
     avatarSeed: 'Felix',
     x: 20,
     y: 30,
@@ -106,6 +108,7 @@ const personas: Persona[] = [
     role: '管理者',
     traits: ['品質重視'],
     background: '入力内容を確認する',
+    sourceDocumentIds: [],
     avatarSeed: 'Aneka',
     x: 70,
     y: 40,
@@ -156,7 +159,7 @@ function createService(options?: {
   };
 }
 
-describe('SimulationService', () => {
+describe('シミュレーションサービス', () => {
   it('承認時点の要件とペルソナをSnapshot化してTaskを登録する', async () => {
     const { service, requirementStore, simulationStore, queue } =
       createService();

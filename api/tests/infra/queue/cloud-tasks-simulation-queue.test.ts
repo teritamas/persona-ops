@@ -13,7 +13,7 @@ function createClient() {
   } as unknown as CloudTasksClientPort;
 }
 
-describe('CloudTasksSimulationQueue', () => {
+describe('Cloud TasksシミュレーションQueue', () => {
   it('Simulation IDをTask名と内部APIパスへ設定する', async () => {
     const client = createClient();
     const queue = new CloudTasksSimulationQueue(client, {

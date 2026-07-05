@@ -32,7 +32,7 @@ function createObject({
   };
 }
 
-describe('StorageConnectivityService', () => {
+describe('Storage接続確認サービス', () => {
   it('Storageのチェック用オブジェクトを作成、読み取り、削除する', async () => {
     const object = createObject();
     const service = new StorageConnectivityService({
@@ -67,7 +67,7 @@ describe('StorageConnectivityService', () => {
     expect(object.delete).not.toHaveBeenCalled();
   });
 
-  describe('createStorageConnectivityService', () => {
+  describe('Storage接続確認サービスの生成', () => {
     it('サービスインスタンスを生成できる', async () => {
       const service = createStorageConnectivityService({
         bucketName: 'b',

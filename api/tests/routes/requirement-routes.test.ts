@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import { describe, expect, it } from 'vitest';
 
 import type { RequirementService } from '../../src/application/requirement-service.js';
-import { NotFoundError } from '../../src/domain/errors.js';
+import { NotFoundError, ValidationError } from '../../src/domain/errors.js';
 import type { Requirement } from '../../src/domain/requirement.js';
 import { requirementRoutes } from '../../src/routes/requirement-routes.js';
 
@@ -12,6 +12,7 @@ const requirement: Requirement = {
   title: '音声入力',
   description: '移動中に入力する',
   acceptanceCriteria: [],
+  sourceDocumentIds: [],
   sourceSimulationIds: [],
   status: 'draft',
   version: 1,
@@ -81,5 +82,49 @@ describe('要件ルーター', () => {
     expect(list.statusCode).toBe(500);
     expect(detail.statusCode).toBe(500);
     expect(detail.body).not.toContain('secret');
+  });
+
+  it('要件の保存と削除をApplication Serviceへ委譲する', async () => {
+    const app = createApp({
+      saveDraft: () => Promise.resolve(requirement),
+      delete: () => Promise.resolve(),
+    });
+
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/project-1/requirements',
+      payload: {
+        title: '音声入力',
+        description: '移動中に入力する',
+        acceptanceCriteria: [],
+        sourceDocumentIds: ['document-1'],
+      },
+    });
+    const deleted = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/projects/project-1/requirements/requirement-1',
+    });
+
+    expect(saved.statusCode).toBe(201);
+    expect(deleted.statusCode).toBe(204);
+  });
+
+  it('参照資料のValidationErrorを400へ変換する', async () => {
+    const app = createApp({
+      saveDraft: () =>
+        Promise.reject(new ValidationError('参照可能な資料ではありません')),
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/project-1/requirements',
+      payload: {
+        title: '音声入力',
+        description: '移動中に入力する',
+        acceptanceCriteria: [],
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
   });
 });

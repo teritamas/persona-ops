@@ -51,7 +51,7 @@ describe('チャットストリーミングルーター', () => {
     expect(response.statusCode).toBe(400);
   });
 
-  it('Agentでエラーが発生した場合は安全なメッセージを返す', async () => {
+  it('Agentの準備でエラーが発生した場合は安全な502を返す', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/chat/stream',
@@ -62,7 +62,7 @@ describe('チャットストリーミングルーター', () => {
       },
     });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toContain('[ERROR: Failed to generate response]');
+    expect(response.statusCode).toBe(502);
+    expect(response.body).not.toContain('secret');
   });
 });

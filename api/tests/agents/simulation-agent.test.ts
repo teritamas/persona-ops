@@ -22,6 +22,7 @@ const input = {
     role: '営業',
     traits: ['外勤'],
     background: '移動が多い',
+    sourceDocumentIds: [],
     updatedAt: '2026-01-01T00:00:00Z',
   },
   requirement: {
@@ -29,12 +30,13 @@ const input = {
     title: '音声入力',
     description: '移動中に入力する',
     acceptanceCriteria: [],
+    sourceDocumentIds: [],
     sourceSimulationIds: [],
     version: 1,
   },
 };
 
-describe('AdkPersonaSimulationAgent', () => {
+describe('ADKペルソナシミュレーションAgent', () => {
   it('構造化されたペルソナ反応を返す', async () => {
     const response = JSON.stringify({
       sentiment: 'positive',
