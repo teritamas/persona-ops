@@ -125,4 +125,75 @@ export function requirementTools(
       }
     },
   );
+
+  mcpServer.registerTool(
+    'save_requirement_draft',
+    {
+      description:
+        'Create a new requirement draft, or update an existing requirement draft with modified title, description, or acceptance criteria. If requirementId is provided, the tool will OVERWRITE the existing requirement with the new values. Always fetch the current requirement first using get_requirement_with_simulations to ensure you have the full original text for any fields you do not wish to modify.',
+      inputSchema: z.object({
+        projectId: z.string().describe('The ID of the project'),
+        requirementId: z
+          .string()
+          .optional()
+          .describe(
+            'The ID of the requirement to update. Do not provide this argument if creating a brand new requirement.',
+          ),
+        title: z
+          .string()
+          .describe(
+            'The title of the requirement. Provide the full or updated title.',
+          ),
+        description: z
+          .string()
+          .describe(
+            'The description of the requirement. Provide the full or updated description. If editing, pass the original description if it is unchanged.',
+          ),
+        acceptanceCriteria: z
+          .array(z.string())
+          .describe(
+            'List of acceptance criteria. If editing, pass the original list with any additions/modifications. Unspecified criteria will be lost.',
+          ),
+      }),
+    },
+    async ({
+      projectId,
+      requirementId,
+      title,
+      description,
+      acceptanceCriteria,
+    }) => {
+      log('Calling save_requirement_draft', { projectId, requirementId });
+      try {
+        const requirement = await requirementApiClient.saveRequirementDraft(
+          projectId,
+          {
+            id: requirementId,
+            title,
+            description,
+            acceptanceCriteria,
+          },
+        );
+        log(
+          'save_requirement_draft completed, requirement ID:',
+          requirement.id,
+        );
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Requirement draft saved successfully.\n- ID: ${requirement.id}\n- Title: ${requirement.title}\n- Status: ${requirement.status}`,
+            },
+          ],
+        };
+      } catch (e: unknown) {
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        log('Error in save_requirement_draft:', errorMessage);
+        return {
+          content: [{ type: 'text', text: `Error: ${errorMessage}` }],
+          isError: true,
+        };
+      }
+    },
+  );
 }

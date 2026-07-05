@@ -1,6 +1,7 @@
 import { HttpClient } from './api/http-client.js';
 import { ProjectApiClient } from './api/project-api-client.js';
 import { RequirementApiClient } from './api/requirement-api-clients.js';
+import { SimulationApiClient } from './api/simulation-api-client.js';
 import { HealthApiClient } from './api/health-api-client.js';
 import { createServer } from './server.js';
 
@@ -12,12 +13,14 @@ const API_AUTH_MODE = (process.env.API_AUTH_MODE || 'none') as
 const httpClient = new HttpClient(PRIVATE_API_URL, API_AUTH_MODE);
 const projectApiClient = new ProjectApiClient(httpClient);
 const requirementApiClient = new RequirementApiClient(httpClient);
+const simulationApiClient = new SimulationApiClient(httpClient);
 const healthApiClient = new HealthApiClient(httpClient);
 
 const start = () => {
   const server = createServer(
     projectApiClient,
     requirementApiClient,
+    simulationApiClient,
     healthApiClient,
   );
   server.listen(PORT, '0.0.0.0', () => {

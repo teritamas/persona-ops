@@ -8,6 +8,54 @@ if (typeof window !== "undefined" && window.marked) {
   });
 }
 
+const SystemActionRegistry = [
+  {
+    tag: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
+    text: '要件定義を作成しました',
+    color: 'text-orange-500',
+    iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`,
+    onDetect: () => {
+      const reqBadge = document.getElementById('requirement-notification-badge');
+      if (reqBadge) reqBadge.classList.remove('hidden');
+    }
+  },
+  {
+    tag: '[SYSTEM_ACTION: PERSONAS_SAVED]',
+    text: 'ペルソナを作成しました',
+    color: 'text-emerald-500',
+    iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
+    onDetect: () => {
+      // 必要に応じて追加のUI処理を記述
+    }
+  },
+  {
+    tag: '[SYSTEM_ACTION: PROJECT_NAME_UPDATED]',
+    text: 'プロジェクト名を更新しました',
+    color: 'text-blue-500',
+    iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`,
+    onDetect: () => {
+      // 必要に応じて追加のUI処理を記述
+    }
+  }
+];
+
+function parseAndCleanSystemActions(text) {
+  let cleaned = text;
+  const detectedActions = [];
+
+  SystemActionRegistry.forEach(action => {
+    if (cleaned.includes(action.tag)) {
+      cleaned = cleaned.replaceAll(action.tag, '');
+      detectedActions.push(action);
+    }
+  });
+
+  return {
+    cleanedText: cleaned.trim(),
+    actions: detectedActions
+  };
+}
+
 function escapeHtml(string) {
   return String(string).replace(/[&<>"']/g, function (s) {
     return {
@@ -200,9 +248,8 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
     let displayedText = '';
     let isStreamDone = false;
 
-    // Typewriter loop for smooth streaming rendering and automatic scrolling
     const typeInterval = setInterval(() => {
-      let textToRender = incomingText;
+      const { cleanedText: textToRender } = parseAndCleanSystemActions(incomingText);
 
       if (displayedText.length < textToRender.length) {
         const diff = textToRender.length - displayedText.length;
@@ -222,16 +269,17 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
         clearInterval(typeInterval);
         timeLabel.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-        const hasRequirement = /要件/g.test(incomingText) && /(作成|保存|完了|まとめ|提案|出|追加|登録)/g.test(incomingText);
-        if (hasRequirement) {
-          const reqBadge = document.getElementById('requirement-notification-badge');
-          if (reqBadge) reqBadge.classList.remove('hidden');
+        const { actions } = parseAndCleanSystemActions(incomingText);
+        actions.forEach(action => {
+          if (typeof action.onDetect === 'function') {
+            action.onDetect();
+          }
 
           const systemHtml = `
             <div class="flex w-full justify-center mb-4 animate-fade-in">
               <div class="bg-slate-50 text-slate-500 text-xs px-4 py-1.5 rounded-full flex items-center shadow-sm border border-slate-200">
-                <svg class="w-3.5 h-3.5 mr-1.5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                要件定義を作成しました
+                ${action.iconSvg}
+                ${action.text}
               </div>
             </div>
           `;
@@ -243,7 +291,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
               scrollParent.scrollTop = scrollParent.scrollHeight;
             }
           }
-        }
+        });
 
         setTimeout(() => {
           if (typeof htmx !== 'undefined') {

@@ -54,4 +54,23 @@ export class RequirementApiClient {
       `/api/v1/projects/${projectId}/requirements/${requirementId}/simulations`,
     );
   }
+
+  async saveRequirementDraft(
+    projectId: string,
+    requirement: {
+      id?: string;
+      title: string;
+      description: string;
+      acceptanceCriteria: string[];
+    },
+  ): Promise<RequirementDto> {
+    return this.httpClient.request<RequirementDto>(
+      `/api/v1/projects/${projectId}/requirements`,
+      {
+        method: 'POST',
+        body: JSON.stringify(requirement),
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
 }
