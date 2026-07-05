@@ -3,6 +3,7 @@ import { HttpClient } from '../src/api/http-client.js';
 import { ProjectApiClient } from '../src/api/project-api-client.js';
 import { RequirementApiClient } from '../src/api/requirement-api-clients.js';
 import { SimulationApiClient } from '../src/api/simulation-api-client.js';
+import { PersonaApiClient } from '../src/api/persona-api-client.js';
 import { HealthApiClient } from '../src/api/health-api-client.js';
 import { createServer } from '../src/server.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -15,6 +16,7 @@ describe('MCPサーバー セッション管理およびヘルスチェックテ
     const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
     const mockRequirementApiClient = new RequirementApiClient(mockHttpClient);
     const mockSimulationApiClient = new SimulationApiClient(mockHttpClient);
+    const mockPersonaApiClient = new PersonaApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
     mockProjectApiClient.listProjects = vi
@@ -25,6 +27,7 @@ describe('MCPサーバー セッション管理およびヘルスチェックテ
       mockProjectApiClient,
       mockRequirementApiClient,
       mockSimulationApiClient,
+      mockPersonaApiClient,
       mockHealthApiClient,
     );
     const server = app.listen(0);
@@ -52,8 +55,8 @@ describe('MCPサーバー セッション管理およびヘルスチェックテ
     // Both should be able to run queries
     const toolsA = await clientA.listTools();
     const toolsB = await clientB.listTools();
-    expect(toolsA.tools).toHaveLength(6);
-    expect(toolsB.tools).toHaveLength(6);
+    expect(toolsA.tools).toHaveLength(7);
+    expect(toolsB.tools).toHaveLength(7);
 
     // Close both
     await clientA.close();
@@ -66,12 +69,14 @@ describe('MCPサーバー セッション管理およびヘルスチェックテ
     const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
     const mockRequirementApiClient = new RequirementApiClient(mockHttpClient);
     const mockSimulationApiClient = new SimulationApiClient(mockHttpClient);
+    const mockPersonaApiClient = new PersonaApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
     const app = createServer(
       mockProjectApiClient,
       mockRequirementApiClient,
       mockSimulationApiClient,
+      mockPersonaApiClient,
       mockHealthApiClient,
     );
     const server = app.listen(0);

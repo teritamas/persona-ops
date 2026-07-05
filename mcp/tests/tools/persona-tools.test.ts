@@ -15,8 +15,8 @@ interface TextContent {
   text: string;
 }
 
-describe('Project Tools E2Eテスト', () => {
-  it('list_projects ツールが正常にプロジェクト一覧を返却すること', async () => {
+describe('Persona Tools E2Eテスト', () => {
+  it('list_personas ツールが正常にペルソナ一覧を返却すること', async () => {
     const mockHttpClient = new HttpClient('http://localhost:3001');
     const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
     const mockRequirementApiClient = new RequirementApiClient(mockHttpClient);
@@ -24,9 +24,19 @@ describe('Project Tools E2Eテスト', () => {
     const mockPersonaApiClient = new PersonaApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
-    mockProjectApiClient.listProjects = vi
-      .fn()
-      .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
+    mockPersonaApiClient.listPersonas = vi.fn().mockResolvedValue([
+      {
+        id: 'pers1',
+        projectId: 'p1',
+        name: '山田太郎',
+        age: 30,
+        role: 'エンジニア',
+        traits: ['真面目', '几帳面'],
+        background: '10年の開発経験を持つシニアデベロッパー。',
+        x: 10,
+        y: 20,
+      },
+    ]);
 
     const app = createServer(
       mockProjectApiClient,
@@ -48,14 +58,21 @@ describe('Project Tools E2Eテスト', () => {
     );
     await client.connect(transport);
 
-    const projectResponse = await client.callTool({
-      name: 'list_projects',
-      arguments: {},
+    const personaResponse = await client.callTool({
+      name: 'list_personas',
+      arguments: {
+        projectId: 'p1',
+      },
     });
-    expect(projectResponse.isError).toBeFalsy();
-    const projectContent = projectResponse.content as TextContent[];
-    expect(projectContent[0]?.type).toBe('text');
-    expect(projectContent[0]?.text).toContain('Project 1');
+    expect(personaResponse.isError).toBeFalsy();
+    const personaContent = personaResponse.content as TextContent[];
+    expect(personaContent[0]?.text).toContain('ペルソナ一覧');
+    expect(personaContent[0]?.text).toContain('山田太郎 (年齢: 30)');
+    expect(personaContent[0]?.text).toContain('エンジニア');
+    expect(personaContent[0]?.text).toContain('真面目, 几帳面');
+    expect(personaContent[0]?.text).toContain(
+      '10年の開発経験を持つシニアデベロッパー。',
+    );
 
     await client.close();
     server.close();
