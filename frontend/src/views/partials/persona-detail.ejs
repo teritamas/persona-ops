@@ -91,12 +91,31 @@
       <% if (typeof reaction !== 'undefined' && reaction && reaction.status === 'completed') { %>
         <!-- シミュレーション結果セクション -->
         <div class="mt-8 border-t border-slate-100 pt-6 animate-fade-in relative z-10">
-          <h3 class="text-[11px] font-black text-slate-800 mb-4 flex items-center uppercase tracking-widest font-mono">
-            <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg> 
-            シミュレーション結果
-          </h3>
+          <%
+            let sentimentLabel = 'ニュートラル';
+            let sentimentBadgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
+            let sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            if (reaction.sentiment === 'positive') {
+              sentimentLabel = 'ポジティブ';
+              sentimentBadgeClass = 'bg-green-50 text-green-700 border-green-200';
+              sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            } else if (reaction.sentiment === 'negative') {
+              sentimentLabel = 'ネガティブ';
+              sentimentBadgeClass = 'bg-red-50 text-red-700 border-red-200';
+              sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            }
+          %>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[11px] font-black text-slate-800 flex items-center uppercase tracking-widest font-mono">
+              <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg> 
+              シミュレーション結果
+            </h3>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border <%= sentimentBadgeClass %>">
+              <%- sentimentIcon %><%= sentimentLabel %>
+            </span>
+          </div>
 
           <!-- 期待・懸念・改善案のリスト -->
           <div class="bg-gradient-to-br from-orange-50 to-amber-50/50 p-5 rounded-[1.5rem] border border-orange-100/60 shadow-inner mb-4">
@@ -140,7 +159,7 @@
             <p class="text-xs text-slate-700 leading-relaxed font-bold relative z-10">
               <%= reaction.shortFeedback %>
             </p>
-          </div>
+
         </div>
       <% } %>
 

@@ -75,7 +75,7 @@
 
               <!-- 受け入れ基準ボックス -->
               <div
-                class="mb-8 bg-gradient-to-br from-orange-50 to-amber-50/50 p-5 rounded-[1.5rem] border border-orange-100/60 shadow-inner relative z-10">
+                class="mb-6 bg-gradient-to-br from-orange-50 to-amber-50/50 p-5 rounded-[1.5rem] border border-orange-100/60 shadow-inner relative z-10">
                 <h4 class="text-[10px] font-black text-orange-800/60 mb-2.5 uppercase tracking-widest font-mono">受け入れ基準
                 </h4>
                 <div class="space-y-3">
@@ -89,6 +89,15 @@
                       </p>
                     </div>
                     <% }) %>
+                </div>
+              </div>
+            </section>
+
+            <section class="mb-8">
+              <div class="rounded-2xl border-[3px] border-white bg-emerald-50/50 p-5 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative z-10">
+                <div class="text-[10px] font-black text-emerald-600/80 tracking-widest font-mono uppercase">成功ペルソナ</div>
+                <div class="mt-2 text-3xl font-black text-emerald-600 flex items-baseline gap-1">
+                  <%= selectedSimulation.successCount %><span class="text-sm text-emerald-600/60">/ <%= selectedSimulation.targetCount %></span>
                 </div>
               </div>
             </section>

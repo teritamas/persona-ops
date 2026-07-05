@@ -56,8 +56,8 @@ describe('ADKペルソナシミュレーションAgent', () => {
     });
   });
 
-  it('範囲外スコアと不正JSONを拒否する', async () => {
-    const invalidScore = new AdkPersonaSimulationAgent('test-model', () =>
+  it('必須フィールドの欠落や不正データを拒否する', async () => {
+    const missingField = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(
         JSON.stringify({
           sentiment: 'invalid', // should fail enum check
@@ -72,7 +72,7 @@ describe('ADKペルソナシミュレーションAgent', () => {
       createRunner('not-json'),
     );
 
-    await expect(invalidScore.simulate(input)).rejects.toThrow();
+    await expect(missingField.simulate(input)).rejects.toThrow();
     await expect(invalidJson.simulate(input)).rejects.toThrow('invalid JSON');
   });
 
