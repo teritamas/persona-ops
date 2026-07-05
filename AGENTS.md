@@ -31,4 +31,5 @@
 
 - フロントエンド: [frontend/AGENTS.md](./frontend/AGENTS.md)
 - API: [api/AGENTS.md](./api/AGENTS.md)
+- MCP: [mcp/AGENTS.md](./mcp/AGENTS.md)
 - インフラ: [infra/terraform/AGENTS.md](./infra/terraform/AGENTS.md)

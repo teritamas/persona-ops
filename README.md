@@ -99,6 +99,9 @@ sequenceDiagram
 - バックエンド
   - [README.md: Private APIサーバーの起動方法や各種コマンドの説明](./api/README.md)
   - [AGENTS.md: Private APIサーバーの設計思想、実装に関するルール](./api/AGENTS.md)
+- MCPサーバー
+  - [README.md: MCPサーバーの起動方法や各種コマンドの説明](./mcp/README.md)
+  - [AGENTS.md: MCPサーバーの設計思想、実装に関するルール](./mcp/AGENTS.md)
 
 - インフラストラクチャ
   - [README.md: GCPやterraformの初期構築手順や各種コマンドの説明](./infra/terraform/README.md)

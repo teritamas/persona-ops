@@ -1,6 +1,7 @@
 locals {
   frontend_service_name    = "persona-ops-web"
   private_api_service_name = "persona-ops-private-api"
+  mcp_server_name          = "persona-ops-mcp-server"
   simulation_queue_name    = "persona-simulations"
 
   labels = {

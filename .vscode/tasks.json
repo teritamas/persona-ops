@@ -178,44 +178,135 @@
       "detail": "Node.js標準テストランナーで単体テストとカバレッジ計測を実行します。lintは静的解析、testは実行時の振る舞いを確認します"
     },
     {
-      "label": "dev: all",
-      "dependsOn": [
-        "api: dev",
-        "frontend: dev"
-      ],
-      "dependsOrder": "parallel",
+      "label": "mcp: dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
       "problemMatcher": [],
-      "detail": "APIとフロントエンドの両方の開発サーバーを起動します"
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "detail": "MCPサーバーの開発用サーバーを起動します (ホットリロード有効)"
     },
     {
-      "label": "format: all",
+      "label": "mcp: build",
+      "type": "shell",
+      "command": "pnpm build",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "detail": "MCPサーバーのTypeScriptコードをビルドします"
+    },
+    {
+      "label": "mcp: start",
+      "type": "shell",
+      "command": "pnpm start",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [],
+      "detail": "ビルドされたプロダクション用MCPサーバーを起動します"
+    },
+    {
+      "label": "mcp: test",
+      "type": "shell",
+      "command": "pnpm test",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [],
+      "detail": "vitestを使用してMCPサーバーのテストを実行します"
+    },
+    {
+      "label": "mcp: typecheck",
+      "type": "shell",
+      "command": "pnpm typecheck",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "detail": "MCPサーバーのTypeScriptの型チェックを実行します"
+    },
+    {
+      "label": "mcp: lint:fix",
+      "type": "shell",
+      "command": "pnpm lint:fix",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [],
+      "detail": "ESLintを使用してMCPサーバーの静的解析をして修正します"
+    },
+    {
+      "label": "mcp: format",
       "type": "shell",
       "command": "pnpm format",
       "options": {
-        "cwd": "${workspaceFolder}/api"
+        "cwd": "${workspaceFolder}/mcp"
       },
       "problemMatcher": [],
-      "detail": "APIのPrettierを実行します"
+      "detail": "Prettierを使用してMCPサーバーのコードを自動整形します"
+    },
+    {
+      "label": "mcp: format:check",
+      "type": "shell",
+      "command": "pnpm format:check",
+      "options": {
+        "cwd": "${workspaceFolder}/mcp"
+      },
+      "problemMatcher": [],
+      "detail": "Prettierを使用してMCPサーバーのコードが整形ルールに準拠しているか確認します"
+    },
+    {
+      "label": "dev: all",
+      "dependsOn": [
+        "api: dev",
+        "frontend: dev",
+        "mcp: dev"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "detail": "API、フロントエンド、MCPサーバーの全ての開発サーバーを起動します"
+    },
+    {
+      "label": "format: all",
+      "dependsOn": [
+        "api: format",
+        "mcp: format"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": [],
+      "detail": "APIとMCPサーバーのPrettierを実行します"
     },
     {
       "label": "test: all",
       "dependsOn": [
         "api: test",
-        "frontend: test"
+        "frontend: test",
+        "mcp: test"
       ],
       "dependsOrder": "parallel",
       "problemMatcher": [],
-      "detail": "APIとフロントエンドの両方のテストを実行します"
+      "detail": "API、フロントエンド、MCPサーバーの全てのテストを実行します"
     },
     {
       "label": "lint:fix: all",
       "dependsOn": [
         "api: lint:fix",
-        "frontend: lint:fix"
+        "frontend: lint:fix",
+        "mcp: lint:fix"
       ],
       "dependsOrder": "parallel",
       "problemMatcher": [],
-      "detail": "ESLintで両方のコードを修正します。"
+      "detail": "ESLintで全てのコードを修正します。"
     },
     {
       "label": "full-ci-cycle: all",

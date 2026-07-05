@@ -43,6 +43,17 @@ steps:
         docker push "$$image"
         printf '%s' "$$image" > /workspace/.frontend-image-uri
 
+  - id: build-mcp-server
+    name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -euc
+      - |
+        image="${_REGION}-docker.pkg.dev/$PROJECT_ID/persona-ops/mcp-server:$COMMIT_SHA"
+        docker build --tag "$$image" mcp
+        docker push "$$image"
+        printf '%s' "$$image" > /workspace/.mcp-image-uri
+
   - id: terraform-apply
     name: hashicorp/terraform:1.15.1
     dir: infra/terraform/environments/stg
@@ -56,6 +67,7 @@ steps:
           -lock-timeout=10m \
           -var="api_container_image=$$(cat /workspace/.private-api-image-uri)" \
           -var="frontend_container_image=$$(cat /workspace/.frontend-image-uri)" \
+          -var="mcp_container_image=$$(cat /workspace/.mcp-image-uri)" \
           -var="project_id=$PROJECT_ID" \
           -var="region=${_REGION}"
 
