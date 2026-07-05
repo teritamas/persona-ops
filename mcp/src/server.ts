@@ -25,7 +25,9 @@ function createMcpServer(apiClient: ApiClient) {
       try {
         const projects = await apiClient.listProjects();
         log('list_projects returned count:', projects.length);
-        const text = projects.map((p) => `- ${p.name} (ID: ${p.id})`).join('\n');
+        const text = projects
+          .map((p) => `- ${p.name} (ID: ${p.id})`)
+          .join('\n');
         return {
           content: [{ type: 'text', text: text || 'No projects found.' }],
         };
@@ -37,7 +39,7 @@ function createMcpServer(apiClient: ApiClient) {
           isError: true,
         };
       }
-    }
+    },
   );
 
   mcpServer.registerTool(
@@ -67,26 +69,35 @@ function createMcpServer(apiClient: ApiClient) {
           isError: true,
         };
       }
-    }
+    },
   );
 
   mcpServer.registerTool(
     'get_requirement_with_simulations',
     {
-      description: 'Get requirement details and persona simulations to generate USM or Elevator Pitch',
+      description:
+        'Get requirement details and persona simulations to generate USM or Elevator Pitch',
       inputSchema: z.object({
         projectId: z.string().describe('The ID of the project'),
         requirementId: z.string().describe('The ID of the requirement'),
       }),
     },
     async ({ projectId, requirementId }) => {
-      log('Calling get_requirement_with_simulations', { projectId, requirementId });
+      log('Calling get_requirement_with_simulations', {
+        projectId,
+        requirementId,
+      });
       try {
         const [req, evaluations] = await Promise.all([
           apiClient.getRequirement(projectId, requirementId),
           apiClient.getRequirementSimulations(projectId, requirementId),
         ]);
-        log('get_requirement_with_simulations fetched requirement:', req.title, 'and evaluations count:', evaluations.length);
+        log(
+          'get_requirement_with_simulations fetched requirement:',
+          req.title,
+          'and evaluations count:',
+          evaluations.length,
+        );
 
         let markdown = `# 要件: ${req.title}\n\n`;
         markdown += `## 概要\n${req.description}\n\n`;
@@ -102,7 +113,8 @@ function createMcpServer(apiClient: ApiClient) {
           evaluations.forEach((evalData, i) => {
             markdown += `### シミュレーション #${i + 1}\n`;
             evalData.reactions.forEach((reaction) => {
-              const personaName = reaction.personaSnapshot?.name || 'Unknown Persona';
+              const personaName =
+                reaction.personaSnapshot?.name || 'Unknown Persona';
               markdown += `#### ${personaName} の反応\n`;
               if (reaction.status === 'completed') {
                 markdown += `- **評価 (Sentiment)**: ${reaction.sentiment ?? 'unknown'}\n`;
@@ -122,7 +134,10 @@ function createMcpServer(apiClient: ApiClient) {
           });
         }
 
-        log('get_requirement_with_simulations output markdown length:', markdown.length);
+        log(
+          'get_requirement_with_simulations output markdown length:',
+          markdown.length,
+        );
         return {
           content: [{ type: 'text', text: markdown }],
         };
@@ -134,7 +149,7 @@ function createMcpServer(apiClient: ApiClient) {
           isError: true,
         };
       }
-    }
+    },
   );
 
   return mcpServer;
@@ -150,18 +165,20 @@ export function createServer(apiClient: ApiClient) {
     console.error('Failed to connect to Streamable HTTP transport:', err);
   });
 
-  const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
-    log(`HTTP ${req.method} ${req.url} request received`);
-    
-    if (req.url?.startsWith('/mcp')) {
-      transport.handleRequest(req, res).catch((err) => {
-        console.error('Error handling MCP request:', err);
-      });
-    } else {
-      res.writeHead(404);
-      res.end('Not Found');
-    }
-  });
+  const server = http.createServer(
+    (req: http.IncomingMessage, res: http.ServerResponse) => {
+      log(`HTTP ${req.method} ${req.url} request received`);
+
+      if (req.url?.startsWith('/mcp')) {
+        transport.handleRequest(req, res).catch((err) => {
+          console.error('Error handling MCP request:', err);
+        });
+      } else {
+        res.writeHead(404);
+        res.end('Not Found');
+      }
+    },
+  );
 
   return server;
 }

@@ -43,16 +43,21 @@ export class ApiClient {
   }
 
   async listRequirements(projectId: string): Promise<RequirementDto[]> {
-    const res = await fetch(`${this.baseUrl}/api/v1/projects/${projectId}/requirements`);
+    const res = await fetch(
+      `${this.baseUrl}/api/v1/projects/${projectId}/requirements`,
+    );
     if (!res.ok) {
       throw new Error(`Failed to list requirements: ${res.statusText}`);
     }
     return res.json() as Promise<RequirementDto[]>;
   }
 
-  async getRequirement(projectId: string, requirementId: string): Promise<RequirementDto> {
+  async getRequirement(
+    projectId: string,
+    requirementId: string,
+  ): Promise<RequirementDto> {
     const res = await fetch(
-      `${this.baseUrl}/api/v1/projects/${projectId}/requirements/${requirementId}`
+      `${this.baseUrl}/api/v1/projects/${projectId}/requirements/${requirementId}`,
     );
     if (!res.ok) {
       throw new Error(`Failed to get requirement: ${res.statusText}`);
@@ -60,12 +65,17 @@ export class ApiClient {
     return res.json() as Promise<RequirementDto>;
   }
 
-  async getRequirementSimulations(projectId: string, requirementId: string): Promise<SimulationDto[]> {
+  async getRequirementSimulations(
+    projectId: string,
+    requirementId: string,
+  ): Promise<SimulationDto[]> {
     const res = await fetch(
-      `${this.baseUrl}/api/v1/projects/${projectId}/requirements/${requirementId}/simulations`
+      `${this.baseUrl}/api/v1/projects/${projectId}/requirements/${requirementId}/simulations`,
     );
     if (!res.ok) {
-      throw new Error(`Failed to get requirement simulations: ${res.statusText}`);
+      throw new Error(
+        `Failed to get requirement simulations: ${res.statusText}`,
+      );
     }
     return res.json() as Promise<SimulationDto[]>;
   }

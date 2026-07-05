@@ -13,8 +13,10 @@ interface TextContent {
 describe('MCP Server E2E', () => {
   it('should initialize, list tools, and call tools', async () => {
     const mockApiClient = new ApiClient('http://localhost:3001');
-    mockApiClient.listProjects = vi.fn().mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
-    
+    mockApiClient.listProjects = vi
+      .fn()
+      .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
+
     mockApiClient.getRequirement = vi.fn().mockResolvedValue({
       title: '音声入力機能',
       description: 'スマホで音声をテキストに変換する',
@@ -41,10 +43,12 @@ describe('MCP Server E2E', () => {
     const address = server.address() as AddressInfo;
     const port = address.port;
 
-    const transport = new StreamableHTTPClientTransport(new URL(`http://localhost:${port}/mcp`));
+    const transport = new StreamableHTTPClientTransport(
+      new URL(`http://localhost:${port}/mcp`),
+    );
     const client = new Client(
       { name: 'test-client', version: '1.0.0' },
-      { capabilities: {} }
+      { capabilities: {} },
     );
     await client.connect(transport);
 
@@ -53,12 +57,14 @@ describe('MCP Server E2E', () => {
     expect(tools.tools).toHaveLength(3);
     expect(tools.tools.map((t) => t.name)).toContain('list_projects');
     expect(tools.tools.map((t) => t.name)).toContain('list_requirements');
-    expect(tools.tools.map((t) => t.name)).toContain('get_requirement_with_simulations');
+    expect(tools.tools.map((t) => t.name)).toContain(
+      'get_requirement_with_simulations',
+    );
 
     // Test: call list_projects
     const projectResponse = await client.callTool({
       name: 'list_projects',
-      arguments: {}
+      arguments: {},
     });
     expect(projectResponse.isError).toBeFalsy();
     const projectContent = projectResponse.content as TextContent[];
