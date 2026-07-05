@@ -41,6 +41,7 @@ describe('ペルソナ ルーター', () => {
       id: 'test_id',
       projectId: 'proj_123',
       name: '山田 太郎',
+      age: 30,
       role: 'デザイナー',
       traits: [],
       background: '',

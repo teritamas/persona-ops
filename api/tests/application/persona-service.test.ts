@@ -40,6 +40,7 @@ describe('ペルソナサービス', () => {
       id: 'pers_1',
       projectId: 'proj_test',
       name: 'テスト 太郎',
+      age: 30,
       role: 'エンジニア',
       traits: [],
       background: '',
@@ -65,12 +66,14 @@ describe('ペルソナサービス', () => {
     await service.savePersonas('proj_test', [
       {
         name: '山田',
+        age: 30,
         role: '営業',
         traits: ['外勤'],
         background: '新規営業',
       },
       {
         name: '佐藤',
+        age: 30,
         role: '営業',
         traits: ['内勤'],
         background: '既存顧客担当',
@@ -82,6 +85,7 @@ describe('ペルソナサービス', () => {
       {
         id: before[0]!.id,
         name: '山田',
+        age: 30,
         role: '営業',
         traits: ['モバイル重視'],
         background: '新規営業',
@@ -116,6 +120,7 @@ describe('ペルソナサービス', () => {
     await service.savePersonas('proj_test', [
       {
         name: '山田',
+        age: 30,
         role: '営業',
         traits: [],
         background: '外勤',
@@ -130,6 +135,7 @@ describe('ペルソナサービス', () => {
       service.savePersonas('proj_test', [
         {
           name: '不正',
+          age: 30,
           role: '営業',
           traits: [],
           background: '',

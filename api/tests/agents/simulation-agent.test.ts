@@ -19,6 +19,7 @@ const input = {
   persona: {
     id: 'persona-1',
     name: '山田',
+    age: 30,
     role: '営業',
     traits: ['外勤'],
     background: '移動が多い',

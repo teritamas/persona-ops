@@ -48,6 +48,7 @@ const reactions: PersonaReaction[] = [
     personaSnapshot: {
       id: 'persona-1',
       name: '山田',
+      age: 30,
       role: '営業',
       traits: [],
       background: '',
@@ -71,6 +72,7 @@ const reactions: PersonaReaction[] = [
     personaSnapshot: {
       id: 'persona-2',
       name: '佐藤',
+      age: 30,
       role: '管理者',
       traits: [],
       background: '',

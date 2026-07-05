@@ -2,6 +2,7 @@ export interface Persona {
   id: string;
   projectId: string;
   name: string;
+  age: number;
   role: string;
   traits: string[];
   background: string;
@@ -16,6 +17,7 @@ export interface Persona {
 export interface PersonaSnapshot {
   id: string;
   name: string;
+  age: number;
   role: string;
   traits: string[];
   background: string;
@@ -27,6 +29,7 @@ export function createPersonaSnapshot(persona: Persona): PersonaSnapshot {
   return {
     id: persona.id,
     name: persona.name,
+    age: persona.age,
     role: persona.role,
     traits: [...persona.traits],
     background: persona.background,
