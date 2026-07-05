@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 
 import type { RequirementService } from '../application/requirement-service.js';
+import type { SimulationService } from '../application/simulation-service.js';
+import type { Simulation } from '../domain/simulation.js';
 import type { Requirement } from '../domain/requirement.js';
 import { registerDomainErrorHandler } from './domain-error-handler.js';
 
@@ -56,10 +58,23 @@ function toRequirementResponse(requirement: Requirement) {
   };
 }
 
+function toSimulationResponse(simulation: Simulation) {
+  return {
+    ...simulation,
+    leaseExpiresAt: simulation.leaseExpiresAt?.toISOString(),
+    createdAt: simulation.createdAt.toISOString(),
+    startedAt: simulation.startedAt?.toISOString(),
+    completedAt: simulation.completedAt?.toISOString(),
+  };
+}
+
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function requirementRoutes(
   app: FastifyInstance,
-  options: { requirementService: RequirementService },
+  options: {
+    requirementService: RequirementService;
+    simulationService: SimulationService;
+  },
 ): Promise<void> {
   registerDomainErrorHandler(app);
 
@@ -86,6 +101,48 @@ export async function requirementRoutes(
         requirementId,
       );
       return reply.send(toRequirementResponse(requirement));
+    },
+  );
+
+  app.get(
+    '/api/v1/projects/:projectId/requirements/:requirementId/simulations',
+    { schema: { params: requirementParamsSchema } },
+    async (request, reply) => {
+      const { projectId, requirementId } = request.params as {
+        projectId: string;
+        requirementId: string;
+      };
+      const simulations = await options.simulationService.list(projectId);
+      const relatedSimulations = simulations.filter(
+        (sim) => sim.requirementId === requirementId,
+      );
+      
+      const response = await Promise.all(
+        relatedSimulations.map(async (sim) => {
+          const detail = await options.simulationService.getDetail(projectId, sim.id);
+          return {
+            ...toSimulationResponse(detail.simulation),
+            reactions: detail.reactions.map((r) => {
+              if (r.status === 'completed') {
+                return {
+                  ...r,
+                  createdAt: r.createdAt.toISOString(),
+                };
+              }
+              return {
+                simulationId: r.simulationId,
+                personaId: r.personaId,
+                personaSnapshot: r.personaSnapshot,
+                status: r.status,
+                errorCode: r.errorCode,
+                createdAt: r.createdAt.toISOString(),
+              };
+            }),
+          };
+        })
+      );
+
+      return reply.send(response);
     },
   );
 

@@ -45,6 +45,7 @@ export function buildApp({
 
   void app.register(requirementRoutes, {
     requirementService: container.requirementService,
+    simulationService: container.simulationService,
   });
 
   void app.register(simulationRoutes, {
