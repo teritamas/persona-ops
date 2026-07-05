@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { InMemoryRunner, LlmAgent } from '@google/adk';
+import { InMemoryRunner, LlmAgent, getFunctionCalls } from '@google/adk';
+import {
+  SystemAction,
+  SYSTEM_ACTION_TAGS,
+} from '../../domain/system-action.js';
 
 import type {
   PersonaOpsAgentInput,
@@ -61,11 +65,39 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
       userId: `persona-ops-${randomUUID()}`,
     });
 
+    const executedTools = new Set<string>();
+
     for await (const event of events) {
+      const functionCalls = getFunctionCalls(event);
+      for (const call of functionCalls) {
+        if (call.name) {
+          executedTools.add(call.name);
+        }
+      }
+
       for (const part of event.content?.parts ?? []) {
         if (typeof part.text === 'string' && part.text.length > 0) {
           yield part.text;
         }
+      }
+    }
+
+    if (executedTools.size > 0) {
+      const tags: string[] = [];
+      if (executedTools.has('save_personas_tool')) {
+        tags.push(SYSTEM_ACTION_TAGS[SystemAction.PersonasSaved]);
+      }
+      if (
+        executedTools.has('save_requirement_tool') ||
+        executedTools.has('approve_requirement_and_request_simulation_tool')
+      ) {
+        tags.push(SYSTEM_ACTION_TAGS[SystemAction.RequirementSaved]);
+      }
+      if (executedTools.has('update_project_name_tool')) {
+        tags.push(SYSTEM_ACTION_TAGS[SystemAction.ProjectNameUpdated]);
+      }
+      if (tags.length > 0) {
+        yield '\n' + tags.join('\n');
       }
     }
   }
