@@ -6,6 +6,7 @@ import type { PersonaService } from '../../src/application/persona-service.js';
 import type { RequirementService } from '../../src/application/requirement-service.js';
 import type { SimulationService } from '../../src/application/simulation-service.js';
 import type { SourceDocumentService } from '../../src/application/source-document/source-document-service.js';
+import type { ProjectService } from '../../src/application/project-service.js';
 
 describe('PersonaOpsチャットサービス', () => {
   it('保存済み資料を含むプロジェクトContextをAgentへ渡す', async () => {
@@ -38,6 +39,9 @@ describe('PersonaOpsチャットサービス', () => {
             },
           ]),
       } as unknown as SourceDocumentService,
+      {
+        getProjectById: () => Promise.resolve({ name: 'Test Project' }),
+      } as unknown as ProjectService,
       agent,
     );
 

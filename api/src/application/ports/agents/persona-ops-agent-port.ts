@@ -5,6 +5,7 @@ import type { SourceDocument } from '../../../domain/source-document/source-docu
 
 export interface PersonaOpsAgentInput {
   projectId: string;
+  projectName: string;
   message: string;
   history: Array<{ role: 'user' | 'agent' | 'persona'; text: string }>;
   personas: Persona[];

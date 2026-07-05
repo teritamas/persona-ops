@@ -4,16 +4,16 @@ const { simulationService } = require('../services/simulationService');
 function unhideSimulationsForRequirement(req, res, requirementId, simulations) {
   if (!requirementId || !simulations) return;
   if (!req.cookies) return;
-  
+
   try {
     if (req.cookies.hidden_simulations) {
       let hiddenSimulations = JSON.parse(req.cookies.hidden_simulations);
       const relatedSimIds = simulations
         .filter(sim => sim.requirementId === requirementId)
         .map(sim => sim.id);
-        
+
       const newHiddenSimulations = hiddenSimulations.filter(id => !relatedSimIds.includes(id));
-      
+
       if (newHiddenSimulations.length !== hiddenSimulations.length) {
         res.cookie('hidden_simulations', JSON.stringify(newHiddenSimulations), { maxAge: 30 * 24 * 60 * 60 * 1000 });
       }
@@ -26,7 +26,7 @@ function unhideSimulationsForRequirement(req, res, requirementId, simulations) {
         res.cookie('hidden_sandbox_requirements', JSON.stringify(newHiddenReqs), { maxAge: 30 * 24 * 60 * 60 * 1000 });
       }
     }
-  } catch (e) {
+  } catch {
     // Ignore JSON parse error
   }
 }
@@ -43,12 +43,12 @@ exports.getRequirementsDashboard = async (req, res) => {
   if (requirements && requirements.length > 0) {
     selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
   }
-  
+
   if (selectedRequirement) {
     try {
       const dashboard = await simulationService.getDashboard(req.activeProject);
       unhideSimulationsForRequirement(req, res, selectedRequirement.id, dashboard.simulations);
-      
+
       // If this is an HTMX request, trigger the sandbox to refresh so the unhidden requirement appears
       if (req.headers['hx-request']) {
         res.setHeader('HX-Trigger', 'refreshSandbox');

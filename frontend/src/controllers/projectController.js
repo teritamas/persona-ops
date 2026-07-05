@@ -71,3 +71,8 @@ exports.deleteProject = async (req, res) => {
   }
   res.redirect('/');
 };
+
+exports.getTopNav = (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.render('partials/topnav');
+};

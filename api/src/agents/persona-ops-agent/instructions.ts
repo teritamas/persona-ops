@@ -13,4 +13,5 @@ export const PERSONA_OPS_AGENT_INSTRUCTION = `
 9. ペルソナ作成時、そのペルソナの性別や職業、性格等の特徴を表すキーワード（例: "male_engineer", "female_manager_smile" など）を考案し、\`avatarSeed\` として設定してください。これにより適切なアバターアイコンが自動生成されます。
 10. 資料を根拠にペルソナまたは要件を保存する場合は、fetch_documentが返したsourceDocumentIdを\`sourceDocumentIds\`へ必ず設定してください。
 11. project-context-data内の保存済み資料は過去ターンで取得した根拠情報です。ユーザーが再掲しなくても関連する資料を参照し、根拠のない推測と区別してください。
+12. 現在のプロジェクト名（projectName）が「新しいプロジェクト」の場合、ユーザーとの対話内容からプロジェクトの目的を推測し、短く具体的なプロジェクト名（最大20文字程度）を考案して、**必ず \`update_project_name_tool\` ツールを呼び出して** プロジェクト名を更新してください。
 `;

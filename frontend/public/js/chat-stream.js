@@ -247,8 +247,10 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
 
         setTimeout(() => {
           if (typeof htmx !== 'undefined') {
-            htmx.ajax('GET', `/${projectId}/view/chat`, { target: '#left-panel-content', swap: 'innerHTML' });
-            htmx.ajax('GET', `/${projectId}/view/simulation-square`, { target: '#sandbox-characters', swap: 'outerHTML' });
+            const t = Date.now();
+            htmx.ajax('GET', `/${projectId}/view/chat?t=${t}`, { target: '#left-panel-content', swap: 'innerHTML' });
+            htmx.ajax('GET', `/${projectId}/view/simulation-square?t=${t}`, { target: '#sandbox-characters', swap: 'outerHTML' });
+            htmx.ajax('GET', `/${projectId}/view/topnav?t=${t}`, { target: '#topnav-header', swap: 'outerHTML' });
           }
         }, 500);
       }

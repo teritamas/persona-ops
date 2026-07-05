@@ -7,7 +7,7 @@ function getHiddenSimulations(req) {
   if (req.cookies && req.cookies.hidden_simulations) {
     try {
       return JSON.parse(req.cookies.hidden_simulations);
-    } catch (e) {
+    } catch {
       return [];
     }
   }
@@ -18,7 +18,7 @@ function getHiddenSandboxRequirements(req) {
   if (req.cookies && req.cookies.hidden_sandbox_requirements) {
     try {
       return JSON.parse(req.cookies.hidden_sandbox_requirements);
-    } catch (e) {
+    } catch {
       return [];
     }
   }
