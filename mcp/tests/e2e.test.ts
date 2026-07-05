@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiClient } from '../src/api-client.js';
+import { HttpClient } from '../src/api/http-client.js';
+import { ProjectApiClient } from '../src/api/project-api-client.js';
+import { HealthApiClient } from '../src/api/health-api-client.js';
 import { createServer } from '../src/server.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -12,18 +14,21 @@ interface TextContent {
 
 describe('MCP Server E2E', () => {
   it('should initialize, list tools, and call tools', async () => {
-    const mockApiClient = new ApiClient('http://localhost:3001');
-    mockApiClient.listProjects = vi
+    const mockHttpClient = new HttpClient('http://localhost:3001');
+    const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
+    const mockHealthApiClient = new HealthApiClient(mockHttpClient);
+
+    mockProjectApiClient.listProjects = vi
       .fn()
       .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
 
-    mockApiClient.getRequirement = vi.fn().mockResolvedValue({
+    mockProjectApiClient.getRequirement = vi.fn().mockResolvedValue({
       title: '音声入力機能',
       description: 'スマホで音声をテキストに変換する',
       acceptanceCriteria: ['一文字も間違えずに変換できること'],
     });
 
-    mockApiClient.getRequirementSimulations = vi.fn().mockResolvedValue([
+    mockProjectApiClient.getRequirementSimulations = vi.fn().mockResolvedValue([
       {
         reactions: [
           {
@@ -38,7 +43,7 @@ describe('MCP Server E2E', () => {
       },
     ]);
 
-    const app = createServer(mockApiClient);
+    const app = createServer(mockProjectApiClient, mockHealthApiClient);
     const server = app.listen(0);
     const address = server.address() as AddressInfo;
     const port = address.port;
@@ -81,21 +86,37 @@ describe('MCP Server E2E', () => {
     });
     expect(evalResponse.isError).toBeFalsy();
     const evalContent = evalResponse.content as TextContent[];
-    const markdown = evalContent[0]?.text ?? '';
-    expect(markdown).toContain('音声入力機能');
-    expect(markdown).toContain('とても使いやすい');
-    expect(markdown).toContain('騒がしい場所での認識精度');
+    expect(evalContent[0]?.text ?? '').toContain('音声入力機能');
+    expect(evalContent[0]?.text ?? '').toContain('とても使いやすい');
+    expect(evalContent[0]?.text ?? '').toContain('騒がしい場所での認識精度');
+
+    // Test: health check endpoint (success)
+    mockHealthApiClient.checkHealth = vi.fn().mockResolvedValue(true);
+    const healthRes = await fetch(`http://localhost:${port}/health`);
+    expect(healthRes.status).toBe(200);
+    const healthJson = (await healthRes.json()) as { status: string };
+    expect(healthJson.status).toBe('ok');
+
+    // Test: health check endpoint (failure)
+    mockHealthApiClient.checkHealth = vi.fn().mockResolvedValue(false);
+    const healthFailRes = await fetch(`http://localhost:${port}/health`);
+    expect(healthFailRes.status).toBe(500);
+    const healthFailJson = (await healthFailRes.json()) as { status: string };
+    expect(healthFailJson.status).toBe('error');
 
     server.close();
   });
 
   it('should support multiple concurrent client sessions', async () => {
-    const mockApiClient = new ApiClient('http://localhost:3001');
-    mockApiClient.listProjects = vi
+    const mockHttpClient = new HttpClient('http://localhost:3001');
+    const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
+    const mockHealthApiClient = new HealthApiClient(mockHttpClient);
+
+    mockProjectApiClient.listProjects = vi
       .fn()
       .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
 
-    const app = createServer(mockApiClient);
+    const app = createServer(mockProjectApiClient, mockHealthApiClient);
     const server = app.listen(0);
     const address = server.address() as AddressInfo;
     const port = address.port;

@@ -3,13 +3,14 @@ import { randomUUID } from 'node:crypto';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
-import type { ApiClient } from './api-client.js';
+import type { ProjectApiClient } from './api/project-api-client.js';
+import type { HealthApiClient } from './api/health-api-client.js';
 
 function log(message: string, ...args: unknown[]) {
   console.error(`[MCP Log] ${message}`, ...args);
 }
 
-function createMcpServer(apiClient: ApiClient) {
+function createMcpServer(projectApiClient: ProjectApiClient) {
   const mcpServer = new McpServer({
     name: 'PersonaOps MCP Server',
     version: '1.0.0',
@@ -23,7 +24,7 @@ function createMcpServer(apiClient: ApiClient) {
     async () => {
       log('Calling list_projects');
       try {
-        const projects = await apiClient.listProjects();
+        const projects = await projectApiClient.listProjects();
         log('list_projects returned count:', projects.length);
         const text = projects
           .map((p) => `- ${p.name} (ID: ${p.id})`)
@@ -53,7 +54,7 @@ function createMcpServer(apiClient: ApiClient) {
     async ({ projectId }) => {
       log('Calling list_requirements', { projectId });
       try {
-        const requirements = await apiClient.listRequirements(projectId);
+        const requirements = await projectApiClient.listRequirements(projectId);
         log('list_requirements returned count:', requirements.length);
         const text = requirements
           .map((r) => `- ${r.title} (ID: ${r.id}, Status: ${r.status})`)
@@ -89,8 +90,8 @@ function createMcpServer(apiClient: ApiClient) {
       });
       try {
         const [req, evaluations] = await Promise.all([
-          apiClient.getRequirement(projectId, requirementId),
-          apiClient.getRequirementSimulations(projectId, requirementId),
+          projectApiClient.getRequirement(projectId, requirementId),
+          projectApiClient.getRequirementSimulations(projectId, requirementId),
         ]);
         log(
           'get_requirement_with_simulations fetched requirement:',
@@ -155,7 +156,10 @@ function createMcpServer(apiClient: ApiClient) {
   return mcpServer;
 }
 
-export function createServer(apiClient: ApiClient) {
+export function createServer(
+  projectApiClient: ProjectApiClient,
+  healthApiClient: HealthApiClient,
+) {
   interface Session {
     transport: StreamableHTTPServerTransport;
     mcpServer: McpServer;
@@ -196,6 +200,41 @@ export function createServer(apiClient: ApiClient) {
   const server = http.createServer(
     (req: http.IncomingMessage, res: http.ServerResponse) => {
       log(`HTTP ${req.method} ${req.url} request received`);
+
+      if (req.url === '/health') {
+        if (req.method !== 'GET') {
+          res.writeHead(405, { 'Content-Type': 'text/plain' });
+          res.end('Method Not Allowed');
+          return;
+        }
+        healthApiClient
+          .checkHealth()
+          .then((isHealthy) => {
+            if (isHealthy) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ status: 'ok' }));
+            } else {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(
+                JSON.stringify({
+                  status: 'error',
+                  details: 'Private API unhealthy',
+                }),
+              );
+            }
+          })
+          .catch((err: unknown) => {
+            log('Health check error:', err);
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(
+              JSON.stringify({
+                status: 'error',
+                details: err instanceof Error ? err.message : String(err),
+              }),
+            );
+          });
+        return;
+      }
 
       if (!req.url?.startsWith('/mcp')) {
         res.writeHead(404);
@@ -238,7 +277,7 @@ export function createServer(apiClient: ApiClient) {
           const transport = new StreamableHTTPServerTransport({
             sessionIdGenerator: () => newSessionId,
           });
-          const mcpServer = createMcpServer(apiClient);
+          const mcpServer = createMcpServer(projectApiClient);
 
           mcpServer.connect(transport).catch((err) => {
             console.error(

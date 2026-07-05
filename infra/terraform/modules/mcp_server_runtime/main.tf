@@ -29,6 +29,26 @@ resource "google_cloud_run_v2_service" "application" {
         container_port = 8080
       }
 
+      startup_probe {
+        timeout_seconds   = 5
+        period_seconds    = 10
+        failure_threshold = 3
+        http_get {
+          path = "/health"
+          port = 8080
+        }
+      }
+
+      liveness_probe {
+        timeout_seconds   = 5
+        period_seconds    = 10
+        failure_threshold = 3
+        http_get {
+          path = "/health"
+          port = 8080
+        }
+      }
+
       resources {
         cpu_idle = true
         limits = {
@@ -40,6 +60,11 @@ resource "google_cloud_run_v2_service" "application" {
       env {
         name  = "PRIVATE_API_URL"
         value = var.private_api_url
+      }
+
+      env {
+        name  = "API_AUTH_MODE"
+        value = "google-id-token"
       }
 
       env {
