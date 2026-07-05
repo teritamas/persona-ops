@@ -1,14 +1,14 @@
 import type { FastifyInstance } from 'fastify';
 
 import type { SimulationService } from '../application/simulation-service.js';
-import { NotFoundError } from '../domain/errors.js';
 import type { PersonaReaction, Simulation } from '../domain/simulation.js';
+import { registerDomainErrorHandler } from './domain-error-handler.js';
 
 const projectParamsSchema = {
   type: 'object',
   additionalProperties: false,
   required: ['projectId'],
-  properties: { projectId: { type: 'string', minLength: 1 } },
+  properties: { projectId: { type: 'string', minLength: 1, maxLength: 128 } },
 } as const;
 
 const simulationParamsSchema = {
@@ -16,8 +16,8 @@ const simulationParamsSchema = {
   additionalProperties: false,
   required: ['projectId', 'simulationId'],
   properties: {
-    projectId: { type: 'string', minLength: 1 },
-    simulationId: { type: 'string', minLength: 1 },
+    projectId: { type: 'string', minLength: 1, maxLength: 128 },
+    simulationId: { type: 'string', minLength: 1, maxLength: 128 },
   },
 } as const;
 
@@ -26,7 +26,7 @@ const createSimulationBodySchema = {
   additionalProperties: false,
   required: ['requirementId'],
   properties: {
-    requirementId: { type: 'string', minLength: 1 },
+    requirementId: { type: 'string', minLength: 1, maxLength: 128 },
   },
 } as const;
 
@@ -62,18 +62,15 @@ export async function simulationRoutes(
   app: FastifyInstance,
   options: { simulationService: SimulationService },
 ): Promise<void> {
+  registerDomainErrorHandler(app);
+
   app.get(
     '/api/v1/projects/:projectId/simulations',
     { schema: { params: projectParamsSchema } },
     async (request, reply) => {
-      try {
-        const { projectId } = request.params as { projectId: string };
-        const simulations = await options.simulationService.list(projectId);
-        return reply.send(simulations.map(toSimulationResponse));
-      } catch (error) {
-        request.log.error({ err: error }, 'Failed to list simulations');
-        return reply.status(500).send({ error: 'Internal Server Error' });
-      }
+      const { projectId } = request.params as { projectId: string };
+      const simulations = await options.simulationService.list(projectId);
+      return reply.send(simulations.map(toSimulationResponse));
     },
   );
 
@@ -81,26 +78,18 @@ export async function simulationRoutes(
     '/api/v1/projects/:projectId/simulations/:simulationId',
     { schema: { params: simulationParamsSchema } },
     async (request, reply) => {
-      try {
-        const { projectId, simulationId } = request.params as {
-          projectId: string;
-          simulationId: string;
-        };
-        const detail = await options.simulationService.getDetail(
-          projectId,
-          simulationId,
-        );
-        return reply.send({
-          ...toSimulationResponse(detail.simulation),
-          reactions: detail.reactions.map(toReactionResponse),
-        });
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.status(404).send({ error: 'Simulation not found' });
-        }
-        request.log.error({ err: error }, 'Failed to get simulation');
-        return reply.status(500).send({ error: 'Internal Server Error' });
-      }
+      const { projectId, simulationId } = request.params as {
+        projectId: string;
+        simulationId: string;
+      };
+      const detail = await options.simulationService.getDetail(
+        projectId,
+        simulationId,
+      );
+      return reply.send({
+        ...toSimulationResponse(detail.simulation),
+        reactions: detail.reactions.map(toReactionResponse),
+      });
     },
   );
 
@@ -113,21 +102,13 @@ export async function simulationRoutes(
       },
     },
     async (request, reply) => {
-      try {
-        const { projectId } = request.params as { projectId: string };
-        const { requirementId } = request.body as { requirementId: string };
-        const simulation = await options.simulationService.request(
-          projectId,
-          requirementId,
-        );
-        return reply.status(201).send(toSimulationResponse(simulation));
-      } catch (error) {
-        request.log.error({ err: error }, 'Failed to create simulation');
-        if (error instanceof NotFoundError) {
-          return reply.status(404).send({ error: error.message });
-        }
-        return reply.status(500).send({ error: 'Internal Server Error' });
-      }
+      const { projectId } = request.params as { projectId: string };
+      const { requirementId } = request.body as { requirementId: string };
+      const simulation = await options.simulationService.request(
+        projectId,
+        requirementId,
+      );
+      return reply.status(201).send(toSimulationResponse(simulation));
     },
   );
 
@@ -135,20 +116,12 @@ export async function simulationRoutes(
     '/api/v1/projects/:projectId/simulations/:simulationId',
     { schema: { params: simulationParamsSchema } },
     async (request, reply) => {
-      try {
-        const { projectId, simulationId } = request.params as {
-          projectId: string;
-          simulationId: string;
-        };
-        await options.simulationService.delete(projectId, simulationId);
-        return reply.status(204).send();
-      } catch (error) {
-        if (error instanceof NotFoundError) {
-          return reply.status(404).send({ error: 'Simulation not found' });
-        }
-        request.log.error({ err: error }, 'Failed to delete simulation');
-        return reply.status(500).send({ error: 'Internal Server Error' });
-      }
+      const { projectId, simulationId } = request.params as {
+        projectId: string;
+        simulationId: string;
+      };
+      await options.simulationService.delete(projectId, simulationId);
+      return reply.status(204).send();
     },
   );
 }

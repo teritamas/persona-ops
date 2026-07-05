@@ -3,17 +3,13 @@ const router = express.Router();
 const requirementController = require('../controllers/requirementController');
 
 router.get('/view/requirements', requirementController.getRequirementsDashboard);
-router.get('/view/requirements/:requirementId', requirementController.getRequirementsDashboard);
+router.get('/view/requirements/new-form', requirementController.createNewRequirementForm);
 router.get(
-  '/requirements/:requirementId/card',
-  requirementController.getRequirementCard,
-);
-router.get(
-  '/requirements/:requirementId/edit',
+  '/view/requirements/:requirementId/edit',
   requirementController.getRequirementEditForm,
 );
-router.post('/requirements/save', requirementController.saveRequirement);
-router.get('/requirements/new-form', requirementController.createNewRequirementForm);
-router.delete('/requirements/:requirementId', requirementController.deleteRequirement);
+router.get('/view/requirements/:requirementId', requirementController.getRequirementsDashboard);
+router.post('/action/requirements/save', requirementController.saveRequirement);
+router.delete('/action/requirements/:requirementId', requirementController.deleteRequirement);
 
 module.exports = router;

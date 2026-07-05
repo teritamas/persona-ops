@@ -3,7 +3,7 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { sourceDocumentRoutes } from '../../src/routes/source-document-routes.js';
 import type { SourceDocumentService } from '../../src/application/source-document/source-document-service.js';
 
-describe('SourceDocumentRoutes', () => {
+describe('参照資料ルーター', () => {
   let app: FastifyInstance;
   let mockSourceDocumentService: Partial<SourceDocumentService>;
 
@@ -29,7 +29,7 @@ describe('SourceDocumentRoutes', () => {
     });
   });
 
-  it('GET /api/v1/projects/:projectId/source-documents returns empty array', async () => {
+  it('プロジェクトの参照資料一覧を返す', async () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/v1/projects/project-1/source-documents',
@@ -38,7 +38,7 @@ describe('SourceDocumentRoutes', () => {
     expect(response.json()).toEqual({ documents: [] });
   });
 
-  it('POST /api/v1/projects/:projectId/source-documents returns 201', async () => {
+  it('参照資料を登録して201を返す', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/projects/project-1/source-documents',
@@ -54,7 +54,7 @@ describe('SourceDocumentRoutes', () => {
     expect(body.id).toBe('doc-1');
   });
 
-  it('POST /api/v1/projects/:projectId/source-documents missing payload returns 400', async () => {
+  it('必須項目がない参照資料を400で拒否する', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/projects/project-1/source-documents',
@@ -63,11 +63,15 @@ describe('SourceDocumentRoutes', () => {
     expect(response.statusCode).toBe(400);
   });
 
-  it('DELETE /api/v1/projects/:projectId/source-documents/:documentId returns 204', async () => {
+  it('プロジェクトに紐づく参照資料を削除する', async () => {
     const response = await app.inject({
       method: 'DELETE',
       url: '/api/v1/projects/project-1/source-documents/doc-1',
     });
     expect(response.statusCode).toBe(204);
+    expect(mockSourceDocumentService.deleteDocument).toHaveBeenCalledWith(
+      'project-1',
+      'doc-1',
+    );
   });
 });

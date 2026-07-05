@@ -18,6 +18,7 @@
   <script src="/js/htmx.min.js"></script>
   <!-- marked.js for Markdown parsing -->
   <script src="/js/marked.js"></script>
+  <script src="/js/project-menu.js" defer></script>
 </head>
 
 <body class="bg-slate-50 text-slate-800 font-sans antialiased overflow-hidden">
@@ -63,70 +64,6 @@
   </div>
 
   <script>
-    // プロジェクトメニューのトグル
-    function toggleProjectMenu() {
-      const menu = document.getElementById('project-dropdown');
-      menu.classList.toggle('hidden');
-    }
-
-    // メニュー外クリックで閉じる
-    document.addEventListener('click', function (event) {
-      const container = document.getElementById('project-menu-container');
-      if (container && !container.contains(event.target)) {
-        document.getElementById('project-dropdown')?.classList.add('hidden');
-      }
-    });
-
-    // プロジェクト新規作成
-    function createProject() {
-      fetch('/action/project/create', {
-        method: 'POST'
-      }).then(res => {
-        if (res.headers.get('hx-redirect')) {
-          window.location.href = res.headers.get('hx-redirect');
-        } else {
-          window.location.reload();
-        }
-      });
-    }
-
-    // プロジェクト切り替え (通常遷移)
-    function switchProject(projectId) {
-      document.cookie = "selectedPersonaId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      window.location.href = '/' + projectId;
-    }
-
-    // プロジェクト名変更
-    function renameProject(event, projectId, currentName) {
-      event.preventDefault();
-      event.stopPropagation();
-      const newName = window.prompt('新しいプロジェクト名を入力してください', currentName);
-      if (newName && newName.trim() !== '' && newName !== currentName) {
-        fetch('/action/project/rename', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId, name: newName.trim() })
-        }).then(() => {
-          window.location.href = '/' + projectId;
-        });
-      }
-    }
-
-    // プロジェクト削除
-    function deleteProject(event, projectId) {
-      event.preventDefault();
-      event.stopPropagation();
-      if (window.confirm('このプロジェクトを削除しますか？\n（復元できません）')) {
-        fetch('/action/project/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ projectId })
-        }).then(() => {
-          window.location.href = '/';
-        });
-      }
-    }
-
     function showSimulationPlayground() {
       const pathParts = window.location.pathname.split('/');
       const projectId = pathParts[1];
@@ -152,12 +89,8 @@
       const text = input.value.trim();
       if (!text) return;
 
-      const modelSelect = document.getElementById('modelSelect');
-      const model = modelSelect ? modelSelect.value : 'gemini-2.5-flash';
-
       // sessionStorage に退避
       sessionStorage.setItem('pendingStreamText', text);
-      sessionStorage.setItem('pendingStreamModel', model);
 
       // 送信ボタンをローディング状態にする
       const submitBtn = event.target.querySelector('button[type="submit"]');

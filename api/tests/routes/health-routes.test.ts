@@ -26,7 +26,7 @@ function createApp(aiAgent: AiAgentPort) {
   return app;
 }
 
-describe('health routes', () => {
+describe('ヘルスチェックルーター', () => {
   it('api/v1 配下で Vertex AI を呼び出さずに Liveness (ヘルスチェック) を返す', async () => {
     const invoke = vi.fn<() => Promise<string>>();
     const app = createApp({ invoke });

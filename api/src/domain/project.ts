@@ -1,6 +1,6 @@
 export interface Message {
   id: string;
-  role: 'user' | 'agent' | 'persona';
+  role: 'user' | 'agent' | 'persona' | 'system';
   text: string;
   time: string;
   isSystem?: boolean;

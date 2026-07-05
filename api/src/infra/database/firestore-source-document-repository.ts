@@ -1,5 +1,5 @@
 import type { Firestore, CollectionReference } from '@google-cloud/firestore';
-import type { SourceDocumentRepositoryPort } from '../../domain/source-document/source-document-repository.js';
+import type { SourceDocumentRepositoryPort } from '../../application/ports/infra/database/source-document-repository-port.js';
 import type { SourceDocument } from '../../domain/source-document/source-document.js';
 
 export class FirestoreSourceDocumentRepository implements SourceDocumentRepositoryPort {
@@ -27,19 +27,18 @@ export class FirestoreSourceDocumentRepository implements SourceDocumentReposito
       return [];
     }
 
-    return snapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        ...data,
-        id: doc.id,
-        createdAt: new Date(data.createdAt as string),
-        updatedAt: new Date(data.updatedAt as string),
-      } as SourceDocument;
-    });
+    return snapshot.docs
+      .map((doc) => this.mapDocument(doc.id, doc.data()))
+      .sort(
+        (left, right) => right.updatedAt.getTime() - left.updatedAt.getTime(),
+      );
   }
 
-  async findById(id: string): Promise<SourceDocument | null> {
-    const docRef = this.collection.doc(id);
+  async findById(
+    projectId: string,
+    documentId: string,
+  ): Promise<SourceDocument | null> {
+    const docRef = this.collection.doc(documentId);
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -49,16 +48,44 @@ export class FirestoreSourceDocumentRepository implements SourceDocumentReposito
     const data = doc.data();
     if (!data) return null;
 
-    return {
-      ...data,
-      id: doc.id,
-      createdAt: new Date(data.createdAt as string),
-      updatedAt: new Date(data.updatedAt as string),
-    } as SourceDocument;
+    const document = this.mapDocument(doc.id, data);
+    return document.projectId === projectId ? document : null;
   }
 
-  async deleteById(id: string): Promise<void> {
-    const docRef = this.collection.doc(id);
+  async deleteById(projectId: string, documentId: string): Promise<void> {
+    const document = await this.findById(projectId, documentId);
+    if (!document) {
+      return;
+    }
+    const docRef = this.collection.doc(documentId);
     await docRef.delete();
+  }
+
+  private mapDocument(
+    id: string,
+    data: Record<string, unknown>,
+  ): SourceDocument {
+    const contentSnapshot =
+      typeof data.contentSnapshot === 'string'
+        ? { contentSnapshot: data.contentSnapshot }
+        : {};
+    const errorMessage =
+      typeof data.errorMessage === 'string'
+        ? { errorMessage: data.errorMessage }
+        : {};
+    return {
+      id,
+      projectId: String(data.projectId),
+      type: data.type === 'chat' ? 'chat' : 'url',
+      reference: String(data.reference),
+      fetchStatus:
+        data.fetchStatus === 'success' || data.fetchStatus === 'error'
+          ? data.fetchStatus
+          : 'pending',
+      ...contentSnapshot,
+      ...errorMessage,
+      createdAt: new Date(String(data.createdAt)),
+      updatedAt: new Date(String(data.updatedAt)),
+    };
   }
 }

@@ -1,102 +1,128 @@
-const { requestPrivateApi } = require('../clients/private-api');
+const {
+  requestPrivateApi,
+  requestPrivateApiStream,
+} = require('../clients/private-api');
+
+function projectPath(projectId, suffix = '') {
+  return `/api/v1/projects/${encodeURIComponent(projectId)}${suffix}`;
+}
 
 class ChatService {
+  constructor(options = {}) {
+    this.requestPrivateApi =
+      options.requestPrivateApiImplementation ?? requestPrivateApi;
+    this.requestPrivateApiStream =
+      options.requestPrivateApiStreamImplementation ?? requestPrivateApiStream;
+  }
+
   getActiveChatContext(activeProject) {
-    if (!activeProject) {
-      return {
-        activeProject: null,
-        isInitial: true,
-        activeChat: null,
-        hasMessages: false
-      };
-    }
-    return {
-      activeProject,
-      isInitial: activeProject.isInitial,
-      activeChat: activeProject.chats.find(c => c.id === activeProject.activeChatId) || null,
-      hasMessages: activeProject.activeChatId && activeProject.chats.find(c => c.id === activeProject.activeChatId)?.messages?.length > 0
-    };
+    const activeChat =
+      activeProject?.chats?.find(
+        (chat) => chat.id === activeProject.activeChatId,
+      ) ?? null;
+    return { activeChat };
   }
 
   async createNewChat(activeProject) {
-    if (!activeProject || !activeProject.id) return null;
-
-    const newId = 'chat_' + Date.now();
-    const newChat = {
-      id: newId,
+    return this.createChat(activeProject.id, {
       title: '新しいチャット',
-      messages: []
-    };
-
-    const updatedChats = [...activeProject.chats, newChat];
-
-    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
-      method: 'PUT',
-      body: {
-        chats: updatedChats,
-        activeChatId: newId
-      }
+      type: 'agent',
     });
-
-    if (response.ok && response.data) {
-      return response.data;
-    }
-    return null;
   }
 
   async switchChat(activeProject, chatId) {
-    if (!activeProject || !activeProject.id) return null;
-
-    const chat = activeProject.chats.find(c => c.id === chatId);
-    if (!chat) return activeProject;
-
-    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
-      method: 'PUT',
-      body: {
-        activeChatId: chatId
-      }
-    });
-
-    if (response.ok && response.data) {
-      return response.data;
+    if (!activeProject.chats.some((chat) => chat.id === chatId)) {
+      return null;
     }
-    return null;
+    const response = await this.requestPrivateApi(
+      projectPath(activeProject.id, '/active-chat'),
+      {
+        method: 'PUT',
+        body: { chatId },
+      },
+    );
+    return response.ok ? response.data : null;
   }
 
   async startPersonaChat(activeProject, personaId) {
-    if (!activeProject || !activeProject.id) return null;
-
-    const persona = activeProject.personas.find(p => p.id === personaId);
-    if (!persona) return null;
-
-    const newChatId = 'chat_' + Date.now();
-    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-    const newChat = {
-      id: newChatId,
+    const persona = activeProject.personas.find(
+      (candidate) => candidate.id === personaId,
+    );
+    if (!persona) {
+      return null;
+    }
+    const time = new Date().toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    return this.createChat(activeProject.id, {
+      title: `${persona.name}との個別チャット`,
       type: 'persona',
       personaId: persona.id,
-      title: persona.name + 'との個別チャット',
-      messages: [
-        { id: 'msg_init', role: 'agent', text: `こんにちは。${persona.role}の${persona.name}です。どのようなことについてお話ししましょうか？`, time: nowStr }
-      ]
-    };
-
-    const updatedChats = [...activeProject.chats, newChat];
-
-    const response = await requestPrivateApi(`/api/v1/projects/${encodeURIComponent(activeProject.id)}`, {
-      method: 'PUT',
-      body: {
-        chats: updatedChats,
-        activeChatId: newChatId
-      }
+      initialMessages: [
+        {
+          id: `msg_${Date.now()}`,
+          role: 'agent',
+          text: `こんにちは。${persona.role}の${persona.name}です。どのようなことについてお話ししましょうか？`,
+          time,
+        },
+      ],
     });
+  }
 
-    if (response.ok && response.data) {
-      return response.data;
+  async ensureActiveChat(activeProject) {
+    const activeChat = activeProject.chats.find(
+      (chat) => chat.id === activeProject.activeChatId,
+    );
+    if (activeChat) {
+      return { activeChat, project: activeProject };
     }
-    return null;
+
+    const project = await this.createNewChat(activeProject);
+    if (!project) {
+      throw new Error('Failed to create chat.');
+    }
+    const createdChat = project.chats.find(
+      (chat) => chat.id === project.activeChatId,
+    );
+    if (!createdChat) {
+      throw new Error('Created chat was not returned.');
+    }
+    return { activeChat: createdChat, project };
+  }
+
+  async appendMessages(projectId, chatId, messages) {
+    const response = await this.requestPrivateApi(
+      projectPath(projectId, `/chats/${encodeURIComponent(chatId)}/messages`),
+      {
+        method: 'POST',
+        body: { messages },
+      },
+    );
+    if (!response.ok || !response.data) {
+      throw new Error('Failed to save chat messages.');
+    }
+    return response.data;
+  }
+
+  stream(message, history, projectId) {
+    return this.requestPrivateApiStream('/api/v1/chat/stream', {
+      method: 'POST',
+      body: { message, history, projectId },
+    });
+  }
+
+  async createChat(projectId, request) {
+    const response = await this.requestPrivateApi(
+      projectPath(projectId, '/chats'),
+      {
+        method: 'POST',
+        body: request,
+      },
+    );
+    return response.ok ? response.data : null;
   }
 }
 
 module.exports = new ChatService();
+module.exports.ChatService = ChatService;

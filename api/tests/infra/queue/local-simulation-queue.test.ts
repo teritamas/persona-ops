@@ -6,7 +6,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('LocalSimulationQueue', () => {
+describe('ローカルシミュレーションQueue', () => {
   it('同じローカルAPIの内部Taskルートを非同期で呼び出す', async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true, status: 204 });
     vi.stubGlobal('fetch', fetchMock);

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { PersonaService } from '../../src/application/persona-service.js';
 import type { PersonaStorePort } from '../../src/application/ports/infra/database/persona-store-port.js';
 import type { Persona } from '../../src/domain/persona.js';
+import { MemorySourceDocumentRepository } from '../helpers/memory-source-document-repository.js';
 
 class MockPersonaRepository implements PersonaStorePort {
   private personas: Persona[] = [];
@@ -27,10 +28,13 @@ class MockPersonaRepository implements PersonaStorePort {
   }
 }
 
-describe('PersonaService (ペルソナサービス)', () => {
+describe('ペルソナサービス', () => {
   it('プロジェクトIDに紐づくペルソナ一覧を取得できる', async () => {
     const repository = new MockPersonaRepository();
-    const service = new PersonaService(repository);
+    const service = new PersonaService(
+      repository,
+      new MemorySourceDocumentRepository(),
+    );
 
     await repository.save({
       id: 'pers_1',
@@ -39,6 +43,7 @@ describe('PersonaService (ペルソナサービス)', () => {
       role: 'エンジニア',
       traits: [],
       background: '',
+      sourceDocumentIds: [],
       avatarSeed: 'Felix',
       x: 0,
       y: 0,
@@ -53,7 +58,10 @@ describe('PersonaService (ペルソナサービス)', () => {
 
   it('IDを指定した更新では同じ役割の別ペルソナを変更しない', async () => {
     const repository = new MockPersonaRepository();
-    const service = new PersonaService(repository);
+    const service = new PersonaService(
+      repository,
+      new MemorySourceDocumentRepository(),
+    );
     await service.savePersonas('proj_test', [
       {
         name: '山田',
@@ -88,5 +96,46 @@ describe('PersonaService (ペルソナサービス)', () => {
     expect(after.find((persona) => persona.name === '佐藤')?.traits).toEqual([
       '内勤',
     ]);
+  });
+
+  it('同じプロジェクトの取得済み資料をペルソナの根拠に設定する', async () => {
+    const repository = new MockPersonaRepository();
+    const sourceDocuments = new MemorySourceDocumentRepository();
+    await sourceDocuments.save({
+      id: 'document-1',
+      projectId: 'proj_test',
+      type: 'url',
+      reference: 'https://example.com',
+      fetchStatus: 'success',
+      contentSnapshot: '顧客調査',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const service = new PersonaService(repository, sourceDocuments);
+
+    await service.savePersonas('proj_test', [
+      {
+        name: '山田',
+        role: '営業',
+        traits: [],
+        background: '外勤',
+        sourceDocumentIds: ['document-1'],
+      },
+    ]);
+
+    await expect(
+      service.getPersonasByProjectId('proj_test'),
+    ).resolves.toMatchObject([{ sourceDocumentIds: ['document-1'] }]);
+    await expect(
+      service.savePersonas('proj_test', [
+        {
+          name: '不正',
+          role: '営業',
+          traits: [],
+          background: '',
+          sourceDocumentIds: ['missing'],
+        },
+      ]),
+    ).rejects.toThrow('参照可能な資料ではありません');
   });
 });

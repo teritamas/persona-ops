@@ -121,6 +121,20 @@ test('認証エラーと upstream エラーを HTTP ステータスで分類す�
   assert.equal(upstreamFailure.errorType, 'upstream');
 });
 
+test('204 No Contentを正常な空レスポンスとして扱う', async () => {
+  const client = createPrivateApiClient({
+    environment: {},
+    fetchImplementation: async () => new Response(null, { status: 204 }),
+  });
+
+  const response = await client.request('/projects/project-1', {
+    method: 'DELETE',
+  });
+
+  assert.equal(response.ok, true);
+  assert.equal(response.data, null);
+});
+
 test('タイムアウト、ネットワーク、無効レスポンスを識別して扱う', async (t) => {
   await t.test('タイムアウトを検出する', async () => {
     const client = createPrivateApiClient({

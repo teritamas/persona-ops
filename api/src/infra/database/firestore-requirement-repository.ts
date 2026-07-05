@@ -14,6 +14,7 @@ export class FirestoreRequirementRepository implements RequirementStorePort {
         title: requirement.title,
         description: requirement.description,
         acceptanceCriteria: requirement.acceptanceCriteria,
+        sourceDocumentIds: requirement.sourceDocumentIds,
         sourceSimulationIds: requirement.sourceSimulationIds,
         status: requirement.status,
         version: requirement.version,
@@ -67,6 +68,9 @@ export class FirestoreRequirementRepository implements RequirementStorePort {
       description: String(data.description),
       acceptanceCriteria: Array.isArray(data.acceptanceCriteria)
         ? data.acceptanceCriteria.map((value) => String(value))
+        : [],
+      sourceDocumentIds: Array.isArray(data.sourceDocumentIds)
+        ? data.sourceDocumentIds.map((value) => String(value))
         : [],
       sourceSimulationIds: Array.isArray(data.sourceSimulationIds)
         ? data.sourceSimulationIds.map((value) => String(value))

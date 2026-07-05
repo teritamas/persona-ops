@@ -17,6 +17,7 @@ import type { AppConfig } from '../config.js';
 import { AdkAiAgent } from './ai/adk-ai-agent.js';
 import { FirestoreRequirementRepository } from './database/firestore-requirement-repository.js';
 import { FirestoreSimulationRepository } from './database/firestore-simulation-repository.js';
+import { FirestoreProjectDataDeletion } from './database/firestore-project-data-deletion.js';
 import { createCloudTasksSimulationQueue } from './queue/cloud-tasks-simulation-queue.js';
 import { LocalSimulationQueue } from './queue/local-simulation-queue.js';
 
@@ -50,10 +51,14 @@ export function buildContainer(config: AppConfig): Container {
     model: config.VERTEX_AI_MODEL,
   });
 
-  const personaService = new PersonaService(personaRepository);
+  const personaService = new PersonaService(
+    personaRepository,
+    sourceDocumentRepository,
+  );
   const requirementService = new RequirementService(
     requirementRepository,
     simulationRepository,
+    sourceDocumentRepository,
   );
 
   const simulationQueue =
@@ -84,7 +89,10 @@ export function buildContainer(config: AppConfig): Container {
 
   return {
     aiAgent,
-    projectService: new ProjectService(projectRepository),
+    projectService: new ProjectService(
+      projectRepository,
+      new FirestoreProjectDataDeletion(firestore),
+    ),
     personaService,
     requirementService,
     simulationService,
@@ -92,6 +100,7 @@ export function buildContainer(config: AppConfig): Container {
       personaService,
       requirementService,
       simulationService,
+      sourceDocumentService,
       personaOpsAgent,
     ),
     sourceDocumentService,

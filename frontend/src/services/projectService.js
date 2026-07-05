@@ -1,9 +1,14 @@
 const { requestPrivateApi } = require('../clients/private-api');
 
 class ProjectService {
+  constructor(options = {}) {
+    this.requestPrivateApi =
+      options.requestPrivateApiImplementation ?? requestPrivateApi;
+  }
+
   async createProject(name = '新しいプロジェクト') {
     try {
-      const response = await requestPrivateApi('/api/v1/projects', {
+      const response = await this.requestPrivateApi('/api/v1/projects', {
         method: 'POST',
         body: { name }
       });
@@ -20,37 +25,9 @@ class ProjectService {
 
   async fetchProjects() {
     try {
-      const response = await requestPrivateApi('/api/v1/projects');
+      const response = await this.requestPrivateApi('/api/v1/projects');
       if (response.ok && Array.isArray(response.data)) {
-        const apiProjects = response.data;
-        return await Promise.all(
-          apiProjects.map(async (apiProj) => {
-            let personas = [];
-            try {
-              const personaResponse = await requestPrivateApi(
-                `/api/v1/projects/${apiProj.id}/personas`,
-              );
-              if (personaResponse.ok && Array.isArray(personaResponse.data)) {
-                personas = personaResponse.data;
-              }
-            } catch (err) {
-              console.error(
-                `Failed to fetch personas for project ${apiProj.id}`,
-                err,
-              );
-            }
-            return {
-              id: apiProj.id,
-              name: apiProj.name,
-              isInitial: apiProj.chats && apiProj.chats.length > 0 ? false : true,
-              personas: personas,
-              chats: apiProj.chats || [],
-              activeChatId: apiProj.activeChatId || null,
-              createdAt: apiProj.createdAt,
-              updatedAt: apiProj.updatedAt
-            };
-          }),
-        );
+        return response.data;
       }
     } catch (err) {
       console.error('Failed to fetch projects', err);
@@ -60,10 +37,13 @@ class ProjectService {
 
   async updateProjectName(id, name) {
     try {
-      const response = await requestPrivateApi(`/api/v1/projects/${id}`, {
-        method: 'PUT',
-        body: { name }
-      });
+      const response = await this.requestPrivateApi(
+        `/api/v1/projects/${encodeURIComponent(id)}`,
+        {
+          method: 'PUT',
+          body: { name }
+        },
+      );
       return response.ok;
     } catch (err) {
       console.error('Failed to update project name', err);
@@ -73,9 +53,10 @@ class ProjectService {
 
   async deleteProject(id) {
     try {
-      const response = await requestPrivateApi(`/api/v1/projects/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await this.requestPrivateApi(
+        `/api/v1/projects/${encodeURIComponent(id)}`,
+        { method: 'DELETE' },
+      );
       return response.ok;
     } catch (err) {
       console.error('Failed to delete project', err);
@@ -85,11 +66,11 @@ class ProjectService {
 
   async getDashboardContext(activeProjectId, selectedPersonaId) {
     const projectsList = await this.fetchProjects();
-    const activeProject =
+    const selectedProject =
       projectsList.find((candidate) => candidate.id === activeProjectId) ||
       projectsList[0];
 
-    if (!activeProject) {
+    if (!selectedProject) {
       return {
         activeProject: {
           id: '',
@@ -106,6 +87,23 @@ class ProjectService {
       };
     }
 
+    const projectId = encodeURIComponent(selectedProject.id);
+    const [projectResponse, personaResponse] = await Promise.all([
+      this.requestPrivateApi(`/api/v1/projects/${projectId}`),
+      this.requestPrivateApi(`/api/v1/projects/${projectId}/personas`),
+    ]);
+    if (!projectResponse.ok || !projectResponse.data) {
+      throw new Error('Failed to fetch the active project.');
+    }
+
+    const activeProject = {
+      ...projectResponse.data,
+      personas:
+        personaResponse.ok && Array.isArray(personaResponse.data)
+          ? personaResponse.data
+          : [],
+      chats: projectResponse.data.chats || [],
+    };
     activeProject.activeChat =
       activeProject.chats.find((chat) => chat.id === activeProject.activeChatId) ||
       activeProject.chats[0] ||
@@ -119,21 +117,7 @@ class ProjectService {
       selectedPersonaId: selectedPersonaId || null
     };
   }
-
-  getProjectState(activeProject) {
-    if (!activeProject) {
-      return {
-        activeProjectId: null,
-        isInitial: true,
-        activeChatId: null
-      };
-    }
-    return {
-      activeProjectId: activeProject.id,
-      isInitial: activeProject.isInitial,
-      activeChatId: activeProject.activeChatId
-    };
-  }
 }
 
 module.exports = new ProjectService();
+module.exports.ProjectService = ProjectService;

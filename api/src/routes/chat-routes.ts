@@ -43,6 +43,20 @@ export async function chatRoutes(
         }>;
       };
 
+      let stream: AsyncIterable<string>;
+      try {
+        stream = await options.personaOpsChatService.stream({
+          projectId: body.projectId,
+          message: body.message,
+          history: body.history ?? [],
+        });
+      } catch (error) {
+        request.log.error({ err: error }, 'PersonaOps chat setup failed');
+        return reply
+          .status(502)
+          .send({ error: 'Failed to prepare chat response' });
+      }
+
       reply.raw.writeHead(200, {
         'Content-Type': 'text/plain; charset=utf-8',
         'Transfer-Encoding': 'chunked',
@@ -51,11 +65,6 @@ export async function chatRoutes(
       });
 
       try {
-        const stream = await options.personaOpsChatService.stream({
-          projectId: body.projectId,
-          message: body.message,
-          history: body.history ?? [],
-        });
         for await (const text of stream) {
           reply.raw.write(text);
         }

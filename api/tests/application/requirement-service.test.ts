@@ -5,6 +5,7 @@ import type { RequirementStorePort } from '../../src/application/ports/infra/dat
 import type { SimulationStorePort } from '../../src/application/ports/infra/database/simulation-store-port.js';
 import type { Requirement } from '../../src/domain/requirement.js';
 import type { Simulation } from '../../src/domain/simulation.js';
+import { MemorySourceDocumentRepository } from '../helpers/memory-source-document-repository.js';
 
 class MemoryRequirementStore implements RequirementStorePort {
   readonly items = new Map<string, Requirement>();
@@ -34,14 +35,18 @@ class MemoryRequirementStore implements RequirementStorePort {
   }
 }
 
-describe('RequirementService', () => {
+describe('要件サービス', () => {
   const simulationStore = {
     findById: () => Promise.resolve(null),
   } as unknown as SimulationStorePort;
 
   it('新しい要件をdraftとして保存する', async () => {
     const store = new MemoryRequirementStore();
-    const service = new RequirementService(store, simulationStore);
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      new MemorySourceDocumentRepository(),
+    );
 
     const requirement = await service.saveDraft('project-1', {
       title: '音声入力',
@@ -58,7 +63,11 @@ describe('RequirementService', () => {
 
   it('承認済み要件を更新するとversionを増やしてdraftへ戻す', async () => {
     const store = new MemoryRequirementStore();
-    const service = new RequirementService(store, simulationStore);
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      new MemorySourceDocumentRepository(),
+    );
     const created = await service.saveDraft('project-1', {
       title: '音声入力',
       description: '初版',
@@ -86,6 +95,7 @@ describe('RequirementService', () => {
     const service = new RequirementService(
       new MemoryRequirementStore(),
       simulationStore,
+      new MemorySourceDocumentRepository(),
     );
 
     await expect(
@@ -106,7 +116,11 @@ describe('RequirementService', () => {
     const invalidSimulationStore = {
       findById: () => Promise.resolve(null),
     } as unknown as SimulationStorePort;
-    const service = new RequirementService(store, invalidSimulationStore);
+    const service = new RequirementService(
+      store,
+      invalidSimulationStore,
+      new MemorySourceDocumentRepository(),
+    );
 
     await expect(
       service.saveDraft('project-1', {
@@ -123,7 +137,11 @@ describe('RequirementService', () => {
           status: 'completed',
         } as Simulation),
     } as unknown as SimulationStorePort;
-    const validService = new RequirementService(store, validSimulationStore);
+    const validService = new RequirementService(
+      store,
+      validSimulationStore,
+      new MemorySourceDocumentRepository(),
+    );
     await expect(
       validService.saveDraft('project-1', {
         title: '改善要件',
@@ -152,13 +170,18 @@ describe('RequirementService', () => {
       },
     } as unknown as SimulationStorePort;
 
-    const service = new RequirementService(store, mockSimulationStore);
+    const service = new RequirementService(
+      store,
+      mockSimulationStore,
+      new MemorySourceDocumentRepository(),
+    );
     await store.save({
       id: 'req-1',
       projectId: 'project-1',
       title: '要件1',
       description: '',
       acceptanceCriteria: [],
+      sourceDocumentIds: [],
       sourceSimulationIds: [],
       status: 'draft',
       version: 1,
@@ -172,5 +195,34 @@ describe('RequirementService', () => {
     expect(deletedSimIds).toContain('sim-3');
     expect(deletedSimIds).not.toContain('sim-2');
     await expect(store.findById('project-1', 'req-1')).resolves.toBeNull();
+  });
+
+  it('取得済み資料を要件の根拠として保存する', async () => {
+    const store = new MemoryRequirementStore();
+    const sourceDocuments = new MemorySourceDocumentRepository();
+    await sourceDocuments.save({
+      id: 'document-1',
+      projectId: 'project-1',
+      type: 'url',
+      reference: 'https://example.com',
+      fetchStatus: 'success',
+      contentSnapshot: '要件の根拠',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      sourceDocuments,
+    );
+
+    const saved = await service.saveDraft('project-1', {
+      title: '証拠付き要件',
+      description: '資料を参照する',
+      acceptanceCriteria: [],
+      sourceDocumentIds: ['document-1'],
+    });
+
+    expect(saved.sourceDocumentIds).toEqual(['document-1']);
   });
 });

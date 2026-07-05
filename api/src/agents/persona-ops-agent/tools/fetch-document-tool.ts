@@ -3,6 +3,7 @@ import { FunctionTool } from '@google/adk';
 import type { SourceDocumentService } from '../../../application/source-document/source-document-service.js';
 
 export function createFetchDocumentTool(
+  projectId: string,
   sourceDocumentService: SourceDocumentService,
 ) {
   return new FunctionTool({
@@ -10,17 +11,12 @@ export function createFetchDocumentTool(
     description:
       'Fetches the content of a given URL, extracts the plain text, and saves it as a reference document for the project. Use this tool when the user provides a URL to read.',
     parameters: z.object({
-      projectId: z
-        .string()
-        .describe(
-          'The ID of the project to associate the fetched document with.',
-        ),
-      url: z.string().describe('The URL to fetch the content from.'),
+      url: z.url().describe('The URL to fetch the content from.'),
     }),
-    execute: async (input: { projectId: string; url: string }) => {
+    execute: async (input: { url: string }) => {
       try {
         const document = await sourceDocumentService.addSourceDocument({
-          projectId: input.projectId,
+          projectId,
           type: 'url',
           reference: input.url,
         });
@@ -29,7 +25,7 @@ export function createFetchDocumentTool(
           return `Failed to fetch the document from ${input.url}. Error: ${document.errorMessage}`;
         }
 
-        return `Successfully fetched the document from ${input.url}.\n\nContent:\n${document.contentSnapshot}`;
+        return `Successfully fetched sourceDocumentId=${document.id} from ${input.url}.\n\nContent:\n${document.contentSnapshot}`;
       } catch (error) {
         if (error instanceof Error) {
           return `Failed to fetch the document from ${input.url}: ${error.message}`;

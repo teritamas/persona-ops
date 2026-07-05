@@ -1,59 +1,88 @@
-import type { FastifyPluginAsync } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
 import type { SourceDocumentService } from '../application/source-document/source-document-service.js';
 import type { SourceDocumentType } from '../domain/source-document/source-document.js';
+import { registerDomainErrorHandler } from './domain-error-handler.js';
 
-interface SourceDocumentRoutesOptions {
-  sourceDocumentService: SourceDocumentService;
-}
+const projectParamsSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['projectId'],
+  properties: {
+    projectId: { type: 'string', minLength: 1, maxLength: 128 },
+  },
+} as const;
 
-export const sourceDocumentRoutes: FastifyPluginAsync<
-  SourceDocumentRoutesOptions
-> = async (fastify, options) => {
-  await Promise.resolve();
+const documentParamsSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['projectId', 'documentId'],
+  properties: {
+    projectId: { type: 'string', minLength: 1, maxLength: 128 },
+    documentId: { type: 'string', minLength: 1, maxLength: 128 },
+  },
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function sourceDocumentRoutes(
+  app: FastifyInstance,
+  options: { sourceDocumentService: SourceDocumentService },
+): Promise<void> {
+  registerDomainErrorHandler(app);
   const { sourceDocumentService } = options;
 
-  fastify.get<{
-    Params: { projectId: string };
-  }>('/api/v1/projects/:projectId/source-documents', async (request, reply) => {
-    const { projectId } = request.params;
-    const documents =
-      await sourceDocumentService.getDocumentsByProjectId(projectId);
-    return reply.send({ documents });
-  });
-
-  fastify.post<{
-    Params: { projectId: string };
-    Body: { type: SourceDocumentType; reference: string };
-  }>('/api/v1/projects/:projectId/source-documents', async (request, reply) => {
-    const { projectId } = request.params;
-    const { type, reference } = request.body;
-
-    if (!type || !reference) {
-      return reply.status(400).send({
-        error: {
-          code: 'VALIDATION_ERROR',
-          message: 'type and reference are required',
-        },
-      });
-    }
-
-    const document = await sourceDocumentService.addSourceDocument({
-      projectId,
-      type,
-      reference,
-    });
-
-    return reply.status(201).send(document);
-  });
-
-  fastify.delete<{
-    Params: { projectId: string; documentId: string };
-  }>(
-    '/api/v1/projects/:projectId/source-documents/:documentId',
+  app.get(
+    '/api/v1/projects/:projectId/source-documents',
+    { schema: { params: projectParamsSchema } },
     async (request, reply) => {
-      const { documentId } = request.params;
-      await sourceDocumentService.deleteDocument(documentId);
+      const { projectId } = request.params as { projectId: string };
+      const documents =
+        await sourceDocumentService.getDocumentsByProjectId(projectId);
+      return reply.send({ documents });
+    },
+  );
+
+  app.post(
+    '/api/v1/projects/:projectId/source-documents',
+    {
+      schema: {
+        params: projectParamsSchema,
+        body: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['type', 'reference'],
+          properties: {
+            type: { type: 'string', enum: ['url', 'chat'] },
+            reference: { type: 'string', minLength: 1, maxLength: 10_000 },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { projectId } = request.params as { projectId: string };
+      const { type, reference } = request.body as {
+        type: SourceDocumentType;
+        reference: string;
+      };
+      const document = await sourceDocumentService.addSourceDocument({
+        projectId,
+        type,
+        reference,
+      });
+      return reply.status(201).send(document);
+    },
+  );
+
+  app.delete(
+    '/api/v1/projects/:projectId/source-documents/:documentId',
+    { schema: { params: documentParamsSchema } },
+    async (request, reply) => {
+      const { projectId, documentId } = request.params as {
+        projectId: string;
+        documentId: string;
+      };
+      await sourceDocumentService.deleteDocument(projectId, documentId);
       return reply.status(204).send();
     },
   );
-};
+}

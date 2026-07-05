@@ -202,6 +202,13 @@ export class SimulationService {
   }
 
   async delete(projectId: string, simulationId: string): Promise<void> {
+    const simulation = await this.simulationRepository.findById(
+      projectId,
+      simulationId,
+    );
+    if (!simulation) {
+      throw new NotFoundError('Simulation', simulationId);
+    }
     await this.simulationRepository.delete(projectId, simulationId);
   }
 

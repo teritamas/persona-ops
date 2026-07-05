@@ -11,7 +11,7 @@ const validEnvironment = {
   VERTEX_AI_MODEL: 'gemini-2.5-flash',
 };
 
-describe('loadConfig', () => {
+describe('環境設定の読み込み', () => {
   it('ローカルサーバーのデフォルト設定を読み込む', () => {
     const config = loadConfig(validEnvironment);
 

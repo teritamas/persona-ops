@@ -1,188 +1,235 @@
-import { describe, it, expect } from 'vitest';
 import Fastify from 'fastify';
+import { describe, expect, it, vi } from 'vitest';
 
-import { projectRoutes } from '../../src/routes/project-routes.js';
-import { ProjectService } from '../../src/application/project-service.js';
+import type { ProjectDataDeletionPort } from '../../src/application/ports/infra/database/project-data-deletion-port.js';
 import type { ProjectRepositoryPort } from '../../src/application/ports/infra/database/project-repository-port.js';
-import type { Project } from '../../src/domain/project.js';
+import { ProjectService } from '../../src/application/project-service.js';
+import { NotFoundError } from '../../src/domain/errors.js';
+import type { Chat, Message, Project } from '../../src/domain/project.js';
+import { projectRoutes } from '../../src/routes/project-routes.js';
 
-class MockProjectRepository implements ProjectRepositoryPort {
-  private projects: Project[] = [];
+class MemoryProjectRepository implements ProjectRepositoryPort {
+  readonly projects = new Map<string, Project>();
   shouldFail = false;
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async save(project: Project): Promise<void> {
-    if (this.shouldFail) throw new Error('Mock Error');
-    this.projects.push(project);
+  save(project: Project): Promise<void> {
+    this.failIfNeeded();
+    this.projects.set(project.id, project);
+    return Promise.resolve();
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async findAll(): Promise<Project[]> {
-    if (this.shouldFail) throw new Error('Mock Error');
-    return this.projects;
+  findAll(): Promise<Project[]> {
+    this.failIfNeeded();
+    return Promise.resolve([...this.projects.values()]);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async findById(id: string): Promise<Project | null> {
-    if (this.shouldFail) throw new Error('Mock Error');
-    return this.projects.find((p) => p.id === id) || null;
+  findById(id: string): Promise<Project | null> {
+    this.failIfNeeded();
+    return Promise.resolve(this.projects.get(id) ?? null);
   }
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async delete(id: string): Promise<void> {
-    if (this.shouldFail) throw new Error('Mock Error');
-    this.projects = this.projects.filter((p) => p.id !== id);
+
+  updateName(projectId: string, name: string, updatedAt: Date): Promise<void> {
+    return this.update(projectId, (project) => ({
+      ...project,
+      name,
+      updatedAt,
+    })).then(() => undefined);
+  }
+
+  delete(id: string): Promise<void> {
+    this.failIfNeeded();
+    this.projects.delete(id);
+    return Promise.resolve();
+  }
+
+  createChat(projectId: string, chat: Chat): Promise<Project> {
+    return this.update(projectId, (project) => ({
+      ...project,
+      chats: [...(project.chats ?? []), chat],
+      activeChatId: chat.id,
+    }));
+  }
+
+  setActiveChat(projectId: string, chatId: string): Promise<Project> {
+    return this.update(projectId, (project) => {
+      if (!(project.chats ?? []).some((chat) => chat.id === chatId)) {
+        throw new NotFoundError('Chat', chatId);
+      }
+      return { ...project, activeChatId: chatId };
+    });
+  }
+
+  appendChatMessages(
+    projectId: string,
+    chatId: string,
+    messages: Message[],
+  ): Promise<Project> {
+    return this.update(projectId, (project) => ({
+      ...project,
+      chats: (project.chats ?? []).map((chat) =>
+        chat.id === chatId
+          ? { ...chat, messages: [...chat.messages, ...messages] }
+          : chat,
+      ),
+    }));
+  }
+
+  private update(
+    projectId: string,
+    update: (project: Project) => Project,
+  ): Promise<Project> {
+    this.failIfNeeded();
+    const project = this.projects.get(projectId);
+    if (!project) {
+      throw new NotFoundError('Project', projectId);
+    }
+    const updated = update(project);
+    this.projects.set(projectId, updated);
+    return Promise.resolve(updated);
+  }
+
+  private failIfNeeded(): void {
+    if (this.shouldFail) {
+      throw new Error('Mock Error');
+    }
   }
 }
 
-describe('プロジェクトルーター', () => {
+function createApp(options?: {
+  repository?: MemoryProjectRepository;
+  deletion?: ProjectDataDeletionPort;
+}) {
+  const repository = options?.repository ?? new MemoryProjectRepository();
+  const projectService = new ProjectService(repository, options?.deletion);
   const app = Fastify();
-  const repository = new MockProjectRepository();
-  const projectService = new ProjectService(repository);
+  void app.register(projectRoutes, { projectService });
+  return { app, projectService, repository };
+}
 
-  app.register(projectRoutes, { projectService });
-
-  it('POST /api/v1/projects で新しいプロジェクトを作成する', async () => {
-    const response = await app.inject({
+describe('プロジェクトルーター', () => {
+  it('作成・一覧・詳細取得では一覧にチャット本文を含めない', async () => {
+    const { app } = createApp();
+    const created = await app.inject({
       method: 'POST',
       url: '/api/v1/projects',
       payload: { name: 'Test Project' },
     });
+    const project = created.json<Project>();
 
-    expect(response.statusCode).toBe(201);
-    const body = response.json<Project>();
-    expect(body.id).toBeTruthy();
-    expect(body.name).toBe('Test Project');
-    expect(body.createdAt).toBeTruthy();
-    expect(body.updatedAt).toBeTruthy();
-  });
-
-  it('GET /api/v1/projects でプロジェクトのリストを返す', async () => {
-    const response = await app.inject({
+    const list = await app.inject({
       method: 'GET',
       url: '/api/v1/projects',
     });
+    const detail = await app.inject({
+      method: 'GET',
+      url: `/api/v1/projects/${project.id}`,
+    });
 
-    expect(response.statusCode).toBe(200);
-    const body = response.json<Project[]>();
-    expect(Array.isArray(body)).toBeTruthy();
-    expect(body.length).toBe(1);
-    expect(body[0]?.name).toBe('Test Project');
+    expect(created.statusCode).toBe(201);
+    const summaries = list.json<Array<Record<string, unknown>>>();
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]).not.toHaveProperty('chats');
+    expect(detail.json<Project>()).toMatchObject({
+      id: project.id,
+      chats: [],
+      activeChatId: null,
+    });
   });
 
-  it('PUT /api/v1/projects/:id でプロジェクトを更新する', async () => {
-    // 既存のプロジェクトを取得してIDを特定
-    const getRes = await app.inject({
-      method: 'GET',
-      url: '/api/v1/projects',
-    });
-    const projects = getRes.json<Project[]>();
-    const projectId = projects[0]?.id;
-    expect(projectId).toBeDefined();
+  it('プロジェクト名だけを更新し、未知の入力を拒否する', async () => {
+    const { app, projectService } = createApp();
+    const project = await projectService.createProject('変更前');
 
-    const response = await app.inject({
+    const updated = await app.inject({
       method: 'PUT',
-      url: `/api/v1/projects/${projectId}`,
+      url: `/api/v1/projects/${project.id}`,
+      payload: { name: '変更後' },
+    });
+    const invalid = await app.inject({
+      method: 'PUT',
+      url: `/api/v1/projects/${project.id}`,
+      payload: { chats: [] },
+    });
+
+    expect(updated.json<Project>().name).toBe('変更後');
+    expect(invalid.statusCode).toBe(400);
+  });
+
+  it('チャット作成・メッセージ追記・切替を専用UseCaseで処理する', async () => {
+    const { app, projectService } = createApp();
+    const project = await projectService.createProject('チャット');
+    const created = await app.inject({
+      method: 'POST',
+      url: `/api/v1/projects/${project.id}/chats`,
+      payload: { title: '新規チャット', type: 'agent' },
+    });
+    const createdProject = created.json<Project>();
+    const chatId = createdProject.activeChatId!;
+
+    const appended = await app.inject({
+      method: 'POST',
+      url: `/api/v1/projects/${project.id}/chats/${chatId}/messages`,
       payload: {
-        name: 'Updated Project Name',
-        activeChatId: 'chat_123',
-        chats: [{ id: 'chat_123', title: 'Test Chat', messages: [] }],
+        messages: [
+          { id: 'message-1', role: 'user', text: 'こんにちは', time: '10:00' },
+        ],
       },
     });
-
-    expect(response.statusCode).toBe(200);
-    const body = response.json<Project>();
-    expect(body.name).toBe('Updated Project Name');
-    expect(body.name).toBe('Updated Project Name');
-    expect(body.activeChatId).toBe('chat_123');
-    expect(body.chats?.length).toBe(1);
-  });
-
-  it('PUT /api/v1/projects/:id で空のオブジェクトを送信した場合は何も更新せず200を返す', async () => {
-    const getRes = await app.inject({
-      method: 'GET',
-      url: '/api/v1/projects',
-    });
-    const projects = getRes.json<Project[]>();
-    const projectId = projects[0]?.id;
-
-    const response = await app.inject({
+    const switched = await app.inject({
       method: 'PUT',
-      url: `/api/v1/projects/${projectId}`,
-      payload: {},
+      url: `/api/v1/projects/${project.id}/active-chat`,
+      payload: { chatId },
     });
 
-    expect(response.statusCode).toBe(200);
-    const body = response.json<Project>();
-    expect(body.id).toBe(projectId);
+    expect(created.statusCode).toBe(201);
+    expect(appended.json<Project>().chats?.[0]?.messages[0]?.text).toBe(
+      'こんにちは',
+    );
+    expect(switched.json<Project>().activeChatId).toBe(chatId);
   });
 
-  it('PUT /api/v1/projects/:id で存在しないプロジェクトを更新しようとした場合は404を返す', async () => {
-    const response = await app.inject({
-      method: 'PUT',
-      url: '/api/v1/projects/non-existent-id',
-      payload: { name: 'New Name' },
-    });
-
-    expect(response.statusCode).toBe(404);
-    expect(response.json()).toEqual({ error: 'Project not found' });
-  });
-
-  it('GET /api/v1/projects でエラーが発生した場合は500を返す', async () => {
-    repository.shouldFail = true;
-    const response = await app.inject({
+  it('存在しないリソースを404へ変換する', async () => {
+    const { app } = createApp();
+    const detail = await app.inject({
       method: 'GET',
-      url: '/api/v1/projects',
+      url: '/api/v1/projects/missing',
     });
-    repository.shouldFail = false;
-    expect(response.statusCode).toBe(500);
+    const deletion = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/projects/missing',
+    });
+
+    expect(detail.statusCode).toBe(404);
+    expect(deletion.statusCode).toBe(404);
   });
 
-  it('POST /api/v1/projects でエラーが発生した場合は500を返す', async () => {
-    repository.shouldFail = true;
-    const response = await app.inject({
-      method: 'POST',
-      url: '/api/v1/projects',
-      payload: { name: 'Test' },
+  it('削除時に関連データ削除Portを呼び出す', async () => {
+    const deleteProjectData = vi.fn(() => Promise.resolve());
+    const { app, projectService } = createApp({
+      deletion: { deleteProjectData },
     });
-    repository.shouldFail = false;
-    expect(response.statusCode).toBe(500);
-  });
-
-  it('PUT /api/v1/projects/:id でエラーが発生した場合は500を返す', async () => {
-    repository.shouldFail = true;
-    const response = await app.inject({
-      method: 'PUT',
-      url: '/api/v1/projects/some-id',
-      payload: { name: 'New Name' },
-    });
-    repository.shouldFail = false;
-    expect(response.statusCode).toBe(500);
-  });
-  it('DELETE /api/v1/projects/:id でプロジェクトを削除し204を返す', async () => {
-    // 既存のプロジェクトを取得してIDを特定
-    const getRes = await app.inject({
-      method: 'GET',
-      url: '/api/v1/projects',
-    });
-    const projects = getRes.json<Project[]>();
-    const projectId = projects[0]?.id;
-    expect(projectId).toBeDefined();
+    const project = await projectService.createProject('削除対象');
 
     const response = await app.inject({
       method: 'DELETE',
-      url: `/api/v1/projects/${projectId}`,
+      url: `/api/v1/projects/${project.id}`,
     });
 
     expect(response.statusCode).toBe(204);
+    expect(deleteProjectData).toHaveBeenCalledWith(project.id);
   });
 
-  it('DELETE /api/v1/projects/:id でエラーが発生した場合は500を返す', async () => {
+  it('予期しないRepositoryエラーを安全な500へ変換する', async () => {
+    const repository = new MemoryProjectRepository();
     repository.shouldFail = true;
+    const { app } = createApp({ repository });
+
     const response = await app.inject({
-      method: 'DELETE',
-      url: '/api/v1/projects/some-id',
+      method: 'GET',
+      url: '/api/v1/projects',
     });
-    repository.shouldFail = false;
+
     expect(response.statusCode).toBe(500);
+    expect(response.json()).toEqual({ error: 'Internal Server Error' });
   });
 });

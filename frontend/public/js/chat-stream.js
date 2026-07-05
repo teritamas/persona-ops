@@ -10,7 +10,7 @@ function escapeHtml(string) {
   });
 }
 
-function submitSuggestion(element) {
+globalThis.submitSuggestion = function submitSuggestion(element) {
   const text = element.getAttribute('data-text');
   const input = document.getElementById('inputText');
   if (input && text) {
@@ -20,7 +20,7 @@ function submitSuggestion(element) {
       form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
   }
-}
+};
 
 // チャットウィンドウを最下部までスクロールする
 function scrollToBottom() {
@@ -35,17 +35,13 @@ function scrollToBottom() {
 // 新規プロジェクト作成時のメッセージ自動送信トリガー
 function triggerPendingStreamChat() {
   const pendingText = sessionStorage.getItem('pendingStreamText');
-  const pendingModel = sessionStorage.getItem('pendingStreamModel');
   if (pendingText) {
     const input = document.getElementById('inputText');
-    const modelSelect = document.getElementById('modelSelect');
     if (input) {
       // 確実に要素が見つかった段階でセッションを消去
       sessionStorage.removeItem('pendingStreamText');
-      sessionStorage.removeItem('pendingStreamModel');
       
       input.value = pendingText;
-      if (modelSelect && pendingModel) modelSelect.value = pendingModel;
       const form = input.closest('form');
       if (form) {
         // HTMXやカスタムイベントに対応するため、少し遅延させてサブミット
@@ -70,7 +66,7 @@ document.addEventListener('htmx:afterSwap', (evt) => {
   }
 });
 
-async function submitStreamChat(event) {
+globalThis.submitStreamChat = async function submitStreamChat(event) {
   event.preventDefault();
 
   const pathParts = window.location.pathname.split('/');
@@ -80,9 +76,6 @@ async function submitStreamChat(event) {
   if (!input) return;
   const text = input.value.trim();
   if (!text) return;
-
-  const modelSelect = document.getElementById('modelSelect');
-  const model = modelSelect ? modelSelect.value : 'gemini-2.5-flash';
 
   const container = document.getElementById('chat-messages-container');
   if (!container) return;
@@ -184,7 +177,7 @@ async function submitStreamChat(event) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ inputText: text, model })
+      body: JSON.stringify({ inputText: text })
     });
 
     if (!response.ok) {
@@ -247,4 +240,4 @@ async function submitStreamChat(event) {
       contentDiv.innerHTML = `<span class="text-red-500">[エラーが発生しました: ${escapeHtml(error.message)}]</span>`;
     }
   }
-}
+};

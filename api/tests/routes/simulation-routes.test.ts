@@ -2,7 +2,7 @@ import Fastify from 'fastify';
 import { describe, expect, it } from 'vitest';
 
 import type { SimulationService } from '../../src/application/simulation-service.js';
-import { NotFoundError } from '../../src/domain/errors.js';
+import { ConflictError, NotFoundError } from '../../src/domain/errors.js';
 import type {
   PersonaReaction,
   Simulation,
@@ -19,6 +19,7 @@ const simulation: Simulation = {
     title: '音声入力',
     description: '移動中に入力する',
     acceptanceCriteria: [],
+    sourceDocumentIds: [],
     sourceSimulationIds: [],
     version: 1,
   },
@@ -50,6 +51,7 @@ const reactions: PersonaReaction[] = [
       role: '営業',
       traits: [],
       background: '',
+      sourceDocumentIds: [],
       updatedAt: '2026-01-01T00:00:00Z',
     },
     status: 'completed',
@@ -72,6 +74,7 @@ const reactions: PersonaReaction[] = [
       role: '管理者',
       traits: [],
       background: '',
+      sourceDocumentIds: [],
       updatedAt: '2026-01-01T00:00:00Z',
     },
     status: 'failed',
@@ -139,5 +142,39 @@ describe('シミュレーションルーター', () => {
     });
     expect(list.statusCode).toBe(500);
     expect(detail.statusCode).toBe(500);
+  });
+
+  it('シミュレーションの登録と削除をApplication Serviceへ委譲する', async () => {
+    const app = createApp({
+      request: () => Promise.resolve(simulation),
+      delete: () => Promise.resolve(),
+    });
+
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/project-1/simulations',
+      payload: { requirementId: 'requirement-1' },
+    });
+    const deleted = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/projects/project-1/simulations/simulation-1',
+    });
+
+    expect(created.statusCode).toBe(201);
+    expect(deleted.statusCode).toBe(204);
+  });
+
+  it('実行中Simulationとの競合を409へ変換する', async () => {
+    const app = createApp({
+      request: () => Promise.reject(new ConflictError('実行中です')),
+    });
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/projects/project-1/simulations',
+      payload: { requirementId: 'requirement-1' },
+    });
+
+    expect(response.statusCode).toBe(409);
   });
 });

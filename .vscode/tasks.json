@@ -175,7 +175,7 @@
         "cwd": "${workspaceFolder}/frontend"
       },
       "problemMatcher": [],
-      "detail": "Node.js標準テストランナーで単体テストを実行します。lintは静的解析、testは実行時の振る舞いを確認します"
+      "detail": "Node.js標準テストランナーで単体テストとカバレッジ計測を実行します。lintは静的解析、testは実行時の振る舞いを確認します"
     },
     {
       "label": "dev: all",

@@ -13,6 +13,7 @@ export class FirestorePersonaRepository implements PersonaStorePort {
       role: persona.role,
       traits: persona.traits,
       background: persona.background,
+      sourceDocumentIds: persona.sourceDocumentIds,
       avatarSeed: persona.avatarSeed,
       x: persona.x,
       y: persona.y,
@@ -37,6 +38,9 @@ export class FirestorePersonaRepository implements PersonaStorePort {
           ? data.traits.map((value) => String(value))
           : [],
         background: String(data.background ?? ''),
+        sourceDocumentIds: Array.isArray(data.sourceDocumentIds)
+          ? data.sourceDocumentIds.map((value) => String(value))
+          : [],
         avatarSeed: String(data.avatarSeed),
         x: Number(data.x),
         y: Number(data.y),

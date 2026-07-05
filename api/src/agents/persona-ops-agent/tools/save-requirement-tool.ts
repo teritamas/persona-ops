@@ -12,7 +12,8 @@ export function createSaveRequirementTool(
     title: z.string().min(1),
     description: z.string().min(1),
     acceptanceCriteria: z.array(z.string().min(1)),
-    sourceSimulationIds: z.array(z.string()).default([]),
+    sourceDocumentIds: z.array(z.string().min(1)).optional(),
+    sourceSimulationIds: z.array(z.string()).optional(),
   });
 
   return new FunctionTool({

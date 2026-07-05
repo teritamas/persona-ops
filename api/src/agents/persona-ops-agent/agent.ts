@@ -39,7 +39,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
           input.projectId,
           this.simulationService,
         ),
-        createFetchDocumentTool(this.sourceDocumentService),
+        createFetchDocumentTool(input.projectId, this.sourceDocumentService),
       ],
     });
     const runner = new InMemoryRunner({
@@ -73,6 +73,12 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
         projectId: input.projectId,
         personas: input.personas,
         requirements: input.requirements,
+        sourceDocuments: input.sourceDocuments.map((document) => ({
+          id: document.id,
+          type: document.type,
+          reference: document.reference,
+          contentSnapshot: document.contentSnapshot,
+        })),
         recentSimulations: input.recentSimulations.map((simulation) => ({
           id: simulation.id,
           requirementId: simulation.requirementId,

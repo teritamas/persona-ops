@@ -2,7 +2,9 @@ const { requestPrivateApi } = require('../clients/private-api');
 
 exports.fetchDocuments = async (projectId) => {
   try {
-    const response = await requestPrivateApi(`/api/v1/projects/${projectId}/source-documents`);
+    const response = await requestPrivateApi(
+      `/api/v1/projects/${encodeURIComponent(projectId)}/source-documents`,
+    );
     if (response.ok && response.data) {
       return response.data.documents || [];
     }
