@@ -63,57 +63,66 @@
       <% if (typeof reaction !== 'undefined' && reaction && reaction.status === 'completed') { %>
         <!-- シミュレーション結果セクション -->
         <div class="mt-6 border-t border-slate-100 pt-6 animate-fade-in">
-          <h3 class="text-xs font-bold text-slate-700 mb-4 flex items-center uppercase tracking-wider">
-            <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            シミュレーション反応
-          </h3>
-
-          <!-- スコア表示 -->
-          <div class="grid grid-cols-3 gap-2 mb-4">
-            <% [
-              ['価値', reaction.valueScore, 'bg-emerald-50 text-emerald-700 border-emerald-200'],
-              ['採用', reaction.adoptionIntentScore, 'bg-blue-50 text-blue-700 border-blue-200'],
-              ['適合', reaction.workflowFitScore, 'bg-orange-50 text-orange-700 border-orange-200']
-            ].forEach(([label, score, classes]) => { %>
-              <div class="rounded-xl border p-2 text-center <%= classes %>">
-                <div class="text-[9px] font-bold opacity-80"><%= label %></div>
-                <div class="text-base font-extrabold mt-0.5"><%= score %><span class="text-[10px] font-normal opacity-70">/5</span></div>
-              </div>
-            <% }) %>
+          <%
+            let sentimentLabel = 'ニュートラル';
+            let sentimentBadgeClass = 'bg-slate-50 text-slate-700 border-slate-200';
+            let sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            if (reaction.sentiment === 'positive') {
+              sentimentLabel = 'ポジティブ';
+              sentimentBadgeClass = 'bg-green-50 text-green-700 border-green-200';
+              sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            } else if (reaction.sentiment === 'negative') {
+              sentimentLabel = 'ネガティブ';
+              sentimentBadgeClass = 'bg-red-50 text-red-700 border-red-200';
+              sentimentIcon = '<svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            }
+          %>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xs font-bold text-slate-700 flex items-center uppercase tracking-wider">
+              <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+              </svg>
+              シミュレーション反応
+            </h3>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border <%= sentimentBadgeClass %>">
+              <%- sentimentIcon %><%= sentimentLabel %>
+            </span>
           </div>
 
-          <!-- 全体フィードバック -->
+          <!-- 所感（2行程度） -->
           <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
-            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">総評</div>
-            <p class="text-xs text-slate-600 leading-relaxed font-medium"><%= reaction.feedback %></p>
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">所感（2行程度）</div>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium"><%= reaction.shortFeedback %></p>
           </div>
 
-          <!-- 期待・懸念・改善案のリスト -->
-          <div class="space-y-3">
-            <% [
-              ['期待する効果', reaction.benefits, 'text-emerald-600', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'],
-              ['懸念点', reaction.concerns, 'text-red-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'],
-              ['改善案', reaction.suggestedChanges, 'text-blue-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>']
-            ].forEach(([title, items, iconColor, pathSvg]) => { %>
-              <% if (items && items.length > 0) { %>
-                <div>
-                  <div class="flex items-center gap-1.5 mb-1.5">
-                    <svg class="w-3.5 h-3.5 <%= iconColor %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <%- pathSvg %>
-                    </svg>
-                    <h4 class="text-[10px] font-bold text-slate-700 uppercase tracking-wide"><%= title %></h4>
-                  </div>
-                  <ul class="space-y-1 pl-5 list-disc text-slate-600">
-                    <% items.forEach(item => { %>
-                      <li class="text-[11px] leading-relaxed"><%= item %></li>
-                    <% }) %>
-                  </ul>
-                </div>
-              <% } %>
-            <% }) %>
+          <!-- 詳しい所感 -->
+          <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">詳しい所感</div>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-wrap"><%= reaction.detailedFeedback %></p>
           </div>
+
+          <!-- 業務での活用イメージ -->
+          <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">業務での活用イメージ</div>
+            <p class="text-xs text-slate-600 leading-relaxed font-medium whitespace-pre-wrap"><%= reaction.workImage %></p>
+          </div>
+
+          <!-- 懸念点 -->
+          <% if (reaction.concerns && reaction.concerns.length > 0) { %>
+            <div class="mb-4">
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+                <h4 class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">懸念点</h4>
+              </div>
+              <ul class="space-y-1 pl-5 list-disc text-slate-600">
+                <% reaction.concerns.forEach(item => { %>
+                  <li class="text-[11px] leading-relaxed"><%= item %></li>
+                <% }) %>
+              </ul>
+            </div>
+          <% } %>
         </div>
       <% } %>
 

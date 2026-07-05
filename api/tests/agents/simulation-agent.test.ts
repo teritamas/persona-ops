@@ -41,13 +41,10 @@ describe('ADKペルソナシミュレーションAgent', () => {
   it('構造化されたペルソナ反応を返す', async () => {
     const response = JSON.stringify({
       sentiment: 'positive',
-      valueScore: 5,
-      adoptionIntentScore: 4,
-      workflowFitScore: 3,
-      feedback: '便利です',
-      benefits: ['入力が速い'],
+      shortFeedback: '便利です',
+      detailedFeedback: '移動が多い中で簡単に登録できます。',
+      workImage: '外回り中に素早くメモを取る。',
       concerns: [],
-      suggestedChanges: [],
     });
     const agent = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(response),
@@ -55,22 +52,18 @@ describe('ADKペルソナシミュレーションAgent', () => {
 
     await expect(agent.simulate(input)).resolves.toMatchObject({
       sentiment: 'positive',
-      valueScore: 5,
+      shortFeedback: '便利です',
     });
   });
 
-  it('範囲外スコアと不正JSONを拒否する', async () => {
-    const invalidScore = new AdkPersonaSimulationAgent('test-model', () =>
+  it('必須フィールドの欠落や不正データを拒否する', async () => {
+    const missingField = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(
         JSON.stringify({
           sentiment: 'positive',
-          valueScore: 6,
-          adoptionIntentScore: 4,
-          workflowFitScore: 3,
-          feedback: '便利です',
-          benefits: [],
+          detailedFeedback: 'テスト',
+          workImage: 'イメージ',
           concerns: [],
-          suggestedChanges: [],
         }),
       ),
     );
@@ -78,7 +71,7 @@ describe('ADKペルソナシミュレーションAgent', () => {
       createRunner('not-json'),
     );
 
-    await expect(invalidScore.simulate(input)).rejects.toThrow();
+    await expect(missingField.simulate(input)).rejects.toThrow();
     await expect(invalidJson.simulate(input)).rejects.toThrow('invalid JSON');
   });
 

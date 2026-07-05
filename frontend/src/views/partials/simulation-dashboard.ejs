@@ -116,25 +116,13 @@
             </div>
           </section>
 
-          <section class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
+          <section class="max-w-xs">
+            <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <div class="text-[10px] font-bold text-slate-400">成功ペルソナ</div>
               <div class="mt-1 text-2xl font-bold text-emerald-600">
                 <%= selectedSimulation.successCount %><span class="ml-1 text-xs text-slate-400">/ <%= selectedSimulation.targetCount %></span>
               </div>
             </div>
-            <% [
-              ['価値', selectedSimulation.summary.averageValueScore],
-              ['採用意向', selectedSimulation.summary.averageAdoptionIntentScore],
-              ['業務適合', selectedSimulation.summary.averageWorkflowFitScore],
-            ].forEach(([label, score]) => { %>
-              <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <div class="text-[10px] font-bold text-slate-400"><%= label %> 平均</div>
-                <div class="mt-1 text-2xl font-bold text-slate-800">
-                  <%= score ?? '—' %><span class="ml-1 text-xs text-slate-400">/ 5</span>
-                </div>
-              </div>
-            <% }) %>
           </section>
 
           <section>
@@ -164,10 +152,19 @@
                       <p class="text-[11px] text-slate-400"><%= reaction.personaSnapshot.role %></p>
                     </div>
                     <% if (reaction.status === 'completed') { %>
+                      <%
+                        let sentimentLabel = 'ニュートラル';
+                        let sentimentBadgeClass = 'bg-slate-100 text-slate-700 border-slate-200';
+                        if (reaction.sentiment === 'positive') {
+                          sentimentLabel = 'ポジティブ';
+                          sentimentBadgeClass = 'bg-green-100 text-green-700 border-green-200';
+                        } else if (reaction.sentiment === 'negative') {
+                          sentimentLabel = 'ネガティブ';
+                          sentimentBadgeClass = 'bg-red-100 text-red-700 border-red-200';
+                        }
+                      %>
                       <div class="flex gap-2 text-[10px] font-bold">
-                        <span class="rounded bg-slate-100 px-2 py-1">価値 <%= reaction.valueScore %></span>
-                        <span class="rounded bg-slate-100 px-2 py-1">採用 <%= reaction.adoptionIntentScore %></span>
-                        <span class="rounded bg-slate-100 px-2 py-1">適合 <%= reaction.workflowFitScore %></span>
+                        <span class="rounded px-2 py-1 border <%= sentimentBadgeClass %>">感情: <%= sentimentLabel %></span>
                       </div>
                     <% } else { %>
                       <span class="rounded-full border border-red-200 bg-red-50 px-2 py-1 text-[10px] font-bold text-red-700">
@@ -177,26 +174,38 @@
                   </div>
 
                   <% if (reaction.status === 'completed') { %>
-                    <p class="mt-4 text-sm leading-6 text-slate-700"><%= reaction.feedback %></p>
+                    <!-- 所感（2行程度） -->
+                    <div class="mt-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                      <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">所感（2行程度）</div>
+                      <p class="text-xs text-slate-700 leading-relaxed font-medium"><%= reaction.shortFeedback %></p>
+                    </div>
+
                     <div class="mt-4 grid gap-4 lg:grid-cols-3">
-                      <% [
-                        ['期待する効果', reaction.benefits],
-                        ['懸念点', reaction.concerns],
-                        ['改善案', reaction.suggestedChanges],
-                      ].forEach(([label, items]) => { %>
-                        <div>
-                          <h6 class="text-[10px] font-bold uppercase tracking-wide text-slate-400"><%= label %></h6>
-                          <% if (items.length === 0) { %>
-                            <p class="mt-2 text-xs text-slate-400">なし</p>
-                          <% } else { %>
-                            <ul class="mt-2 space-y-1">
-                              <% items.forEach((item) => { %>
-                                <li class="text-xs leading-5 text-slate-600">・<%= item %></li>
-                              <% }) %>
-                            </ul>
-                          <% } %>
-                        </div>
-                      <% }) %>
+                      <!-- 詳しい所感 -->
+                      <div>
+                        <h6 class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">詳しい所感</h6>
+                        <p class="text-xs leading-relaxed text-slate-600 whitespace-pre-wrap"><%= reaction.detailedFeedback %></p>
+                      </div>
+                      
+                      <!-- 業務での活用イメージ -->
+                      <div>
+                        <h6 class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">業務での活用イメージ</h6>
+                        <p class="text-xs leading-relaxed text-slate-600 whitespace-pre-wrap"><%= reaction.workImage %></p>
+                      </div>
+
+                      <!-- 懸念点 -->
+                      <div>
+                        <h6 class="text-[10px] font-bold uppercase tracking-wide text-slate-400 mb-2">懸念点</h6>
+                        <% if (reaction.concerns.length === 0) { %>
+                          <p class="mt-2 text-xs text-slate-400">なし</p>
+                        <% } else { %>
+                          <ul class="space-y-1 list-disc pl-5 text-slate-600">
+                            <% reaction.concerns.forEach((item) => { %>
+                              <li class="text-[11px] leading-relaxed"><%= item %></li>
+                            <% }) %>
+                          </ul>
+                        <% } %>
+                      </div>
                     </div>
                   <% } %>
                 </article>
