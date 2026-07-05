@@ -61,3 +61,49 @@ pnpm run test         # VitestによるE2Eテスト実行
 ```bash
 docker build -t persona-ops-mcp-server .
 ```
+
+## 各種クライアントとの接続設定 (VS Code / Antigravity)
+
+本サーバーは、複数クライアントからの同時接続や再接続に対応するため、マルチセッション管理をサポートしています。
+ローカルで MCP サーバーがポート `8090`（デフォルト）で起動している場合、以下の設定を行うことで各クライアントから利用可能になります。
+
+### 1. VS Code (Claude Dev / Cline / Roo Code 等) の設定
+
+VS Code から利用する場合、プロジェクトのルートにある `.vscode/mcp.json` にて以下のように設定されています。
+
+```json
+{
+  "servers": {
+    "persona-ops-local": {
+      "url": "http://localhost:8090/mcp/"
+    }
+  }
+}
+```
+
+### 2. Antigravity (Gemini / IDE) の設定
+
+Antigravity から接続する場合、以下のグローバル設定ファイルに記述します。
+Streamable HTTP 接続を stdio にラップするため、`mcp-remote` ユーティリティを使用して `http-only` トランスポートを指定する以下の構成が推奨されます。
+
+**設定ファイルパス:** `~/.gemini/config/mcp_config.json`
+
+```json
+{
+  "mcpServers": {
+    "personaOpsLocal": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote@latest",
+        "http://127.0.0.1:8090/mcp",
+        "--allow-http",
+        "--transport",
+        "http-only"
+      ]
+    }
+  }
+}
+```
+
+※ 本サーバーはセッションルーティング（マルチセッション）に対応しているため、同一プロセス (`http://127.0.0.1:8090/mcp`) に対し、VS Code と Antigravity から同時に接続・利用を行っても競合（`Server already initialized` エラー）が発生しません。

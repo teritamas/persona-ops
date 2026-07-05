@@ -88,4 +88,45 @@ describe('MCP Server E2E', () => {
 
     server.close();
   });
+
+  it('should support multiple concurrent client sessions', async () => {
+    const mockApiClient = new ApiClient('http://localhost:3001');
+    mockApiClient.listProjects = vi
+      .fn()
+      .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
+
+    const app = createServer(mockApiClient);
+    const server = app.listen(0);
+    const address = server.address() as AddressInfo;
+    const port = address.port;
+
+    const url = new URL(`http://localhost:${port}/mcp`);
+
+    // Create client A
+    const transportA = new StreamableHTTPClientTransport(url);
+    const clientA = new Client(
+      { name: 'client-a', version: '1.0.0' },
+      { capabilities: {} },
+    );
+    await clientA.connect(transportA);
+
+    // Create client B
+    const transportB = new StreamableHTTPClientTransport(url);
+    const clientB = new Client(
+      { name: 'client-b', version: '1.0.0' },
+      { capabilities: {} },
+    );
+    await clientB.connect(transportB);
+
+    // Both should be able to run queries
+    const toolsA = await clientA.listTools();
+    const toolsB = await clientB.listTools();
+    expect(toolsA.tools).toHaveLength(3);
+    expect(toolsB.tools).toHaveLength(3);
+
+    // Close both
+    await clientA.close();
+    await clientB.close();
+    server.close();
+  });
 });

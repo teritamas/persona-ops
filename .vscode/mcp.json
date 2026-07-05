@@ -1,7 +1,12 @@
 {
   "servers": {
+    // ローカル開発用
     "persona-ops-local": {
       "url": "http://localhost:8090/mcp/"
+    },
+    // Stg環境用
+    "persona-ops-stg": {
+      "url": "https://persona-ops-mcp-server-453092834186.asia-northeast1.run.app/mcp/"
     }
   }
 }
