@@ -40,7 +40,7 @@ function triggerPendingStreamChat() {
     if (input) {
       // 確実に要素が見つかった段階でセッションを消去
       sessionStorage.removeItem('pendingStreamText');
-      
+
       input.value = pendingText;
       const form = input.closest('form');
       if (form) {
@@ -104,7 +104,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
           <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </div>
         <div class="flex flex-col items-end">
-          <div class="px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm bg-slate-800 text-white rounded-br-sm">
+          <div class="px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm bg-slate-800 text-white rounded-br-sm">
             ${escapeHtml(text).replace(/\n/g, '<br/>')}
           </div>
           <span class="text-[10px] text-slate-400 mt-1 px-1">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
@@ -143,7 +143,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
       </div>
     `;
     container.insertAdjacentHTML('beforeend', systemHtml);
-    
+
     // Show notification badge
     const badge = document.getElementById('resource-notification-badge');
     if (badge) badge.classList.remove('hidden');
@@ -158,8 +158,8 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
           <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
         </div>
         <div class="flex flex-col items-start">
-          <div class="px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm bg-white text-slate-700 border border-slate-200 rounded-bl-sm markdown-body prose prose-sm max-w-none">
-            <span class="typing-loader text-slate-400">●●●</span>
+          <div class="px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm bg-white text-slate-700 border border-slate-200 rounded-bl-sm markdown-body max-w-none">
+            <span class="typing-loader text-slate-400">・・・</span>
           </div>
           <span class="text-[10px] text-slate-400 mt-1 px-1 time-label">Typing...</span>
         </div>
@@ -214,6 +214,13 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
       } else if (isStreamDone) {
         clearInterval(typeInterval);
         timeLabel.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const hasRequirement = /要件定義/g.test(incomingText) && (/作成/g.test(incomingText) || /保存/g.test(incomingText) || /完了/g.test(incomingText) || /提案/g.test(incomingText));
+        if (hasRequirement) {
+          const reqBadge = document.getElementById('requirement-notification-badge');
+          if (reqBadge) reqBadge.classList.remove('hidden');
+        }
+
         setTimeout(() => {
           if (typeof htmx !== 'undefined') {
             htmx.ajax('GET', `/${projectId}/view/chat`, { target: '#left-panel-content', swap: 'innerHTML' });

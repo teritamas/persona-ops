@@ -57,14 +57,14 @@
         hx-get="/<%= activeProject.id %>/view/requirements<%= requirement.id ? '/' + requirement.id : '' %>"
         hx-target="#requirement-dashboard"
         hx-swap="outerHTML"
-        class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-600 font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-sm active:scale-95"
+        class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
       >
         キャンセル
       </button>
       
       <button 
         type="submit" 
-        class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-md shadow-orange-500/10 active:scale-95"
+        class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
       >
         保存して適用
       </button>

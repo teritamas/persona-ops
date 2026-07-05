@@ -59,13 +59,10 @@ interface PersonaReactionBase {
 export interface SuccessfulPersonaReaction extends PersonaReactionBase {
   status: 'completed';
   sentiment: Sentiment;
-  valueScore: number;
-  adoptionIntentScore: number;
-  workflowFitScore: number;
-  feedback: string;
-  benefits: string[];
+  shortFeedback: string;
+  detailedFeedback: string;
+  workImage: string;
   concerns: string[];
-  suggestedChanges: string[];
 }
 
 export interface FailedPersonaReaction extends PersonaReactionBase {
@@ -96,22 +93,10 @@ export function summarizeReactions(
     return EMPTY_SIMULATION_SUMMARY;
   }
 
-  const average = (
-    selector: (reaction: SuccessfulPersonaReaction) => number,
-  ): number =>
-    Number(
-      (
-        successful.reduce((sum, reaction) => sum + selector(reaction), 0) /
-        successful.length
-      ).toFixed(2),
-    );
-
   return {
-    averageValueScore: average((reaction) => reaction.valueScore),
-    averageAdoptionIntentScore: average(
-      (reaction) => reaction.adoptionIntentScore,
-    ),
-    averageWorkflowFitScore: average((reaction) => reaction.workflowFitScore),
+    averageValueScore: null,
+    averageAdoptionIntentScore: null,
+    averageWorkflowFitScore: null,
     positiveCount: successful.filter(
       (reaction) => reaction.sentiment === 'positive',
     ).length,

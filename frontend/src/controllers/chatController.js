@@ -128,10 +128,21 @@ exports.streamChat = async (req, res) => {
       text: fullText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
+    const messagesToAppend = [agentMsg];
+
+    if (/要件定義/g.test(fullText) && (/作成/g.test(fullText) || /保存/g.test(fullText) || /完了/g.test(fullText) || /提案/g.test(fullText))) {
+      messagesToAppend.push({
+        id: 'msg_' + (Date.now() + 2),
+        role: 'system',
+        text: '要件定義を作成しました',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+    }
+
     await chatService.appendMessages(
       req.activeProject.id,
       activeChat.id,
-      [agentMsg],
+      messagesToAppend,
     );
 
   } catch (error) {

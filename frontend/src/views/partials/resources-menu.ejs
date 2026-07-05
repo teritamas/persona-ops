@@ -1,47 +1,53 @@
 <!-- Left Column: Resources List -->
-<div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
-  <h1 class="text-sm font-bold text-slate-800 flex items-center">リソース一覧</h1>
-  <button class="text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 px-3 py-1.5 rounded-lg flex items-center transition-all active:scale-95">
-    <svg class="w-[0.875rem] h-[0.875rem] mr-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> 追加
-  </button>
-</div>
-
 <div id="resources-scroll" class="flex-1 overflow-y-auto p-4 bg-slate-50/30">
   <div class="space-y-1">
     <details class="group/folder" open>
-      <summary class="flex items-center w-full hover:bg-slate-100 p-2 rounded-lg text-slate-700 list-none cursor-pointer transition-colors">
-        <span class="w-4 h-4 mr-1 flex items-center justify-center text-slate-400 group-open/folder:rotate-90 transition-transform">
-          <svg class="w-[0.875rem] h-[0.875rem]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path></svg>
+      <summary
+        class="flex items-center w-full hover:bg-slate-100 p-2 rounded-lg text-slate-700 list-none cursor-pointer transition-colors">
+        <span
+          class="w-4 h-4 mr-1 flex items-center justify-center text-slate-400 group-open/folder:rotate-90 transition-transform">
+          <svg class="w-[0.875rem] h-[0.875rem]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+          </svg>
         </span>
         <span class="text-orange-400 mr-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+          </svg>
         </span>
         <span class="text-sm font-bold">登録されたURL</span>
       </summary>
       <div class="ml-5 pl-3 border-l border-slate-200 flex flex-col gap-1 mt-1">
-        <% if (typeof sourceDocuments !== 'undefined' && sourceDocuments.length > 0) { %>
-          <% sourceDocuments.forEach(doc => { %>
-            <div class="flex items-center justify-between w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors group cursor-pointer" title="<%= doc.reference %>">
+        <% if (typeof sourceDocuments !=='undefined' && sourceDocuments.length> 0) { %>
+          <% sourceDocuments.forEach(doc=> { %>
+            <div
+              class="flex items-center justify-between w-full hover:bg-slate-100 p-2 rounded-lg text-slate-600 transition-colors group cursor-pointer"
+              title="<%= doc.reference %>">
               <div class="flex items-center overflow-hidden">
-                <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                <span class="text-xs font-medium truncate"><%= doc.reference %></span>
+                <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 mr-2 shrink-0" fill="none" stroke="currentColor"
+                  stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+                  </path>
+                </svg>
+                <span class="text-xs font-medium truncate">
+                  <%= doc.reference %>
+                </span>
               </div>
-              <span class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
-                <% 
-                  const d = new Date(doc.createdAt);
-                  const yyyy = d.getFullYear();
-                  const mm = String(d.getMonth() + 1).padStart(2, '0');
-                  const dd = String(d.getDate()).padStart(2, '0');
-                %>
-                <%= `${yyyy}/${mm}/${dd}` %>
+              <span
+                class="text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
+                <% const d=new Date(doc.createdAt); const yyyy=d.getFullYear(); const mm=String(d.getMonth() +
+                  1).padStart(2, '0' ); const dd=String(d.getDate()).padStart(2, '0' ); %>
+                  <%= `${yyyy}/${mm}/${dd}` %>
               </span>
             </div>
-          <% }); %>
-        <% } else { %>
-          <div class="p-2 text-xs text-slate-400">
-            データがありません
-          </div>
-        <% } %>
+            <% }); %>
+              <% } else { %>
+                <div class="p-2 text-xs text-slate-400">
+                  データがありません
+                </div>
+                <% } %>
       </div>
     </details>
   </div>

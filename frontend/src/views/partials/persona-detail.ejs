@@ -1,129 +1,132 @@
-<aside id="detail-panel" hx-swap-oob="true" class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: flex;">
+<aside id="detail-panel" hx-swap-oob="true"
+  class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto"
+  style="display: flex;">
   <!-- Detail Panel Header -->
   <div class="h-10 flex items-center justify-between px-6 border-b border-slate-100 bg-white shrink-0">
-    <h2 class="text-sm font-bold text-slate-800 flex items-center">ペルソナ詳細</h2>
-    <button 
-      hx-get="/<%= activeProject.id %>/view/persona/close?simulationId=<%= typeof selectedSimulation !== 'undefined' && selectedSimulation ? selectedSimulation.id : '' %>" 
-      hx-target="#detail-panel" 
-      hx-swap="outerHTML"
-      class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-full p-1.5 transition-colors"
-    >
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <button
+      hx-get="/<%= activeProject.id %>/view/persona/close?simulationId=<%= typeof selectedSimulation !== 'undefined' && selectedSimulation ? selectedSimulation.id : '' %>"
+      hx-target="#detail-panel" hx-swap="outerHTML"
+      class="text-slate-500 hover:text-slate-700 bg-transparent hover:bg-slate-100 rounded-full p-1.5 transition-all active:scale-95">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    <button hx-post="/<%= activeProject.id %>/action/chat/persona/<%= p.id %>"
+      class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+      このペルソナと個別にチャット
     </button>
   </div>
 
   <!-- Detail Content -->
   <div class="p-6">
-    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
-      <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-100/60 to-transparent rounded-bl-full -z-10 transition-transform duration-500 group-hover:scale-110"></div>
-      
+    <div class="relative overflow-hidden group">
       <div class="flex justify-between items-start mb-2">
-        <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md"><%= p.role %></span>
+        <span class="text-xs font-bold text-orange-500 bg-orange-50 px-2 py-1 rounded-md">
+          <%= p.role %>
+        </span>
       </div>
 
       <div class="flex flex-col items-center mb-6 mt-2">
         <div class="relative mb-4">
-          <div class="w-14 h-14 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 relative z-10 flex items-center justify-center">
-            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc" alt="<%= p.name %>" class="w-full h-full object-cover scale-110" />
+          <div
+            class="w-14 h-14 rounded-full border-4 border-white shadow-md overflow-hidden bg-slate-100 relative z-10 flex items-center justify-center">
+            <img src="https://api.dicebear.com/7.x/notionists/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc"
+              alt="<%= p.name %>" class="w-full h-full object-cover scale-110" />
           </div>
           <div class="absolute inset-0 rounded-full border border-orange-200 scale-110 -z-0"></div>
         </div>
-        <h2 class="text-lg font-bold text-slate-800 flex items-baseline gap-2"><%= p.name %> <span class="text-sm font-normal text-slate-500">(<%= p.age %>歳)</span></h2>
+        <h2 class="text-lg font-bold text-slate-800 flex items-baseline gap-2">
+          <%= p.name %> <span class="text-sm font-normal text-slate-500">(<%= p.age %>歳)</span>
+        </h2>
       </div>
 
       <div class="mb-6">
         <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-wider">
-          <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> 特徴
+          <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg> 特徴
         </h3>
         <div class="flex flex-wrap gap-2">
-          <% p.traits.forEach(t => { %>
-            <span class="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-full text-[10px] font-medium border border-slate-200"><%= t %></span>
-          <% }) %>
+          <% p.traits.forEach(t=> { %>
+            <span
+              class="px-3 py-1.5 bg-slate-50 text-slate-600 rounded-full text-[10px] font-medium border border-slate-200">
+              <%= t %>
+            </span>
+            <% }) %>
         </div>
       </div>
 
       <div class="mb-6">
         <h3 class="text-xs font-bold text-slate-700 mb-3 flex items-center uppercase tracking-wider">
-          <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> 背景・課題
+          <svg class="w-[0.875rem] h-[0.875rem] text-blue-500 mr-2" fill="none" stroke="currentColor" stroke-width="2"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg> 背景・課題
         </h3>
-        <p class="text-xs text-slate-600 leading-relaxed ml-2 whitespace-pre-wrap"><%= p.background %></p>
+        <p class="text-xs text-slate-600 leading-relaxed ml-2 whitespace-pre-wrap">
+          <%= p.background %>
+        </p>
       </div>
 
-      <% if (p.sourceDocumentIds && p.sourceDocumentIds.length > 0) { %>
+      <% if (p.sourceDocumentIds && p.sourceDocumentIds.length> 0) { %>
         <div class="mb-6">
           <h3 class="text-xs font-bold text-slate-700 mb-3 uppercase tracking-wider">参照資料</h3>
           <div class="flex flex-wrap gap-2">
-            <% p.sourceDocumentIds.forEach((documentId) => { %>
-              <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-[10px] border border-blue-100"><%= documentId %></span>
-            <% }) %>
+            <% p.sourceDocumentIds.forEach((documentId)=> { %>
+              <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-[10px] border border-blue-100">
+                <%= documentId %>
+              </span>
+              <% }) %>
           </div>
         </div>
-      <% } %>
+        <% } %>
 
-      <% if (typeof reaction !== 'undefined' && reaction && reaction.status === 'completed') { %>
-        <!-- シミュレーション結果セクション -->
-        <div class="mt-6 border-t border-slate-100 pt-6 animate-fade-in">
-          <h3 class="text-xs font-bold text-slate-700 mb-4 flex items-center uppercase tracking-wider">
-            <svg class="w-4 h-4 text-orange-500 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-            </svg>
-            シミュレーション反応
-          </h3>
-
-          <!-- スコア表示 -->
-          <div class="grid grid-cols-3 gap-2 mb-4">
-            <% [
-              ['価値', reaction.valueScore, 'bg-emerald-50 text-emerald-700 border-emerald-200'],
-              ['採用', reaction.adoptionIntentScore, 'bg-blue-50 text-blue-700 border-blue-200'],
-              ['適合', reaction.workflowFitScore, 'bg-orange-50 text-orange-700 border-orange-200']
-            ].forEach(([label, score, classes]) => { %>
-              <div class="rounded-xl border p-2 text-center <%= classes %>">
-                <div class="text-[9px] font-bold opacity-80"><%= label %></div>
-                <div class="text-base font-extrabold mt-0.5"><%= score %><span class="text-[10px] font-normal opacity-70">/5</span></div>
+          <% if (typeof reaction !=='undefined' && reaction && reaction.status==='completed' ) { %>
+            <!-- シミュレーション結果セクション -->
+            <div class="mt-6 border-t border-slate-100 pt-6 animate-fade-in">
+              <!-- 全体フィードバック -->
+              <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">総評</div>
+                <p class="text-xs text-slate-600 leading-relaxed font-medium">
+                  <%= reaction.shortFeedback %>
+                </p>
               </div>
-            <% }) %>
-          </div>
 
-          <!-- 全体フィードバック -->
-          <div class="mb-4 bg-slate-50 rounded-2xl p-4 border border-slate-100">
-            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">総評</div>
-            <p class="text-xs text-slate-600 leading-relaxed font-medium"><%= reaction.feedback %></p>
-          </div>
-
-          <!-- 期待・懸念・改善案のリスト -->
-          <div class="space-y-3">
-            <% [
-              ['期待する効果', reaction.benefits, 'text-emerald-600', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'],
-              ['懸念点', reaction.concerns, 'text-red-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'],
-              ['改善案', reaction.suggestedChanges, 'text-blue-500', '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>']
-            ].forEach(([title, items, iconColor, pathSvg]) => { %>
-              <% if (items && items.length > 0) { %>
-                <div>
-                  <div class="flex items-center gap-1.5 mb-1.5">
-                    <svg class="w-3.5 h-3.5 <%= iconColor %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <%- pathSvg %>
-                    </svg>
-                    <h4 class="text-[10px] font-bold text-slate-700 uppercase tracking-wide"><%= title %></h4>
-                  </div>
-                  <ul class="space-y-1 pl-5 list-disc text-slate-600">
-                    <% items.forEach(item => { %>
-                      <li class="text-[11px] leading-relaxed"><%= item %></li>
-                    <% }) %>
-                  </ul>
-                </div>
-              <% } %>
-            <% }) %>
-          </div>
-        </div>
-      <% } %>
+              <!-- 期待・懸念・改善案のリスト -->
+              <div class="space-y-3">
+                <% [ ['詳しい所感', [reaction.detailedFeedback], 'text-emerald-600'
+                  , '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+                  ], ['業務での活用イメージ', [reaction.workImage], 'text-blue-500'
+                  , '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>'
+                  ], ['懸念点', reaction.concerns, 'text-red-500'
+                  , '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'
+                  ] ].forEach(([title, items, iconColor, pathSvg])=> { %>
+                  <% if (items && items.length> 0) { %>
+                    <div>
+                      <div class="flex items-center gap-1.5 mb-1.5">
+                        <svg class="w-3.5 h-3.5 <%= iconColor %>" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <%- pathSvg %>
+                        </svg>
+                        <h4 class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">
+                          <%= title %>
+                        </h4>
+                      </div>
+                      <ul class="space-y-1 pl-5 list-disc text-slate-600">
+                        <% items.forEach(item=> { %>
+                          <li class="text-[11px] leading-relaxed">
+                            <%= item %>
+                          </li>
+                          <% }) %>
+                      </ul>
+                    </div>
+                    <% } %>
+                      <% }) %>
+              </div>
+            </div>
+            <% } %>
 
     </div>
-  </div>
-
-  <!-- Action -->
-  <div class="mt-auto p-6 bg-white border-t border-slate-100">
-    <button hx-post="/<%= activeProject.id %>/action/chat/persona/<%= p.id %>" class="w-full flex items-center justify-center text-sm font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 py-3 rounded-xl shadow-sm transition-colors group">
-      このペルソナと個別にチャット
-    </button>
   </div>
 </aside>

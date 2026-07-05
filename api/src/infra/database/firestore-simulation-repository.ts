@@ -152,13 +152,10 @@ export class FirestoreSimulationRepository implements SimulationStorePort {
         ? {
             ...base,
             sentiment: reaction.sentiment,
-            valueScore: reaction.valueScore,
-            adoptionIntentScore: reaction.adoptionIntentScore,
-            workflowFitScore: reaction.workflowFitScore,
-            feedback: reaction.feedback,
-            benefits: reaction.benefits,
+            shortFeedback: reaction.shortFeedback,
+            detailedFeedback: reaction.detailedFeedback,
+            workImage: reaction.workImage,
             concerns: reaction.concerns,
-            suggestedChanges: reaction.suggestedChanges,
           }
         : {
             ...base,
@@ -189,13 +186,10 @@ export class FirestoreSimulationRepository implements SimulationStorePort {
           ...base,
           status: 'completed',
           sentiment: data.sentiment as 'positive' | 'neutral' | 'negative',
-          valueScore: Number(data.valueScore),
-          adoptionIntentScore: Number(data.adoptionIntentScore),
-          workflowFitScore: Number(data.workflowFitScore),
-          feedback: String(data.feedback),
-          benefits: this.stringArray(data.benefits),
+          shortFeedback: String(data.shortFeedback),
+          detailedFeedback: String(data.detailedFeedback),
+          workImage: String(data.workImage),
           concerns: this.stringArray(data.concerns),
-          suggestedChanges: this.stringArray(data.suggestedChanges),
         };
       }
       return {

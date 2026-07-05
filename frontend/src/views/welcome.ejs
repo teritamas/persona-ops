@@ -30,7 +30,7 @@
         <!-- ==========================================
         左サイドバー (グローバルナビ - ミニホバー展開型)
         ========================================== -->
-        <%- include('partials/sidebar', { activeProject: activeProject }) %>
+        <%- include('partials/sidebar', { activeProject, requirements: typeof requirements !=='undefined' ? requirements : [], simulations: typeof simulations !=='undefined' ? simulations : [] }) %>
 
           <!-- ==========================================
         メインコンテンツエリア (3カラム構成)
@@ -49,14 +49,14 @@
           中央カラム: シミュレーション広場（初期状態なので非表示）
           ========================================== -->
             <main id="simulation-playground"
-              class="flex-1 relative bg-slate-100 flex flex-col overflow-hidden min-w-[500px]" style="display: none;">
+              class="flex-1 relative bg-slate-100 flex flex-col overflow-hidden min-w-[500px] hidden">
             </main>
 
             <!-- ==========================================
-          右カラム: 詳細パネル (非表示)
+          右カラム: 詳細パネル
           ========================================== -->
             <aside id="detail-panel"
-              class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto" style="display: none;">
+              class="w-[360px] bg-white border-l border-slate-200 z-30 flex flex-col shrink-0 overflow-y-auto hidden">
             </aside>
 
           </div>
