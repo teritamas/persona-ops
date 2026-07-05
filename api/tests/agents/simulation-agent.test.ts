@@ -42,8 +42,8 @@ describe('ADKペルソナシミュレーションAgent', () => {
     const response = JSON.stringify({
       sentiment: 'positive',
       shortFeedback: '便利です',
-      detailedFeedback: '移動が多い中で簡単に登録できます。',
-      workImage: '外回り中に素早くメモを取る。',
+      detailedFeedback: 'これなら移動中にも入力できて非常に助かります',
+      workImage: '電車の中でスマホに向かって話しかけている',
       concerns: [],
     });
     const agent = new AdkPersonaSimulationAgent('test-model', () =>
@@ -60,9 +60,10 @@ describe('ADKペルソナシミュレーションAgent', () => {
     const missingField = new AdkPersonaSimulationAgent('test-model', () =>
       createRunner(
         JSON.stringify({
-          sentiment: 'positive',
-          detailedFeedback: 'テスト',
-          workImage: 'イメージ',
+          sentiment: 'invalid', // should fail enum check
+          shortFeedback: 'test',
+          detailedFeedback: 'test',
+          workImage: 'test',
           concerns: [],
         }),
       ),

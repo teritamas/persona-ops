@@ -3,9 +3,7 @@
       <div class="flex items-center w-full">
         <!-- ロゴ -->
         <a href="/" class="font-['Quicksand'] text-2xl font-bold tracking-tight flex items-center mr-8 gap-1.5 hover:opacity-85 transition-opacity">
-          <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-          </svg>
+          <img src="/favicon.png?v=3" alt="Logo" class="w-7 h-7 object-contain">
           <div><span class="text-slate-700">Persona</span><span class="text-orange-500">Ops</span></div>
         </a>
 
@@ -18,7 +16,7 @@
             <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
           </button>
           
-          <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col max-h-[70vh]">
+          <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col max-h-[70vh]">
             <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Projects</div>
             <div class="overflow-y-auto">
               <% projects.forEach(function(p) { %>

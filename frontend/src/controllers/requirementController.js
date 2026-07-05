@@ -1,4 +1,35 @@
 const requirementService = require('../services/requirementService');
+const { simulationService } = require('../services/simulationService');
+
+function unhideSimulationsForRequirement(req, res, requirementId, simulations) {
+  if (!requirementId || !simulations) return;
+  if (!req.cookies) return;
+  
+  try {
+    if (req.cookies.hidden_simulations) {
+      let hiddenSimulations = JSON.parse(req.cookies.hidden_simulations);
+      const relatedSimIds = simulations
+        .filter(sim => sim.requirementId === requirementId)
+        .map(sim => sim.id);
+        
+      const newHiddenSimulations = hiddenSimulations.filter(id => !relatedSimIds.includes(id));
+      
+      if (newHiddenSimulations.length !== hiddenSimulations.length) {
+        res.cookie('hidden_simulations', JSON.stringify(newHiddenSimulations), { maxAge: 30 * 24 * 60 * 60 * 1000 });
+      }
+    }
+
+    if (req.cookies.hidden_sandbox_requirements) {
+      let hiddenReqs = JSON.parse(req.cookies.hidden_sandbox_requirements);
+      const newHiddenReqs = hiddenReqs.filter(id => id !== requirementId);
+      if (newHiddenReqs.length !== hiddenReqs.length) {
+        res.cookie('hidden_sandbox_requirements', JSON.stringify(newHiddenReqs), { maxAge: 30 * 24 * 60 * 60 * 1000 });
+      }
+    }
+  } catch (e) {
+    // Ignore JSON parse error
+  }
+}
 
 exports.getRequirementsDashboard = async (req, res) => {
   if (!req.activeProject) {
@@ -12,6 +43,21 @@ exports.getRequirementsDashboard = async (req, res) => {
   if (requirements && requirements.length > 0) {
     selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
   }
+  
+  if (selectedRequirement) {
+    try {
+      const dashboard = await simulationService.getDashboard(req.activeProject);
+      unhideSimulationsForRequirement(req, res, selectedRequirement.id, dashboard.simulations);
+      
+      // If this is an HTMX request, trigger the sandbox to refresh so the unhidden requirement appears
+      if (req.headers['hx-request']) {
+        res.setHeader('HX-Trigger', 'refreshSandbox');
+      }
+    } catch (err) {
+      console.error('Failed to unhide simulations for requirement:', err);
+    }
+  }
+
   res.render('partials/requirement-dashboard', {
     activeProject: req.activeProject,
     requirements,
