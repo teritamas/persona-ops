@@ -25,6 +25,11 @@ variable "frontend_container_image" {
   type        = string
 }
 
+variable "mcp_container_image" {
+  description = "MCP Server image URI."
+  type        = string
+}
+
 variable "vertex_ai_model" {
   description = "Vertex AI Gemini model used by the application."
   type        = string
@@ -50,5 +55,16 @@ variable "frontend_max_instances" {
   validation {
     condition     = var.frontend_max_instances >= 1 && var.frontend_max_instances <= 10
     error_message = "frontend_max_instances must be between 1 and 10."
+  }
+}
+
+variable "mcp_max_instances" {
+  description = "Maximum MCP Server Cloud Run instance count used as a cost guardrail."
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.mcp_max_instances >= 1 && var.mcp_max_instances <= 10
+    error_message = "mcp_max_instances must be between 1 and 10."
   }
 }

@@ -64,3 +64,16 @@ module "simulation_tasks" {
     module.private_api_runtime,
   ]
 }
+
+module "mcp_server_runtime" {
+  source = "../../modules/mcp_server_runtime"
+
+  project_id       = var.project_id
+  region           = var.region
+  application_name = local.mcp_server_name
+  container_image  = var.mcp_container_image
+  private_api_url  = module.private_api_runtime.service_url
+  max_instances    = var.mcp_max_instances
+
+  depends_on = [module.google_apis]
+}
