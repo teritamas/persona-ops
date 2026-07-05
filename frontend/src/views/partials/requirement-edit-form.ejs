@@ -1,11 +1,16 @@
 <%
   const formId = requirement.id ? `requirement-card-${requirement.id}` : 'new-requirement-form';
 %>
-<div id="<%= formId %>" class="bg-white border border-orange-200 rounded-2xl p-6 shadow-md animate-fade-in w-full text-slate-700">
-  <div class="flex items-center gap-2 mb-3 text-xs font-bold text-orange-600">
-    <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-    </svg>
+<div id="<%= formId %>" class="bg-white rounded-[2rem] border-[3px] border-white p-7 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_15px_40px_rgba(249,115,22,0.08)] hover:-translate-y-1.5 transition-all duration-500 animate-fade-in w-full text-slate-800 relative overflow-hidden group">
+  <!-- デコレーション背景 -->
+  <div class="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-orange-100/50 to-pink-100/50 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700 pointer-events-none"></div>
+
+  <div class="flex items-center gap-2 mb-6 text-sm font-black text-slate-800 relative z-10 tracking-tight">
+    <div class="bg-orange-50 p-2 rounded-xl">
+      <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+      </svg>
+    </div>
     <span><%= requirement.id ? '要件を編集' : '新規要件を作成' %></span>
   </div>
 
@@ -13,59 +18,62 @@
     hx-post="/<%= activeProject.id %>/action/requirements/save"
     hx-target="#requirement-dashboard" 
     hx-swap="outerHTML" 
-    class="space-y-4"
+    class="space-y-5 relative z-10"
   >
     <input type="hidden" name="id" value="<%= requirement.id || '' %>" />
 
-    <div>
-      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">タイトル</label>
+    <div class="group/field">
+      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 font-mono">タイトル</label>
       <input 
         type="text" 
         name="title" 
         value="<%= requirement.title || '' %>" 
         required 
         placeholder="例: SFAログイン機能"
-        class="w-full text-xs font-semibold px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all" 
+        class="w-full text-sm font-bold px-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-300 transition-all text-slate-800 placeholder-slate-300" 
       />
     </div>
 
-    <div>
-      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">要件の説明</label>
+    <div class="group/field">
+      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 font-mono">要件の説明</label>
       <textarea 
         name="description" 
         rows="3" 
         required 
         placeholder="要件の背景や具体的な動作内容を入力..."
-        class="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white resize-none focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+        class="w-full text-xs font-bold leading-relaxed px-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50 resize-none focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-300 transition-all text-slate-700 placeholder-slate-300"
       ><%= requirement.description || '' %></textarea>
     </div>
 
-    <div>
-      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">受入基準 (改行区切り)</label>
+    <div class="group/field">
+      <label class="block text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 font-mono">受入基準 <span class="text-slate-300 font-normal lowercase">(改行区切り)</span></label>
       <textarea 
         name="acceptanceCriteriaText" 
         rows="4" 
         required 
         placeholder="例:&#10;IDとパスワードが一致した時のみダッシュボードへ遷移する&#10;無効なアカウントの場合はエラーメッセージが表示される"
-        class="w-full text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl bg-white resize-none font-sans focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+        class="w-full text-xs font-bold leading-relaxed px-4 py-3.5 border-2 border-slate-100 rounded-2xl bg-slate-50 resize-none focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-300 transition-all text-slate-700 placeholder-slate-300"
       ><%= (requirement.acceptanceCriteria || []).join('\n') %></textarea>
     </div>
 
-    <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+    <div class="flex justify-end gap-3 pt-4">
       <button 
         type="button"
         hx-get="/<%= activeProject.id %>/view/requirements<%= requirement.id ? '/' + requirement.id : '' %>"
         hx-target="#requirement-dashboard"
         hx-swap="outerHTML"
-        class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
+        class="bg-white hover:bg-slate-50 border-2 border-slate-100 text-slate-500 hover:text-slate-700 px-5 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
       >
         キャンセル
       </button>
       
       <button 
         type="submit" 
-        class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5"
+        class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-2.5 rounded-xl text-xs font-black shadow-lg shadow-orange-500/30 transition-all active:scale-95 flex items-center justify-center gap-2 border border-orange-500/50"
       >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+        </svg>
         保存して適用
       </button>
     </div>
