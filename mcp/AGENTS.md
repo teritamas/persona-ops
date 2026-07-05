@@ -25,8 +25,12 @@
 ## ディレクトリ構成の責務
 
 - `src/index.ts`: サーバーのブートストラップ、環境変数の読み込み、起動処理。
-- `src/server.ts`: MCPサーバーのインスタンス作成、各ツールの定義（`registerTool`）、SSEトランスポートエンドポイントの設定。ヘルスチェックエンドポイント（`/health`）の公開。
+- `src/server.ts`: MCPサーバーのインスタンス作成、`src/tools/` 配下のツール登録関数の呼び出し、SSEトランスポートエンドポイントの設定。ヘルスチェックエンドポイント（`/health`）の公開。
+- `src/tools/`: MCPツールの定義と登録（Fastifyのルーティング構造を踏襲）。
+  - `project-tools.ts`: プロジェクト関連ツールの定義（`list_projects`）。
+  - `requirement-tools.ts`: 要件・シミュレーション関連ツールの定義（`list_requirements`, `get_requirement_with_simulations`）。
 - `src/api/`: Private API にリクエストを送信するクライアント群。
   - `http-client.ts`: 認証（IDトークンの自動取得・注入）と汎用リクエスト処理を担当する共通モジュール。
-  - `project-api-client.ts`: プロジェクト、要件、シミュレーション結果などドメイン関連の API リクエストをカプセル化する。
+  - `project-api-client.ts`: プロジェクト関連の API リクエストをカプセル化する。
+  - `requirement-api-clients.ts`: 要件、シミュレーション結果関連の API リクエストをカプセル化する。
   - `health-api-client.ts`: Private API のヘルスチェック疎通確認を担当する。

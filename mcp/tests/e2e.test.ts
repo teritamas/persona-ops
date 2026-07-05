@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { HttpClient } from '../src/api/http-client.js';
 import { ProjectApiClient } from '../src/api/project-api-client.js';
+import { RequirementApiClient } from '../src/api/requirement-api-clients.js';
 import { HealthApiClient } from '../src/api/health-api-client.js';
 import { createServer } from '../src/server.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -12,38 +13,45 @@ interface TextContent {
   text: string;
 }
 
-describe('MCP Server E2E', () => {
-  it('should initialize, list tools, and call tools', async () => {
+describe('MCPサーバー E2Eテスト', () => {
+  it('初期化、ツール一覧取得、ツールの実行が正常に行えること', async () => {
     const mockHttpClient = new HttpClient('http://localhost:3001');
     const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
+    const mockRequirementApiClient = new RequirementApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
     mockProjectApiClient.listProjects = vi
       .fn()
       .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
 
-    mockProjectApiClient.getRequirement = vi.fn().mockResolvedValue({
+    mockRequirementApiClient.getRequirement = vi.fn().mockResolvedValue({
       title: '音声入力機能',
       description: 'スマホで音声をテキストに変換する',
       acceptanceCriteria: ['一文字も間違えずに変換できること'],
     });
 
-    mockProjectApiClient.getRequirementSimulations = vi.fn().mockResolvedValue([
-      {
-        reactions: [
-          {
-            personaSnapshot: { name: 'ユーザーA' },
-            status: 'completed',
-            sentiment: 'positive',
-            shortFeedback: 'とても使いやすい',
-            detailedFeedback: '声だけで入力できるのは非常に助かります。',
-            concerns: ['騒がしい場所での認識精度'],
-          },
-        ],
-      },
-    ]);
+    mockRequirementApiClient.getRequirementSimulations = vi
+      .fn()
+      .mockResolvedValue([
+        {
+          reactions: [
+            {
+              personaSnapshot: { name: 'ユーザーA' },
+              status: 'completed',
+              sentiment: 'positive',
+              shortFeedback: 'とても使いやすい',
+              detailedFeedback: '声だけで入力できるのは非常に助かります。',
+              concerns: ['騒がしい場所での認識精度'],
+            },
+          ],
+        },
+      ]);
 
-    const app = createServer(mockProjectApiClient, mockHealthApiClient);
+    const app = createServer(
+      mockProjectApiClient,
+      mockRequirementApiClient,
+      mockHealthApiClient,
+    );
     const server = app.listen(0);
     const address = server.address() as AddressInfo;
     const port = address.port;
@@ -107,16 +115,21 @@ describe('MCP Server E2E', () => {
     server.close();
   });
 
-  it('should support multiple concurrent client sessions', async () => {
+  it('複数のクライアントセッションが並行して正しく処理されること', async () => {
     const mockHttpClient = new HttpClient('http://localhost:3001');
     const mockProjectApiClient = new ProjectApiClient(mockHttpClient);
+    const mockRequirementApiClient = new RequirementApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
     mockProjectApiClient.listProjects = vi
       .fn()
       .mockResolvedValue([{ id: 'p1', name: 'Project 1' }]);
 
-    const app = createServer(mockProjectApiClient, mockHealthApiClient);
+    const app = createServer(
+      mockProjectApiClient,
+      mockRequirementApiClient,
+      mockHealthApiClient,
+    );
     const server = app.listen(0);
     const address = server.address() as AddressInfo;
     const port = address.port;

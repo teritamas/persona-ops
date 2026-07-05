@@ -1,13 +1,13 @@
 # MCP (Model Context Protocol) Server
 
-PersonaOps のシミュレーション結果（評価・懸念事項）や要件データを、VSCode などの外部ツール（MCP クライアント）から透過的に利用できるようにするためのサーバーです。
+PersonaOps のシミュレーション結果や要件データを、VSCode などの外部ツール（MCP クライアント）から利用できるようにするためのサーバーです。
 
 ## 概要
 
 このサーバーは **薄いプロキシ（Proxy Pattern）** として動作します。
 
 - クライアント（VSCode）からの MCP リクエストをパブリックに待ち受けます。
-- DBなどのリソースへ直接アクセスは行わず、内部の Private API (`api` パッケージ) を HTTP で呼び出して結果を取得します。
+- DBなどのリソースへ直接アクセスは行わず、内部の Private API (`api`) を HTTP で呼び出して結果を取得します。
 - 取得した構造化データを、AIコンテキストとして理解しやすいように Markdown 形式へと整形して返却します。
 
 ```
@@ -74,8 +74,13 @@ VS Code から利用する場合、プロジェクトのルートにある `.vsc
 ```json
 {
   "servers": {
+    // ローカル開発用
     "persona-ops-local": {
       "url": "http://localhost:8090/mcp/"
+    },
+    // Stg環境用
+    "persona-ops-stg": {
+      "url": "https://persona-ops-mcp-server-453092834186.asia-northeast1.run.app/mcp/"
     }
   }
 }
@@ -105,5 +110,3 @@ Streamable HTTP 接続を stdio にラップするため、`mcp-remote` ユー�
   }
 }
 ```
-
-※ 本サーバーはセッションルーティング（マルチセッション）に対応しているため、同一プロセス (`http://127.0.0.1:8090/mcp`) に対し、VS Code と Antigravity から同時に接続・利用を行っても競合（`Server already initialized` エラー）が発生しません。
