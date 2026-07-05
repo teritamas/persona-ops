@@ -13,6 +13,7 @@ export function createSavePersonasTool(
         z.object({
           id: z.string().optional(),
           name: z.string().min(1),
+          age: z.number().int().min(0),
           role: z.string().min(1),
           traits: z.array(z.string()),
           background: z.string(),

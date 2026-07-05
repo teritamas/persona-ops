@@ -9,6 +9,7 @@ import { validateSourceDocumentReferences } from './source-document/validate-sou
 export interface SavePersonaInput {
   id?: string | undefined;
   name: string;
+  age: number;
   role: string;
   traits: string[];
   background: string;
@@ -63,6 +64,7 @@ export class PersonaService {
         await this.personaRepository.save({
           ...matched,
           name: input.name,
+          age: input.age,
           role: input.role,
           traits: [...input.traits],
           background: input.background,
@@ -79,6 +81,7 @@ export class PersonaService {
         id: `pers_${randomUUID()}`,
         projectId,
         name: input.name,
+        age: input.age,
         role: input.role,
         traits: [...input.traits],
         background: input.background,

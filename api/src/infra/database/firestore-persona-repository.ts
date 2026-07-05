@@ -10,6 +10,7 @@ export class FirestorePersonaRepository implements PersonaStorePort {
     await this.firestore.collection('personas').doc(persona.id).set({
       projectId: persona.projectId,
       name: persona.name,
+      age: persona.age,
       role: persona.role,
       traits: persona.traits,
       background: persona.background,
@@ -33,6 +34,7 @@ export class FirestorePersonaRepository implements PersonaStorePort {
         id: document.id,
         projectId: String(data.projectId),
         name: String(data.name),
+        age: Number(data.age) || 30,
         role: String(data.role),
         traits: Array.isArray(data.traits)
           ? data.traits.map((value) => String(value))
