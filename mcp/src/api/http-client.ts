@@ -13,8 +13,8 @@ export class HttpClient {
     }
   }
 
-  private async getHeaders(requestUrl: string): Promise<HeadersInit> {
-    const headers: Record<string, string> = {};
+  private async getHeaders(requestUrl: string): Promise<Headers> {
+    const headers = new Headers();
     if (this.authMode === 'google-id-token' && this.googleAuth) {
       try {
         const urlObj = new URL(this.baseUrl);
@@ -28,7 +28,16 @@ export class HttpClient {
         const client = this.idTokenClients.get(audience);
         if (client) {
           const authHeaders = await client.getRequestHeaders(requestUrl);
-          Object.assign(headers, authHeaders);
+          // authHeaders can be a Headers instance or a plain object
+          if (authHeaders instanceof Headers) {
+            authHeaders.forEach((value, key) => {
+              headers.set(key, value);
+            });
+          } else if (authHeaders) {
+            for (const [key, value] of Object.entries(authHeaders)) {
+              headers.set(key, value as string);
+            }
+          }
         }
       } catch (error) {
         throw new Error(
@@ -42,11 +51,13 @@ export class HttpClient {
 
   async request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${path}`;
-    const authHeaders = await this.getHeaders(url);
-    const headers = {
-      ...authHeaders,
-      ...options.headers,
-    };
+    const headers = await this.getHeaders(url);
+    if (options.headers) {
+      const optHeaders = new Headers(options.headers);
+      optHeaders.forEach((value, key) => {
+        headers.set(key, value);
+      });
+    }
     const res = await fetch(url, { ...options, headers });
     if (!res.ok) {
       throw new Error(

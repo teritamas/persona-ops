@@ -13,7 +13,7 @@
 
 ## MCPサーバー (Node.js/TypeScript) の開発方針
 
-- **技術選定**: `@modelcontextprotocol/sdk` および `express` (SSEトランスポート) を標準とする。
+- **技術選定**: `@modelcontextprotocol/sdk` および Node.js 標準の `http.Server` (`StreamableHTTPServerTransport`) を標準とする。
 - **セキュリティと設計境界 (Security Boundary & Proxy Pattern)**:
   - MCPサーバーはDB接続などの直接的なデータ永続化リソースにアクセスしてはならない。
   - すべてのデータ取得・操作は、Private API (`api` サービス) に対して HTTP リクエスト経由で行う。
