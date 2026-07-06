@@ -52,7 +52,7 @@ exports.getSimulationSquare = async (req, res) => {
   try {
     const hiddenSimulations = getHiddenSimulations(req);
     const hiddenRequirements = getHiddenSandboxRequirements(req);
-    const {
+    let {
       selectedSimulation,
       simulations,
       requirements,

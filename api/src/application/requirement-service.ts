@@ -123,7 +123,10 @@ export class RequirementService {
       version,
     );
     if (!requirement) {
-      throw new NotFoundError('RequirementVersion', `${requirementId} v${version}`);
+      throw new NotFoundError(
+        'RequirementVersion',
+        `${requirementId} v${version}`,
+      );
     }
     return requirement;
   }

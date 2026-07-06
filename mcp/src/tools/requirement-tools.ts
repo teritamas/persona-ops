@@ -22,7 +22,9 @@ export function requirementTools(
           .boolean()
           .optional()
           .default(false)
-          .describe('If true, include unapproved draft requirements. Otherwise, return only approved ones.'),
+          .describe(
+            'If true, include unapproved draft requirements. Otherwise, return only approved ones.',
+          ),
       }),
     },
     async ({ projectId, includeDraft }) => {
@@ -41,7 +43,11 @@ export function requirementTools(
           content: [
             {
               type: 'text',
-              text: text || (includeDraft ? 'No requirements found.' : 'No approved requirements found.'),
+              text:
+                text ||
+                (includeDraft
+                  ? 'No requirements found.'
+                  : 'No approved requirements found.'),
             },
           ],
         };

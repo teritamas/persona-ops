@@ -2,7 +2,6 @@ module.exports = {
   tag: '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]',
   execute: (activeProject) => {
     const draft = activeProject?.requirements?.find(r => r.status === 'draft');
-    const requirementTitle = draft ? `「${draft.title}」の` : '';
     return {
       role: 'proposal',
       proposal: {

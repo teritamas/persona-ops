@@ -23,12 +23,10 @@ describe('Requirement Tools E2Eテスト', () => {
     const mockSimulationApiClient = new SimulationApiClient(mockHttpClient);
     const mockHealthApiClient = new HealthApiClient(mockHttpClient);
 
-    mockRequirementApiClient.listRequirements = vi
-      .fn()
-      .mockResolvedValue([
-        { id: 'req1', title: '音声入力機能', status: 'approved' },
-        { id: 'req2', title: 'ドラフト要件', status: 'draft' },
-      ]);
+    mockRequirementApiClient.listRequirements = vi.fn().mockResolvedValue([
+      { id: 'req1', title: '音声入力機能', status: 'approved' },
+      { id: 'req2', title: 'ドラフト要件', status: 'draft' },
+    ]);
 
     mockRequirementApiClient.getRequirement = vi.fn().mockResolvedValue({
       title: '音声入力機能',
