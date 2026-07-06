@@ -81,9 +81,12 @@ class SimulationService {
     // 隠しシミュレーションを除外
     simulations = simulations.filter(sim => !hiddenSimulations.includes(sim.id));
 
-    // クエリパラメータの無効な文字列IDをクレンジングして null に統一
+    // 現在プロジェクト内で実行中/キュー待ちのシミュレーションがあれば、強制的にそれを優先表示
+    const runningSim = simulations.find(s => ['running', 'queued'].includes(s.status));
     let targetSimId = selectedSimulationId;
-    if (
+    if (runningSim) {
+      targetSimId = runningSim.id;
+    } else if (
       !targetSimId ||
       targetSimId === 'dummy' ||
       targetSimId === 'undefined' ||

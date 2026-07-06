@@ -24,7 +24,7 @@
   }
 %>
 <% if (msg.role === 'system') { %>
-<div class="flex w-full justify-center mb-3">
+<div class="flex w-full justify-start mb-3">
   <% 
     let iconSvg = '<svg class="w-3.5 h-3.5 mr-1.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>';
     let colorClass = 'text-slate-500 border-slate-200 bg-slate-50/80';
@@ -45,7 +45,7 @@
   </div>
 </div>
 <% } else if (msg.role === 'proposal') { %>
-<div class="flex w-full justify-center mb-3 animate-fade-in proposal-btn-container">
+<div class="flex w-full justify-start mb-3 animate-fade-in proposal-btn-container">
   <% if (typeof isResolved !== 'undefined' && isResolved) { %>
     <% if (isNo) { %>
       <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
