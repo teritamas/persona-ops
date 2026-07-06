@@ -155,11 +155,19 @@ export class SimulationService {
       (persona) => !completedIds.has(persona.id),
     );
 
+    const designatedNegativePersonaId = simulation.personaSnapshots[0]?.id;
+
     for (let index = 0; index < pending.length; index += PERSONA_CONCURRENCY) {
       const batch = pending.slice(index, index + PERSONA_CONCURRENCY);
       await Promise.all(
         batch.map(async (persona) => {
-          const reaction = await this.simulatePersona(simulation, persona);
+          const isDesignatedNegative =
+            persona.id === designatedNegativePersonaId;
+          const reaction = await this.simulatePersona(
+            simulation,
+            persona,
+            isDesignatedNegative,
+          );
           await this.simulationRepository.saveReaction(projectId, reaction);
         }),
       );
@@ -229,14 +237,18 @@ export class SimulationService {
   async #simulateWithRetry(
     simulation: Simulation,
     persona: Simulation['personaSnapshots'][number],
+    isDesignatedNegative: boolean = false,
   ) {
     let lastError: unknown;
     for (let attempt = 1; attempt <= MAX_PERSONA_ATTEMPTS; attempt += 1) {
       try {
-        return await this.simulationAgent.simulate({
+        const result = await this.simulationAgent.simulate({
           persona,
           requirement: simulation.requirementSnapshot,
+          isDesignatedNegative,
         });
+
+        return result;
       } catch (error) {
         lastError = error;
       }
@@ -247,9 +259,14 @@ export class SimulationService {
   async simulatePersona(
     simulation: Simulation,
     persona: Simulation['personaSnapshots'][number],
+    isDesignatedNegative: boolean = false,
   ): Promise<PersonaReaction> {
     try {
-      const result = await this.#simulateWithRetry(simulation, persona);
+      const result = await this.#simulateWithRetry(
+        simulation,
+        persona,
+        isDesignatedNegative,
+      );
       return {
         simulationId: simulation.id,
         personaId: persona.id,
