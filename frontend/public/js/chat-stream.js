@@ -17,6 +17,10 @@ const SystemActionRegistry = [
     onDetect: () => {
       const reqBadge = document.getElementById('requirement-notification-badge');
       if (reqBadge) reqBadge.classList.remove('hidden');
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSidebar');
+        htmx.trigger(document.body, 'refreshSandbox');
+      }
     }
   },
   {
@@ -25,7 +29,9 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      // 必要に応じて追加のUI処理を記述
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSandbox');
+      }
     }
   },
   {
@@ -34,7 +40,9 @@ const SystemActionRegistry = [
     color: 'text-blue-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`,
     onDetect: () => {
-      // 必要に応じて追加のUI処理を記述
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSidebar');
+      }
     }
   }
 ];

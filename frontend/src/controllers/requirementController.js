@@ -38,7 +38,7 @@ exports.getRequirementsDashboard = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(
     req.activeProject.id,
   );
-  const { requirementId } = req.params;
+  const requirementId = req.params.requirementId || req.query.requirementId;
   let selectedRequirement = null;
   if (requirements && requirements.length > 0) {
     selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
@@ -282,8 +282,14 @@ exports.runRequirementSimulation = async (req, res) => {
     const selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
     const versions = await requirementService.fetchVersions(req.activeProject.id, selectedRequirement.id);
 
+    // クッキーに新シミュレーションIDを保存し、箱庭と状態を共有
+    res.cookie('selectedSimulationId', simulation.id, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+
     if (req.headers['hx-request']) {
-      res.setHeader('HX-Trigger', 'refreshSandbox, refreshChat');
+      res.setHeader('HX-Trigger', JSON.stringify({
+        refreshSandbox: { simulationId: simulation.id },
+        refreshChat: true
+      }));
     }
 
     return res.render('partials/requirement-dashboard', {

@@ -28,7 +28,11 @@ function getHiddenSandboxRequirements(req) {
 
 
 exports.getSimulationSquare = async (req, res) => {
-  const selectedSimulationId = req.query.simulationId;
+  // クエリまたはクッキーから simulationId を解決
+  let selectedSimulationId = req.query.simulationId;
+  if (!selectedSimulationId || selectedSimulationId === 'undefined' || selectedSimulationId === 'dummy') {
+    selectedSimulationId = req.cookies.selectedSimulationId || null;
+  }
   const targetRequirementId = req.query.requirementId;
   const targetVersion = req.query.version ? Number(req.query.version) : null;
 
@@ -62,7 +66,87 @@ exports.getSimulationSquare = async (req, res) => {
       targetRequirementId,
       targetVersion
     );
+
+    // データの変更検知 ＆ ロングポーリング保留ループ
+    let currentStatus = selectedSimulation ? selectedSimulation.status : null;
+    let currentReactionsCount = (selectedSimulation && selectedSimulation.reactions) ? selectedSimulation.reactions.length : 0;
+
+    const isPollingState = selectedSimulation && ['running', 'queued'].includes(currentStatus);
+    const lastStatus = req.query.lastStatus;
+    const lastReactionsCount = req.query.lastReactionsCount !== undefined ? Number(req.query.lastReactionsCount) : null;
+
+    if (isPollingState && lastStatus !== undefined && lastReactionsCount !== null) {
+      /*
+       * 【ロングポーリング (Long Polling) 処理】
+       * クライアント主導の定期的な短期間ポーリングを削減し、サーバー側で進捗完了を非同期で保留待機します。
+       * 
+       * ■ リスクと将来の考慮事項:
+       * 1. コネクション保留リスク: 
+       *    同時アクセスが増大した場合、ExpressサーバーのTCPコネクション数とリソース（スレッド・メモリ）を
+       *    一時的に消費し続けるリスクがあります。現状は少人数前提のため許容しますが、本番スケール時は注意が必要です。
+       * 2. ネットワークプロキシのタイムアウト:
+       *    プロキシ（ALBやNginx等）の無通信タイムアウトによる切断を避けるため、保留時間（TIMEOUT_MS）は
+       *    インフラ設定値より短い時間（15秒）に制限しています。
+       * 
+       * ■ 案2 (将来的なSSE/WebSocket移行) への考慮:
+       *    利用者が増えスケーラビリティが課題となる場合は、本ロングポーリング処理を廃止し、
+       *    「Server-Sent Events (SSE) または WebSockets による完了イベントのプッシュ配信」へ移行し、
+       *    イベント受信時にクライアントが1回だけ最新HTMLを取得する形（案2）に移行することを考慮してください。
+       */
+      const startTime = Date.now();
+      const TIMEOUT_MS = 15000; // ロングポーリングの最大保留時間 (15秒)
+      const POLL_INTERVAL_MS = 2000; // APIサーバーへの確認間隔 (2秒)
+
+      let context = { selectedSimulation, simulations, requirements, selectedRequirementId, selectedRequirementVersion };
+
+      // 変化がない間、ループして待機
+      while (
+        currentStatus === lastStatus &&
+        currentReactionsCount === lastReactionsCount &&
+        (Date.now() - startTime < TIMEOUT_MS)
+      ) {
+        await new Promise(resolve => setTimeout(resolve, POLL_INTERVAL_MS));
+
+        // 最新の状態を再取得
+        const newContext = await simulationService.getSandboxContext(
+          req.activeProject,
+          selectedSimulationId,
+          hiddenSimulations,
+          hiddenRequirements,
+          targetRequirementId,
+          targetVersion
+        );
+
+        context = newContext;
+        currentStatus = newContext.selectedSimulation ? newContext.selectedSimulation.status : null;
+        currentReactionsCount = (newContext.selectedSimulation && newContext.selectedSimulation.reactions)
+          ? newContext.selectedSimulation.reactions.length
+          : 0;
+      }
+
+      // タイムアウト時に変化がなかった場合は 204 を返しつつ、次の接続を要求する
+      if (
+        currentStatus === lastStatus &&
+        currentReactionsCount === lastReactionsCount
+      ) {
+        res.setHeader('HX-Trigger', 'refreshPoll');
+        return res.status(204).end();
+      }
+
+      // 変化があった場合は最新コンテキストで描画データを上書き
+      selectedSimulation = context.selectedSimulation;
+      simulations = context.simulations;
+      requirements = context.requirements;
+      selectedRequirementId = context.selectedRequirementId;
+      selectedRequirementVersion = context.selectedRequirementVersion;
+    }
+
     const selectedPersonaId = req.cookies.selectedPersonaId || null;
+
+    // 解決された最新のIDをクッキーに保存して同期
+    if (selectedSimulation) {
+      res.cookie('selectedSimulationId', selectedSimulation.id, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+    }
 
     return res.render('partials/sandbox-characters-with-oob', {
       activeProject: req.activeProject,

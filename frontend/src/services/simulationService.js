@@ -81,13 +81,24 @@ class SimulationService {
     // 隠しシミュレーションを除外
     simulations = simulations.filter(sim => !hiddenSimulations.includes(sim.id));
 
-    const selectedSummary = selectedSimulationId
+    // クエリパラメータの無効な文字列IDをクレンジングして null に統一
+    let targetSimId = selectedSimulationId;
+    if (
+      !targetSimId ||
+      targetSimId === 'dummy' ||
+      targetSimId === 'undefined' ||
+      targetSimId === 'null'
+    ) {
+      targetSimId = null;
+    }
+
+    const selectedSummary = targetSimId
       ? simulations.find(
-          (simulation) => simulation.id === selectedSimulationId,
+          (simulation) => simulation.id === targetSimId,
         )
       : simulations[0];
 
-    if (selectedSimulationId && selectedSimulationId !== 'dummy' && selectedSimulationId !== 'undefined' && !selectedSummary) {
+    if (targetSimId && !selectedSummary) {
       const error = new Error('指定されたシミュレーションが見つかりません。');
       error.code = 'NOT_FOUND';
       throw error;
@@ -96,7 +107,7 @@ class SimulationService {
     if (!selectedSummary) {
       return {
         activeProject,
-        followLatest: !selectedSimulationId,
+        followLatest: !targetSimId,
         selectedSimulation: null,
         simulations,
       };
@@ -111,7 +122,7 @@ class SimulationService {
 
     return {
       activeProject,
-      followLatest: !selectedSimulationId,
+      followLatest: !targetSimId,
       selectedSimulation: presentSimulation(detailResponse.data),
       simulations,
     };

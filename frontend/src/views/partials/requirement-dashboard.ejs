@@ -1,11 +1,9 @@
 <div id="requirement-dashboard"
   class="flex-1 min-h-0 flex flex-col bg-slate-50 overflow-hidden animate-fade-in text-slate-800"
-  <% if (typeof selectedSimulation !== 'undefined' && selectedSimulation && ['running', 'queued'].includes(selectedSimulation.status)) { %>
-    hx-get="/<%= activeProject.id %>/view/requirements/<%= selectedRequirement.id %>?version=<%= selectedRequirement.version %>"
-    hx-trigger="every 3s"
-    hx-target="#requirement-dashboard"
-    hx-swap="outerHTML"
-  <% } %>
+  hx-get="/<%= activeProject.id %>/view/requirements"
+  hx-trigger="refreshRequirementDashboard from:body"
+  hx-target="#requirement-dashboard"
+  hx-swap="outerHTML"
 >
 
   <% 

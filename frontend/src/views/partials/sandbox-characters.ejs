@@ -3,11 +3,18 @@
   const isPolling = selectedSimulation && (selectedSimulation.status === 'running' || selectedSimulation.status === 'queued'); 
   const triggerList = ['refreshSandbox from:body'];
   if (isPolling) {
-    triggerList.push('every 3s');
-  } else {
-    triggerList.push('every 5s');
+    // 3秒ごとの定期実行を廃止し、自律的な連続リクエスト（ロングポーリング）を設定
+    triggerList.push('load delay:1s');
+    triggerList.push('refreshPoll delay:1s from:body');
   }
-  const pollingAttrs = `hx-get="/${activeProject.id}/view/simulation-square${isPolling ? `?simulationId=${encodeURIComponent(selectedId)}` : ''}" hx-trigger="${triggerList.join(', ')}" hx-swap="outerHTML"`; 
+
+  let queryParams = '';
+  if (selectedSimulation) {
+    queryParams = `?simulationId=${encodeURIComponent(selectedId)}`
+      + `&lastStatus=${encodeURIComponent(selectedSimulation.status)}`
+      + `&lastReactionsCount=${selectedSimulation.reactions ? selectedSimulation.reactions.length : 0}`;
+  }
+  const pollingAttrs = `hx-get="/${activeProject.id}/view/simulation-square${queryParams}" hx-trigger="${triggerList.join(', ')}" hx-swap="outerHTML"`; 
 %>
   <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10" <%- pollingAttrs %>
     <%= (typeof isOob !=='undefined' && isOob) ? 'hx-swap-oob="outerHTML"' : '' %>
@@ -150,7 +157,7 @@
                   }
                 %>
                   <div
-                    class="draggable-node absolute z-30 select-none cursor-grab active:cursor-grabbing border-[3px] p-4 rounded-[2rem] w-64 flex flex-col text-slate-800 transition-all duration-300 group/reqcard hover:-translate-y-1.5 <%= cardBorderClass %> overflow-hidden"
+                    class="draggable-node absolute z-30 select-none cursor-grab active:cursor-grabbing border-[3px] p-4 rounded-[2rem] w-64 flex flex-col text-slate-800 transition-[transform,box-shadow,border-color,background-color] duration-300 group/reqcard hover:-translate-y-1.5 <%= cardBorderClass %> overflow-hidden"
                     style="left: <%= initX %>%; top: <%= initY %>%;" data-node-id="req-<%= req.id %>">
                     <!-- 装飾用グラデーション -->
                     <div
@@ -236,8 +243,10 @@
                             const parts = this.value.split(':');
                             if (parts[0] === 'sim') {
                               htmx.ajax('GET', '/<%= activeProject.id %>/view/simulation-square?simulationId=' + encodeURIComponent(parts[1]), { target: '#sandbox-characters', swap: 'outerHTML' });
+                              htmx.trigger(document.body, 'refreshRequirementDashboard', { simulationId: parts[1] });
                             } else {
                               htmx.ajax('GET', '/<%= activeProject.id %>/view/simulation-square?requirementId=' + encodeURIComponent(parts[1]) + '&version=' + encodeURIComponent(parts[2]), { target: '#sandbox-characters', swap: 'outerHTML' });
+                              htmx.trigger(document.body, 'refreshRequirementDashboard', { requirementId: parts[1], version: parts[2] });
                             }
                           }">
                           <% 
@@ -281,9 +290,13 @@
                         </div>
                         <% } else if (matchingSim) { %>
                           <button
-                            hx-get="/<%= activeProject.id %>/view/simulations/<%= encodeURIComponent(matchingSim.id) %>"
+                            hx-get="/<%= activeProject.id %>/view/requirements/<%= req.id %>"
                             hx-target="#left-panel-content" hx-swap="innerHTML"
-                            onclick="if(typeof htmx !== 'undefined') { htmx.ajax('GET', '/<%= activeProject.id %>/view/simulation-square?simulationId=<%= encodeURIComponent(matchingSim.id) %>', { target: '#sandbox-characters', swap: 'outerHTML' }); }"
+                            hx-push-url="/<%= activeProject.id %>/requirements/<%= req.id %>?simulationId=<%= encodeURIComponent(matchingSim.id) %>"
+                            hx-vals='{"simulationId": "<%= matchingSim.id %>", "version": "<%= matchingSim.requirementSnapshot?.version || matchingSim.requirementVersion %>"}'
+                            onclick="if(typeof htmx !== 'undefined') { 
+                              htmx.ajax('GET', '/<%= activeProject.id %>/view/simulation-square?simulationId=<%= encodeURIComponent(matchingSim.id) %>', { target: '#sandbox-characters', swap: 'outerHTML' }); 
+                            }"
                             class="w-full text-[11px] font-black text-center py-2.5 px-4 rounded-xl border-2 transition-all active:scale-95 flex items-center justify-center gap-1.5
                 <%= isSelectedRequirement ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white border-transparent shadow-lg shadow-orange-500/30' : 'bg-white text-slate-600 border-slate-100 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-200' %>">
                             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5"

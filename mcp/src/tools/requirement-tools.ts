@@ -18,23 +18,30 @@ export function requirementTools(
       description: 'List requirements for a specific project',
       inputSchema: z.object({
         projectId: z.string().describe('The ID of the project'),
+        includeDraft: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe('If true, include unapproved draft requirements. Otherwise, return only approved ones.'),
       }),
     },
-    async ({ projectId }) => {
-      log('Calling list_requirements', { projectId });
+    async ({ projectId, includeDraft }) => {
+      log('Calling list_requirements', { projectId, includeDraft });
       try {
         const requirements =
           await requirementApiClient.listRequirements(projectId);
-        const approvedRequirements = requirements.filter((r) => r.status === 'approved');
-        log('list_requirements returned count:', approvedRequirements.length);
-        const text = approvedRequirements
+        const filteredRequirements = includeDraft
+          ? requirements
+          : requirements.filter((r) => r.status === 'approved');
+        log('list_requirements returned count:', filteredRequirements.length);
+        const text = filteredRequirements
           .map((r) => `- ${r.title} (ID: ${r.id}, Status: ${r.status})`)
           .join('\n');
         return {
           content: [
             {
               type: 'text',
-              text: text || 'No approved requirements found.',
+              text: text || (includeDraft ? 'No requirements found.' : 'No approved requirements found.'),
             },
           ],
         };

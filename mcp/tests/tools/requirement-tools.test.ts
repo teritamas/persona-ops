@@ -27,12 +27,14 @@ describe('Requirement Tools E2Eテスト', () => {
       .fn()
       .mockResolvedValue([
         { id: 'req1', title: '音声入力機能', status: 'approved' },
+        { id: 'req2', title: 'ドラフト要件', status: 'draft' },
       ]);
 
     mockRequirementApiClient.getRequirement = vi.fn().mockResolvedValue({
       title: '音声入力機能',
       description: 'スマホで音声をテキストに変換する',
       acceptanceCriteria: ['一文字も間違えずに変換できること'],
+      status: 'approved',
     });
 
     mockRequirementApiClient.getRequirementSimulations = vi
@@ -73,7 +75,7 @@ describe('Requirement Tools E2Eテスト', () => {
     );
     await client.connect(transport);
 
-    // list_requirements の検証
+    // list_requirements の検証 (デフォルト: approved のみ)
     const listResponse = await client.callTool({
       name: 'list_requirements',
       arguments: { projectId: 'p1' },
@@ -82,6 +84,23 @@ describe('Requirement Tools E2Eテスト', () => {
     const listContent = listResponse.content as TextContent[];
     expect(listContent[0]?.text).toContain(
       '音声入力機能 (ID: req1, Status: approved)',
+    );
+    expect(listContent[0]?.text).not.toContain(
+      'ドラフト要件 (ID: req2, Status: draft)',
+    );
+
+    // list_requirements の検証 (includeDraft: true)
+    const listResponseWithDraft = await client.callTool({
+      name: 'list_requirements',
+      arguments: { projectId: 'p1', includeDraft: true },
+    });
+    expect(listResponseWithDraft.isError).toBeFalsy();
+    const listContentWithDraft = listResponseWithDraft.content as TextContent[];
+    expect(listContentWithDraft[0]?.text).toContain(
+      '音声入力機能 (ID: req1, Status: approved)',
+    );
+    expect(listContentWithDraft[0]?.text).toContain(
+      'ドラフト要件 (ID: req2, Status: draft)',
     );
 
     // get_requirement_with_simulations の検証
