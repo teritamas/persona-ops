@@ -117,9 +117,12 @@ class ChatService {
     let cleanedText = text;
     const systemMessages = [];
 
-    actionRegistry.actions.forEach((action, idx) => {
-      if (cleanedText.includes(action.tag)) {
-        cleanedText = cleanedText.replaceAll(action.tag, '');
+    // 正規表現で [SYSTEM_ACTION: ...] タグを抽出
+    const tags = text.match(/\[SYSTEM_ACTION: [A-Z_]+\]/g) || [];
+    tags.forEach((tag, idx) => {
+      const action = actionRegistry.findByTag(tag);
+      if (action) {
+        cleanedText = cleanedText.replaceAll(tag, '');
         const messagePayload = action.execute(activeProject);
 
         systemMessages.push({

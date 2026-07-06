@@ -130,6 +130,10 @@ exports.streamChat = async (req, res) => {
       res.write(value);
     }
 
+    const requirementService = require('../services/requirementService');
+    const requirements = await requirementService.fetchRequirements(req.activeProject.id);
+    req.activeProject.requirements = requirements;
+
     const { cleanedText, systemMessages } = chatService.processSystemActions(fullText, req.activeProject);
 
     const agentMsg = {
