@@ -38,23 +38,48 @@ exports.getRequirementsDashboard = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(
     req.activeProject.id,
   );
-  const { requirementId } = req.params;
+  const requirementId = req.params.requirementId || req.query.requirementId;
   let selectedRequirement = null;
   if (requirements && requirements.length > 0) {
     selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
   }
 
+  let versions = [];
+  let isPastVersion = false;
+  let latestRequirement = selectedRequirement;
+  let selectedSimulation = null;
+
   if (selectedRequirement) {
     try {
+      versions = await requirementService.fetchVersions(
+        req.activeProject.id,
+        selectedRequirement.id,
+      );
+      const queryVersion = req.query.version;
+      if (queryVersion) {
+        const ver = versions.find(v => v.version === Number(queryVersion));
+        if (ver) {
+          selectedRequirement = ver;
+          isPastVersion = selectedRequirement.version !== latestRequirement.version;
+        }
+      }
+
+      // 該当バージョンに対応するシミュレーション詳細をフェッチ
+      selectedSimulation = await simulationService.getSimulationForRequirementVersion(
+        req.activeProject.id,
+        latestRequirement.id,
+        selectedRequirement.version
+      );
+
       const dashboard = await simulationService.getDashboard(req.activeProject);
-      unhideSimulationsForRequirement(req, res, selectedRequirement.id, dashboard.simulations);
+      unhideSimulationsForRequirement(req, res, latestRequirement.id, dashboard.simulations);
 
       // If this is an HTMX request, trigger the sandbox to refresh so the unhidden requirement appears
       if (req.headers['hx-request']) {
         res.setHeader('HX-Trigger', 'refreshSandbox');
       }
     } catch (err) {
-      console.error('Failed to unhide simulations for requirement:', err);
+      console.error('Failed to process requirement versions or simulations:', err);
     }
   }
 
@@ -62,6 +87,10 @@ exports.getRequirementsDashboard = async (req, res) => {
     activeProject: req.activeProject,
     requirements,
     selectedRequirement,
+    versions,
+    isPastVersion,
+    latestRequirement,
+    selectedSimulation,
   });
 };
 
@@ -95,36 +124,24 @@ exports.saveRequirement = async (req, res) => {
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
-  const requirementData = {
+  const saved = await requirementService.saveRequirement(req.activeProject.id, {
+    id,
     title,
     description,
     acceptanceCriteria,
-  };
-  if (id && id.trim() !== '') {
-    requirementData.id = id;
-  }
-
-  const saved = await requirementService.saveRequirement(
-    req.activeProject.id,
-    requirementData,
-  );
+  });
 
   if (!saved) {
     return res.status(500).send('Failed to save requirement');
   }
 
-  // 保存後はダッシュボード全体を再描画して一貫性を保つ
-  const requirements = await requirementService.fetchRequirements(
-    req.activeProject.id,
-  );
   if (req.headers['hx-request']) {
-    res.setHeader('HX-Trigger', 'refreshSandbox');
+    res.setHeader('HX-Trigger', 'refreshSandbox, refreshSidebar');
+    res.setHeader('HX-Push-Url', `/${req.activeProject.id}/requirements/${saved.id}`);
   }
-  res.render('partials/requirement-dashboard', {
-    activeProject: req.activeProject,
-    requirements,
-    selectedRequirement: saved,
-  });
+
+  req.params.requirementId = saved.id;
+  return exports.getRequirementsDashboard(req, res);
 };
 
 exports.createNewRequirementForm = (req, res) => {
@@ -159,16 +176,133 @@ exports.deleteRequirement = async (req, res) => {
   if (!success) {
     return res.status(500).send('Failed to delete requirement');
   }
-  // 削除後は残りの要件をロードしダッシュボード全体を再描画する
-  const requirements = await requirementService.fetchRequirements(
+
+  const requirements = await requirementService.fetchRequirements(req.activeProject.id);
+  const selectedReq = requirements[0] || null;
+
+  if (req.headers['hx-request']) {
+    res.setHeader('HX-Trigger', 'refreshSandbox, refreshSidebar');
+    res.setHeader('HX-Push-Url', `/${req.activeProject.id}/requirements${selectedReq ? '/' + selectedReq.id : ''}`);
+  }
+
+  req.params.requirementId = selectedReq ? selectedReq.id : '';
+  return exports.getRequirementsDashboard(req, res);
+};
+
+exports.approveRequirement = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  const { requirementId } = req.params;
+  const approved = await requirementService.approveRequirement(
     req.activeProject.id,
+    requirementId,
   );
+  if (!approved) {
+    return res.status(500).send('Failed to approve requirement');
+  }
+
+  try {
+    const chatService = require('../services/chatService');
+    const activeChat = req.activeProject.chats.find(c => c.id === req.activeProject.activeChatId);
+    if (activeChat) {
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      await chatService.appendMessages(req.activeProject.id, activeChat.id, [{
+        id: `msg_system_${Date.now()}`,
+        role: 'system',
+        text: '要件が承認されました。MCP経由で開発者が利用できるようになります。',
+        time
+      }]);
+    }
+  } catch (err) {
+    console.error('Failed to append approval message to chat:', err);
+  }
+
+  if (req.headers['hx-request']) {
+    res.setHeader('HX-Trigger', 'refreshSandbox, refreshChat');
+  }
+
+  req.params.requirementId = approved.id;
+  return exports.getRequirementsDashboard(req, res);
+};
+
+exports.restoreRequirementVersion = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  const { requirementId, version } = req.params;
+  const restored = await requirementService.restoreVersion(
+    req.activeProject.id,
+    requirementId,
+    Number(version),
+  );
+  if (!restored) {
+    return res.status(500).send('Failed to restore requirement version');
+  }
+
   if (req.headers['hx-request']) {
     res.setHeader('HX-Trigger', 'refreshSandbox');
   }
-  res.render('partials/requirement-dashboard', {
-    activeProject: req.activeProject,
-    requirements,
-    selectedRequirement: requirements[0] || null,
-  });
+
+  req.params.requirementId = restored.id;
+  return exports.getRequirementsDashboard(req, res);
+};
+
+exports.runRequirementSimulation = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  const { requirementId } = req.params;
+  try {
+    const simulation = await simulationService.runSimulation(
+      req.activeProject.id,
+      requirementId
+    );
+
+    // シミュレーション開始通知をチャットへ追記
+    try {
+      const chatService = require('../services/chatService');
+      const activeChat = req.activeProject.chats.find(c => c.id === req.activeProject.activeChatId);
+      if (activeChat) {
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        await chatService.appendMessages(req.activeProject.id, activeChat.id, [{
+          id: `msg_system_${Date.now()}`,
+          role: 'system',
+          text: 'シミュレーションの実行を開始しました。',
+          time
+        }]);
+      }
+    } catch (err) {
+      console.error('Failed to append simulation start message to chat:', err);
+    }
+
+    unhideSimulationsForRequirement(req, res, requirementId, [simulation]);
+
+    const requirements = await requirementService.fetchRequirements(req.activeProject.id);
+    const selectedRequirement = requirements.find(r => r.id === requirementId) || requirements[0];
+    const versions = await requirementService.fetchVersions(req.activeProject.id, selectedRequirement.id);
+
+    // クッキーに新シミュレーションIDを保存し、箱庭と状態を共有
+    res.cookie('selectedSimulationId', simulation.id, { maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+    if (req.headers['hx-request']) {
+      res.setHeader('HX-Trigger', JSON.stringify({
+        refreshSandbox: { simulationId: simulation.id },
+        refreshChat: true
+      }));
+    }
+
+    return res.render('partials/requirement-dashboard', {
+      activeProject: req.activeProject,
+      requirements,
+      selectedRequirement,
+      versions,
+      isPastVersion: false,
+      latestRequirement: selectedRequirement,
+      selectedSimulation: simulation,
+    });
+  } catch (error) {
+    console.error('Failed to run simulation from requirement dashboard', error);
+    return res.status(500).send('Internal Server Error');
+  }
 };

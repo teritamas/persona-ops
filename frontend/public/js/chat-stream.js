@@ -17,6 +17,10 @@ const SystemActionRegistry = [
     onDetect: () => {
       const reqBadge = document.getElementById('requirement-notification-badge');
       if (reqBadge) reqBadge.classList.remove('hidden');
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSidebar');
+        htmx.trigger(document.body, 'refreshSandbox');
+      }
     }
   },
   {
@@ -25,7 +29,9 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      // 必要に応じて追加のUI処理を記述
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSandbox');
+      }
     }
   },
   {
@@ -34,7 +40,9 @@ const SystemActionRegistry = [
     color: 'text-blue-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`,
     onDetect: () => {
-      // 必要に応じて追加のUI処理を記述
+      if (typeof htmx !== 'undefined') {
+        htmx.trigger(document.body, 'refreshSidebar');
+      }
     }
   }
 ];
@@ -49,6 +57,9 @@ function parseAndCleanSystemActions(text) {
       detectedActions.push(action);
     }
   });
+
+  // 未定義のものも含め、すべての SYSTEM_ACTION タグを生テキストから削除
+  cleaned = cleaned.replace(/\[SYSTEM_ACTION:\s*[A-Z_]+\]/g, '');
 
   return {
     cleanedText: cleaned.trim(),
@@ -76,6 +87,94 @@ globalThis.submitSuggestion = function submitSuggestion(element) {
     const form = input.closest('form');
     if (form) {
       form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    }
+  }
+};
+
+globalThis.submitProposal = function submitProposal(button) {
+  if (button.disabled) return;
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  const text = button.getAttribute('data-input-text');
+  const btnText = button.querySelector('span:not(.bg-orange-500)')?.innerText || button.innerText;
+  const input = document.getElementById('inputText');
+  if (input && text) {
+    input.value = text;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = button.closest('.proposal-btn-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="font-medium text-slate-600">
+              選択結果：${btnText}
+            </span>
+          </div>
+        `;
+      }
+    }
+  }
+};
+
+globalThis.submitProposal2 = function submitProposal2(button) {
+  if (button.disabled) return;
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  const text = button.getAttribute('data-input-text');
+  const btnText = button.querySelector('span:not(.bg-blue-500)')?.innerText || button.innerText;
+  const input = document.getElementById('inputText');
+  if (input && text) {
+    input.value = text;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = button.closest('.proposal-btn-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="font-medium text-slate-600">
+              選択結果：${btnText}
+            </span>
+          </div>
+        `;
+      }
+    }
+  }
+};
+
+globalThis.submitProposalNo = function submitProposalNo(textarea) {
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  textarea.disabled = true;
+  const button = textarea.nextElementSibling;
+  if (button) button.disabled = true;
+
+  const input = document.getElementById('inputText');
+  if (input) {
+    input.value = `いいえ。${text}`;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = textarea.closest('.proposal-btn-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="font-medium text-slate-600">
+              選択結果：いいえ
+            </span>
+            <div class="text-[11px] bg-white border border-slate-100 p-2 rounded-lg text-slate-600 mt-1 italic">
+              フィードバック: "${text}"
+            </div>
+          </div>
+        `;
+      }
     }
   }
 };
@@ -284,8 +383,13 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             </div>
           `;
           const chatContainer = document.getElementById('chat-messages-container');
-          if (chatContainer) {
+          const agentBubble = document.getElementById(agentMsgId);
+          if (agentBubble) {
+            agentBubble.insertAdjacentHTML('beforebegin', systemHtml);
+          } else if (chatContainer) {
             chatContainer.insertAdjacentHTML('beforeend', systemHtml);
+          }
+          if (chatContainer) {
             const scrollParent = chatContainer.parentElement;
             if (scrollParent) {
               scrollParent.scrollTop = scrollParent.scrollHeight;

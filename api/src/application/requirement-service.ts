@@ -86,6 +86,76 @@ export class RequirementService {
     return requirement;
   }
 
+  async approveDraft(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement> {
+    const requirement = await this.getById(projectId, requirementId);
+    if (requirement.status === 'approved') {
+      return requirement;
+    }
+    const now = new Date();
+    const updated: Requirement = {
+      ...requirement,
+      status: 'approved',
+      approvedAt: now,
+      updatedAt: now,
+    };
+    await this.requirementRepository.save(updated);
+    return updated;
+  }
+
+  async getVersions(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement[]> {
+    return this.requirementRepository.findVersions(projectId, requirementId);
+  }
+
+  async getVersion(
+    projectId: string,
+    requirementId: string,
+    version: number,
+  ): Promise<Requirement> {
+    const requirement = await this.requirementRepository.findVersion(
+      projectId,
+      requirementId,
+      version,
+    );
+    if (!requirement) {
+      throw new NotFoundError(
+        'RequirementVersion',
+        `${requirementId} v${version}`,
+      );
+    }
+    return requirement;
+  }
+
+  async restoreVersion(
+    projectId: string,
+    requirementId: string,
+    version: number,
+  ): Promise<Requirement> {
+    const target = await this.getVersion(projectId, requirementId, version);
+    const current = await this.getById(projectId, requirementId);
+
+    const now = new Date();
+    const updated: Requirement = {
+      ...current,
+      title: target.title,
+      description: target.description,
+      acceptanceCriteria: [...target.acceptanceCriteria],
+      sourceDocumentIds: [...target.sourceDocumentIds],
+      sourceSimulationIds: [...target.sourceSimulationIds],
+      status: 'draft',
+      version: current.version + 1,
+      approvedAt: undefined,
+      updatedAt: now,
+    };
+    await this.requirementRepository.save(updated);
+    return updated;
+  }
+
   private async validateReferences(
     projectId: string,
     sourceDocumentIds: string[],

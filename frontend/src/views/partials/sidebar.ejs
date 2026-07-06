@@ -1,6 +1,9 @@
 <% const hideClass=(!activeProject || !activeProject.id) ? 'hidden' : '' ; %>
   <nav id="global-sidebar"
-    class="w-14 hover:w-48 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group <%= hideClass %>">
+    class="w-14 hover:w-48 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] bg-white border-r border-slate-200 flex flex-col items-center py-6 z-40 shrink-0 group <%= hideClass %>"
+    hx-get="/<%= activeProject.id %>/view/sidebar"
+    hx-trigger="refreshSidebar from:body"
+    hx-swap="outerHTML">
     <!-- Nav Items -->
     <div class="flex flex-col space-y-3 w-full px-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
 
@@ -8,6 +11,7 @@
       <div class="w-full relative group/chatmenu">
         <button id="nav-chat" hx-get="/<%= activeProject.id %>/view/chat" hx-target="#left-panel-content"
           hx-swap="innerHTML" onclick="showSimulationPlayground()"
+          hx-push-url="/<%= activeProject.id %>"
           class="nav-btn flex items-center py-3 px-2.5 rounded-2xl bg-orange-50 text-orange-600 transition-all duration-300 active:scale-95 w-full group/item <%= hideClass %> hover:-translate-y-0.5 hover:shadow-sm hover:shadow-orange-500/10">
           <svg class="nav-icon w-5 h-5 shrink-0 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5"
             viewBox="0 0 24 24">
@@ -22,6 +26,7 @@
         <!-- Resources Menu -->
         <button id="nav-resources" hx-get="/<%= activeProject.id %>/view/resources" hx-target="#left-panel-content"
           hx-swap="innerHTML"
+          hx-push-url="/<%= activeProject.id %>/resource"
           class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item relative <%= hideClass %> hover:-translate-y-0.5"
           onclick="document.getElementById('resource-notification-badge').classList.add('hidden')">
           <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
@@ -39,6 +44,7 @@
         <div class="w-full flex flex-col <%= hideClass %>">
           <button id="nav-requirements" hx-get="/<%= activeProject.id %>/view/requirements"
             hx-target="#left-panel-content" hx-swap="innerHTML"
+            hx-push-url="/<%= activeProject.id %>/requirements"
             class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item relative hover:-translate-y-0.5"
             onclick="document.getElementById('requirement-notification-badge').classList.add('hidden')">
             <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
@@ -59,6 +65,7 @@
             <!-- 新規作成ボタン -->
             <button hx-get="/<%= activeProject.id %>/view/requirements/new-form" hx-target="#left-panel-content"
               hx-swap="innerHTML"
+              hx-push-url="/<%= activeProject.id %>/requirements/edit"
               class="text-orange-500 hover:text-orange-600 bg-orange-50/50 hover:bg-orange-50 px-2 py-1.5 rounded-xl text-[11px] font-black transition-all active:scale-95 flex items-center gap-1 w-full text-left mb-1.5 shadow-sm border border-orange-100/50">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
@@ -69,6 +76,7 @@
               <% requirements.forEach(req=> { %>
                 <button hx-get="/<%= activeProject.id %>/view/requirements/<%= req.id %>"
                   hx-target="#left-panel-content" hx-swap="innerHTML"
+                  hx-push-url="/<%= activeProject.id %>/requirements/<%= req.id %>"
                   class="text-[11px] font-bold text-slate-400 hover:text-orange-600 text-left truncate py-1.5 hover:bg-orange-50 rounded-xl px-2 w-full transition-colors whitespace-nowrap">
                   <%= req.title %>
                 </button>
@@ -77,35 +85,7 @@
           </div>
         </div>
 
-        <!-- Simulation Results -->
-        <div class="w-full flex flex-col <%= hideClass %>">
-          <button id="nav-simulations" hx-get="/<%= activeProject.id %>/view/simulations"
-            hx-target="#left-panel-content" hx-swap="innerHTML"
-            class="nav-btn flex items-center py-3 px-2.5 rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all duration-300 active:scale-95 w-full group/item hover:-translate-y-0.5">
-            <svg class="nav-icon w-5 h-5 shrink-0 text-slate-400 group-hover/item:text-slate-600" fill="none"
-              stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z">
-              </path>
-            </svg>
-            <span
-              class="ms-4 text-sm font-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-slate-600 tracking-tight">シミュレーション</span>
-          </button>
 
-          <!-- Sub-list for Simulations -->
-          <div
-            class="hidden group-hover:flex flex-col w-full pl-11 pr-2 pb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto">
-            <% if (typeof simulations !=='undefined' && simulations.length> 0) { %>
-              <% simulations.slice(0, 5).forEach((sim, idx)=> { %>
-                <button hx-get="/<%= activeProject.id %>/view/simulations/<%= encodeURIComponent(sim.id) %>"
-                  hx-target="#left-panel-content" hx-swap="innerHTML"
-                  class="text-[11px] font-bold text-slate-400 hover:text-orange-600 text-left truncate py-1.5 hover:bg-orange-50 rounded-xl px-2 w-full transition-colors whitespace-nowrap">
-                  <%= sim.requirementSnapshot?.title || `履歴 ${idx + 1}` %>
-                </button>
-                <% }) %>
-                  <% } %>
-          </div>
-        </div>
 
       </div>
     </div>

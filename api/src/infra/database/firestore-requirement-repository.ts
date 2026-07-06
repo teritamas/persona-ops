@@ -7,21 +7,25 @@ export class FirestoreRequirementRepository implements RequirementStorePort {
   constructor(private readonly firestore: Firestore) {}
 
   async save(requirement: Requirement): Promise<void> {
-    await this.collection(requirement.projectId)
-      .doc(requirement.id)
-      .set({
-        projectId: requirement.projectId,
-        title: requirement.title,
-        description: requirement.description,
-        acceptanceCriteria: requirement.acceptanceCriteria,
-        sourceDocumentIds: requirement.sourceDocumentIds,
-        sourceSimulationIds: requirement.sourceSimulationIds,
-        status: requirement.status,
-        version: requirement.version,
-        approvedAt: requirement.approvedAt?.toISOString() ?? null,
-        createdAt: requirement.createdAt.toISOString(),
-        updatedAt: requirement.updatedAt.toISOString(),
-      });
+    const docRef = this.collection(requirement.projectId).doc(requirement.id);
+    const data = {
+      projectId: requirement.projectId,
+      title: requirement.title,
+      description: requirement.description,
+      acceptanceCriteria: requirement.acceptanceCriteria,
+      sourceDocumentIds: requirement.sourceDocumentIds,
+      sourceSimulationIds: requirement.sourceSimulationIds,
+      status: requirement.status,
+      version: requirement.version,
+      approvedAt: requirement.approvedAt?.toISOString() ?? null,
+      createdAt: requirement.createdAt.toISOString(),
+      updatedAt: requirement.updatedAt.toISOString(),
+    };
+    await docRef.set(data);
+    await docRef
+      .collection('versions')
+      .doc(String(requirement.version))
+      .set(data);
   }
 
   async findById(
@@ -32,6 +36,36 @@ export class FirestoreRequirementRepository implements RequirementStorePort {
     return document.exists
       ? this.mapDocument(projectId, document.id, document.data() ?? {})
       : null;
+  }
+
+  async findVersion(
+    projectId: string,
+    requirementId: string,
+    version: number,
+  ): Promise<Requirement | null> {
+    const document = await this.collection(projectId)
+      .doc(requirementId)
+      .collection('versions')
+      .doc(String(version))
+      .get();
+    return document.exists
+      ? this.mapDocument(projectId, requirementId, document.data() ?? {})
+      : null;
+  }
+
+  async findVersions(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement[]> {
+    const snapshot = await this.collection(projectId)
+      .doc(requirementId)
+      .collection('versions')
+      .get();
+    return snapshot.docs
+      .map((document) =>
+        this.mapDocument(projectId, requirementId, document.data()),
+      )
+      .sort((left, right) => right.version - left.version);
   }
 
   async findByProjectId(projectId: string): Promise<Requirement[]> {

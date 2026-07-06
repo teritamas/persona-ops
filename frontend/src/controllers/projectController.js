@@ -36,6 +36,30 @@ exports.getDashboard = async (req, res) => {
   let selectedSimulation = null;
   let requirements = [];
   
+  let activeTab = 'chat';
+  let targetRequirementId = req.params.requirementId || null;
+  
+  const currentPath = req.path;
+  let leftPanelUrl = `/${req.activeProject.id}/view/chat`;
+
+  if (currentPath.startsWith('/resource')) {
+    activeTab = 'resource';
+    leftPanelUrl = `/${req.activeProject.id}/view/resources`;
+  } else if (currentPath.startsWith('/requirements')) {
+    activeTab = 'requirements';
+    if (currentPath.endsWith('/edit')) {
+      if (targetRequirementId) {
+        leftPanelUrl = `/${req.activeProject.id}/view/requirements/${targetRequirementId}/edit`;
+      } else {
+        leftPanelUrl = `/${req.activeProject.id}/view/requirements/new-form`;
+      }
+    } else if (targetRequirementId) {
+      leftPanelUrl = `/${req.activeProject.id}/view/requirements/${targetRequirementId}`;
+    } else {
+      leftPanelUrl = `/${req.activeProject.id}/view/requirements`;
+    }
+  }
+
   if (req.activeProject && req.activeProject.id) {
     try {
       const simContext = await simulationService.getDashboard(req.activeProject, req.query.simulationId);
@@ -43,11 +67,13 @@ exports.getDashboard = async (req, res) => {
       selectedSimulation = simContext.selectedSimulation;
       requirements = await requirementService.fetchRequirements(req.activeProject.id);
     } catch (err) {
-      console.error('Failed to fetch simulations or requirements for dashboard', err);
+      console.error('Failed to fetch dashboard data', err);
     }
   }
 
   res.render('index', {
+    activeTab,
+    leftPanelUrl,
     simulations,
     selectedSimulation,
     requirements,
@@ -75,4 +101,23 @@ exports.deleteProject = async (req, res) => {
 exports.getTopNav = (req, res) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.render('partials/topnav');
+};
+
+exports.getSidebar = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  
+  let requirements = [];
+  try {
+    requirements = await requirementService.fetchRequirements(req.activeProject.id);
+  } catch (err) {
+    console.error('Failed to fetch requirements for sidebar', err);
+  }
+
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.render('partials/sidebar', {
+    activeProject: req.activeProject,
+    requirements,
+  });
 };

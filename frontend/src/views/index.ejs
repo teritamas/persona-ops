@@ -49,7 +49,7 @@
           ========================================== -->
             <aside id="left-panel-content"
               class="<%= isInitial ? 'w-full bg-white z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out' : 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0' %>"
-              hx-get="/<%= activeProject.id %>/view/chat" hx-trigger="load" hx-swap="innerHTML">
+              hx-get="<%= leftPanelUrl %>" hx-trigger="load" hx-swap="innerHTML">
               <!-- ロード中に表示されるプレースホルダー -->
               <div class="h-10 border-b border-slate-100 bg-white shrink-0"></div>
               <div class="flex-1 flex items-center justify-center bg-slate-50/50">

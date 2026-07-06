@@ -82,12 +82,6 @@ export class SimulationService {
       createdAt: now,
     };
 
-    await this.requirementRepository.save({
-      ...requirement,
-      status: 'approved',
-      approvedAt: now,
-      updatedAt: now,
-    });
     await this.simulationRepository.save(simulation);
 
     try {

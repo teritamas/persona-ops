@@ -112,6 +112,43 @@ class ChatService {
     });
   }
 
+  processSystemActions(text, activeProject) {
+    const actionRegistry = require('./chat/actionRegistry');
+    let cleanedText = text;
+    const systemMessages = [];
+
+    // 正規表現で [SYSTEM_ACTION: ...] タグを抽出
+    const tags = text.match(/\[SYSTEM_ACTION: [A-Z_]+\]/g) || [];
+    tags.forEach((tag, idx) => {
+      // 判定の成否に関わらず、見つかったタグはすべてテキストから除去する
+      cleanedText = cleanedText.replaceAll(tag, '');
+
+      const action = actionRegistry.findByTag(tag);
+      if (action) {
+        const messagePayload = action.execute(activeProject);
+
+        systemMessages.push({
+          id: 'msg_' + (Date.now() + 2 + idx),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          text: '',
+          ...messagePayload
+        });
+      }
+    });
+
+    // system 判定のメッセージが proposal より先になるようにソート
+    systemMessages.sort((a, b) => {
+      if (a.role === 'system' && b.role === 'proposal') return -1;
+      if (a.role === 'proposal' && b.role === 'system') return 1;
+      return 0;
+    });
+
+    return {
+      cleanedText: cleanedText.trim(),
+      systemMessages
+    };
+  }
+
   async createChat(projectId, request) {
     const response = await this.requestPrivateApi(
       projectPath(projectId, '/chats'),

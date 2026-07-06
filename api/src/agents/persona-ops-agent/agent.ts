@@ -15,7 +15,8 @@ import type { ProjectService } from '../../application/project-service.js';
 import type { RequirementService } from '../../application/requirement-service.js';
 import type { SimulationService } from '../../application/simulation-service.js';
 import { PERSONA_OPS_AGENT_INSTRUCTION } from './instructions.js';
-import { createApproveRequirementAndRequestSimulationTool } from './tools/approve-requirement-and-request-simulation-tool.js';
+import { createApproveRequirementTool } from './tools/approve-requirement-tool.js';
+import { createRequestSimulationTool } from './tools/request-simulation-tool.js';
 import { createFetchDocumentTool } from './tools/fetch-document-tool.js';
 import { createSavePersonasTool } from './tools/save-personas-tool.js';
 import { createSaveRequirementTool } from './tools/save-requirement-tool.js';
@@ -42,10 +43,8 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
       tools: [
         createSavePersonasTool(input.projectId, this.personaService),
         createSaveRequirementTool(input.projectId, this.requirementService),
-        createApproveRequirementAndRequestSimulationTool(
-          input.projectId,
-          this.simulationService,
-        ),
+        createApproveRequirementTool(input.projectId, this.requirementService),
+        createRequestSimulationTool(input.projectId, this.simulationService),
         createFetchDocumentTool(input.projectId, this.sourceDocumentService),
         createUpdateProjectNameTool(input.projectId, this.projectService),
       ],
@@ -89,7 +88,7 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
       }
       if (
         executedTools.has('save_requirement_tool') ||
-        executedTools.has('approve_requirement_and_request_simulation_tool')
+        executedTools.has('approve_requirement_tool')
       ) {
         tags.push(SYSTEM_ACTION_TAGS[SystemAction.RequirementSaved]);
       }

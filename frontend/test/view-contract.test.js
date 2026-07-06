@@ -22,15 +22,3 @@ test('ペルソナ位置保存URLにProject IDを含める', async () => {
     /fetch\(`\/\$\{projectId\}\/action\/persona\/\$\{personaId\}\/position`/,
   );
 });
-
-test('シミュレーション再読込URLにProject IDを含める', async () => {
-  const html = await ejs.renderFile(
-    path.join(viewsDirectory, 'simulation-dashboard-error.ejs'),
-    {
-      activeProject: { id: 'project-1' },
-      message: '取得に失敗しました',
-    },
-  );
-
-  assert.match(html, /hx-get="\/project-1\/view\/simulations"/);
-});

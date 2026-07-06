@@ -11,5 +11,21 @@ router.get(
 router.get('/view/requirements/:requirementId', requirementController.getRequirementsDashboard);
 router.post('/action/requirements/save', requirementController.saveRequirement);
 router.delete('/action/requirements/:requirementId', requirementController.deleteRequirement);
+router.patch(
+  '/action/requirements/:requirementId/approve',
+  requirementController.approveRequirement,
+);
+router.delete(
+  '/action/requirements/:requirementId',
+  requirementController.deleteRequirement,
+);
+router.post(
+  '/action/requirements/:requirementId/versions/:version/restore',
+  requirementController.restoreRequirementVersion,
+);
+router.post(
+  '/action/requirements/:requirementId/simulate',
+  requirementController.runRequirementSimulation,
+);
 
 module.exports = router;

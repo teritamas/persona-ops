@@ -15,11 +15,21 @@ const messageSchema = {
     id: { type: 'string', minLength: 1, maxLength: 128 },
     role: {
       type: 'string',
-      enum: ['user', 'agent', 'persona', 'system'],
+      enum: ['user', 'agent', 'persona', 'system', 'proposal'],
     },
     text: { type: 'string', maxLength: 100_000 },
     time: { type: 'string', maxLength: 32 },
     isSystem: { type: 'boolean' },
+    proposal: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['buttonText', 'inputText'],
+      properties: {
+        buttonText: { type: 'string', minLength: 1, maxLength: 200 },
+        inputText: { type: 'string', minLength: 1, maxLength: 1000 },
+        style: { type: 'string', maxLength: 32 },
+      },
+    },
   },
 } as const;
 

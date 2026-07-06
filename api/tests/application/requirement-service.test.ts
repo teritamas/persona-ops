@@ -9,9 +9,13 @@ import { MemorySourceDocumentRepository } from '../helpers/memory-source-documen
 
 class MemoryRequirementStore implements RequirementStorePort {
   readonly items = new Map<string, Requirement>();
+  readonly history = new Map<string, Requirement[]>();
 
   save(requirement: Requirement): Promise<void> {
     this.items.set(requirement.id, requirement);
+    const list = this.history.get(requirement.id) ?? [];
+    list.push({ ...requirement });
+    this.history.set(requirement.id, list);
     return Promise.resolve();
   }
 
@@ -31,7 +35,28 @@ class MemoryRequirementStore implements RequirementStorePort {
 
   delete(projectId: string, requirementId: string): Promise<void> {
     this.items.delete(requirementId);
+    this.history.delete(requirementId);
     return Promise.resolve();
+  }
+
+  findVersion(
+    projectId: string,
+    requirementId: string,
+    version: number,
+  ): Promise<Requirement | null> {
+    const list = this.history.get(requirementId) ?? [];
+    const item = list.find((r) => r.version === version);
+    return Promise.resolve(item?.projectId === projectId ? item : null);
+  }
+
+  findVersions(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement[]> {
+    const list = this.history.get(requirementId) ?? [];
+    return Promise.resolve(
+      list.filter((r) => r.projectId === projectId).reverse(),
+    );
   }
 }
 
@@ -224,5 +249,61 @@ describe('要件サービス', () => {
     });
 
     expect(saved.sourceDocumentIds).toEqual(['document-1']);
+  });
+
+  it('ドラフト要件を承認する', async () => {
+    const store = new MemoryRequirementStore();
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      new MemorySourceDocumentRepository(),
+    );
+    const created = await service.saveDraft('project-1', {
+      title: '音声入力',
+      description: '要約テスト',
+      acceptanceCriteria: [],
+    });
+
+    expect(created.status).toBe('draft');
+    expect(created.approvedAt).toBeUndefined();
+
+    const approved = await service.approveDraft('project-1', created.id);
+    expect(approved.status).toBe('approved');
+    expect(approved.approvedAt).toBeDefined();
+
+    // 既に承認済みの場合はそのまま返す
+    const reApproved = await service.approveDraft('project-1', created.id);
+    expect(reApproved.approvedAt).toEqual(approved.approvedAt);
+  });
+
+  it('要件のバージョン履歴を取得および復元する', async () => {
+    const store = new MemoryRequirementStore();
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      new MemorySourceDocumentRepository(),
+    );
+    const v1 = await service.saveDraft('project-1', {
+      title: '要件v1',
+      description: '初期説明',
+      acceptanceCriteria: [],
+    });
+    await service.saveDraft('project-1', {
+      id: v1.id,
+      title: '要件v2',
+      description: '更新された説明',
+      acceptanceCriteria: [],
+    });
+
+    const versions = await service.getVersions('project-1', v1.id);
+    expect(versions).toHaveLength(2);
+    expect(versions[0]?.version).toBe(2);
+    expect(versions[1]?.version).toBe(1);
+
+    const restored = await service.restoreVersion('project-1', v1.id, 1);
+    expect(restored.version).toBe(3);
+    expect(restored.title).toBe('要件v1');
+    expect(restored.description).toBe('初期説明');
+    expect(restored.status).toBe('draft');
   });
 });

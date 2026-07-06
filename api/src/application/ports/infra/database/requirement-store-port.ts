@@ -8,4 +8,13 @@ export interface RequirementStorePort {
   ): Promise<Requirement | null>;
   findByProjectId(projectId: string): Promise<Requirement[]>;
   delete(projectId: string, requirementId: string): Promise<void>;
+  findVersion(
+    projectId: string,
+    requirementId: string,
+    version: number,
+  ): Promise<Requirement | null>;
+  findVersions(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement[]>;
 }

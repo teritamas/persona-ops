@@ -1,4 +1,4 @@
-<%- include('sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation, requirements, simulations }) %>
+<%- include('sandbox-characters', { activeProject, selectedPersonaId, selectedSimulation, requirements, simulations, selectedRequirementId: typeof selectedRequirementId !== 'undefined' ? selectedRequirementId : null, selectedRequirementVersion: typeof selectedRequirementVersion !== 'undefined' ? selectedRequirementVersion : null }) %>
 <% if (selectedPersonaId) { %>
   <%
     const p = activeProject.personas.find(pers => pers.id === selectedPersonaId);
