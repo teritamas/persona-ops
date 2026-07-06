@@ -212,7 +212,8 @@ describe('要件ルーター', () => {
 
   it('要件を承認するPATCHエンドポイント', async () => {
     const app = createApp({
-      approveDraft: () => Promise.resolve({ ...requirement, status: 'approved' }),
+      approveDraft: () =>
+        Promise.resolve({ ...requirement, status: 'approved' }),
     });
 
     const response = await app.inject({
@@ -221,6 +222,9 @@ describe('要件ルーター', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toMatchObject({ id: 'requirement-1', status: 'approved' });
+    expect(response.json()).toMatchObject({
+      id: 'requirement-1',
+      status: 'approved',
+    });
   });
 });

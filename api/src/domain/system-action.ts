@@ -17,8 +17,11 @@ export const SYSTEM_ACTION_TAGS: Record<SystemActionType, string> = {
   [SystemAction.PersonasSaved]: '[SYSTEM_ACTION: PERSONAS_SAVED]',
   [SystemAction.RequirementSaved]: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
   [SystemAction.ProjectNameUpdated]: '[SYSTEM_ACTION: PROJECT_NAME_UPDATED]',
-  [SystemAction.ProposePersonaGeneration]: '[SYSTEM_ACTION: PROPOSE_PERSONA_GENERATION]',
-  [SystemAction.ProposeRequirementDefinition]: '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_DEFINITION]',
+  [SystemAction.ProposePersonaGeneration]:
+    '[SYSTEM_ACTION: PROPOSE_PERSONA_GENERATION]',
+  [SystemAction.ProposeRequirementDefinition]:
+    '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_DEFINITION]',
   [SystemAction.ProposeSimulation]: '[SYSTEM_ACTION: PROPOSE_SIMULATION]',
-  [SystemAction.ProposeRequirementApproval]: '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]',
+  [SystemAction.ProposeRequirementApproval]:
+    '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]',
 };
