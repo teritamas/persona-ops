@@ -67,6 +67,23 @@ class RequirementService {
       return false;
     }
   }
+
+  async approveRequirement(projectId, requirementId) {
+    try {
+      const response = await requestPrivateApi(
+        `/api/v1/projects/${encodeURIComponent(projectId)}/requirements/${encodeURIComponent(requirementId)}/approve`,
+        {
+          method: 'PATCH',
+        },
+      );
+      if (response.ok && response.data) {
+        return response.data;
+      }
+    } catch (err) {
+      console.error(`Failed to approve requirement ${requirementId} for project ${projectId}`, err);
+    }
+    return null;
+  }
 }
 
 module.exports = new RequirementService();

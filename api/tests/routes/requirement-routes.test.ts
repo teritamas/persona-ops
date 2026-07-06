@@ -209,4 +209,18 @@ describe('要件ルーター', () => {
     expect(firstSim?.reactions).toHaveLength(1);
     expect(firstSim?.reactions?.[0]?.sentiment).toBe('positive');
   });
+
+  it('要件を承認するPATCHエンドポイント', async () => {
+    const app = createApp({
+      approveDraft: () => Promise.resolve({ ...requirement, status: 'approved' }),
+    });
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/projects/project-1/requirements/requirement-1/approve',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({ id: 'requirement-1', status: 'approved' });
+  });
 });

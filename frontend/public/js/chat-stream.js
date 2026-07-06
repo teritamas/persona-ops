@@ -50,6 +50,9 @@ function parseAndCleanSystemActions(text) {
     }
   });
 
+  // Clean up any PROPOSE actions so they don't show up in raw text during streaming
+  cleaned = cleaned.replace(/\[SYSTEM_ACTION:\s*PROPOSE_[A-Z_]+\]/g, '');
+
   return {
     cleanedText: cleaned.trim(),
     actions: detectedActions

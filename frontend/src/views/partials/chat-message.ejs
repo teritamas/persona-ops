@@ -30,6 +30,19 @@
     <%= msg.text %>
   </div>
 </div>
+<% } else if (msg.role === 'proposal') { %>
+<div class="flex w-full justify-center mb-3 animate-fade-in">
+  <form hx-post="/action/chat/stream" hx-target="#chat-messages-container" hx-swap="beforeend" class="w-full max-w-[80%] flex justify-center">
+    <input type="hidden" name="inputText" value="<%= msg.proposal.inputText %>" />
+    <button type="submit" class="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 hover:border-orange-200 active:scale-98 transition-all shadow-sm flex items-center justify-center gap-2 group">
+      <span class="w-2 h-2 rounded-full bg-orange-400 shrink-0"></span>
+      <span class="text-slate-600 group-hover:text-orange-600"><%= msg.proposal.buttonText %></span>
+      <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+      </svg>
+    </button>
+  </form>
+</div>
 <% } else { %>
 <div class="flex w-full <%= isUser ? 'justify-end' : 'justify-start' %> mb-3">
   <div class="flex max-w-[85%] <%= isUser ? 'flex-row-reverse' : 'flex-row' %> items-end gap-2.5">

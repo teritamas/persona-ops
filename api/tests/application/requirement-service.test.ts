@@ -225,4 +225,29 @@ describe('要件サービス', () => {
 
     expect(saved.sourceDocumentIds).toEqual(['document-1']);
   });
+
+  it('ドラフト要件を承認する', async () => {
+    const store = new MemoryRequirementStore();
+    const service = new RequirementService(
+      store,
+      simulationStore,
+      new MemorySourceDocumentRepository(),
+    );
+    const created = await service.saveDraft('project-1', {
+      title: '音声入力',
+      description: '要約テスト',
+      acceptanceCriteria: [],
+    });
+
+    expect(created.status).toBe('draft');
+    expect(created.approvedAt).toBeUndefined();
+
+    const approved = await service.approveDraft('project-1', created.id);
+    expect(approved.status).toBe('approved');
+    expect(approved.approvedAt).toBeDefined();
+
+    // 既に承認済みの場合はそのまま返す
+    const reApproved = await service.approveDraft('project-1', created.id);
+    expect(reApproved.approvedAt).toEqual(approved.approvedAt);
+  });
 });

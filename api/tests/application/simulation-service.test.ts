@@ -168,9 +168,7 @@ describe('シミュレーションサービス', () => {
     expect(simulation.status).toBe('queued');
     expect(simulation.requirementSnapshot.title).toBe('音声入力');
     expect(simulation.personaSnapshots).toHaveLength(2);
-    expect(requirementStore.save).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 'approved' }),
-    );
+    expect(requirementStore.save).not.toHaveBeenCalled();
     expect(queue.enqueue).toHaveBeenCalledWith({
       projectId: 'project-1',
       simulationId: simulation.id,

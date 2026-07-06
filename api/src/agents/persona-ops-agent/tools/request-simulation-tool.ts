@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import type { SimulationService } from '../../../application/simulation-service.js';
 
-export function createApproveRequirementAndRequestSimulationTool(
+export function createRequestSimulationTool(
   projectId: string,
   simulationService: SimulationService,
 ) {
@@ -12,9 +12,9 @@ export function createApproveRequirementAndRequestSimulationTool(
   });
 
   return new FunctionTool({
-    name: 'approve_requirement_and_request_simulation_tool',
+    name: 'request_simulation_tool',
     description:
-      'ユーザーが明示承認したdraft要件を承認し、ペルソナシミュレーションを開始します。承認前には絶対に使用しません。',
+      '新機能要件（draft状態）のペルソナシミュレーションを開始します。要件の承認（approvedへの変更）は行いません。',
     parameters,
     execute: async ({ requirementId }) => {
       const simulation = await simulationService.request(

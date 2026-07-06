@@ -172,3 +172,29 @@ exports.deleteRequirement = async (req, res) => {
     selectedRequirement: requirements[0] || null,
   });
 };
+
+exports.approveRequirement = async (req, res) => {
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  const { requirementId } = req.params;
+  const approved = await requirementService.approveRequirement(
+    req.activeProject.id,
+    requirementId,
+  );
+  if (!approved) {
+    return res.status(500).send('Failed to approve requirement');
+  }
+
+  const requirements = await requirementService.fetchRequirements(
+    req.activeProject.id,
+  );
+  if (req.headers['hx-request']) {
+    res.setHeader('HX-Trigger', 'refreshSandbox');
+  }
+  res.render('partials/requirement-dashboard', {
+    activeProject: req.activeProject,
+    requirements,
+    selectedRequirement: approved,
+  });
+};

@@ -184,4 +184,20 @@ export async function requirementRoutes(
       return reply.status(204).send();
     },
   );
+
+  app.patch(
+    '/api/v1/projects/:projectId/requirements/:requirementId/approve',
+    { schema: { params: requirementParamsSchema } },
+    async (request, reply) => {
+      const { projectId, requirementId } = request.params as {
+        projectId: string;
+        requirementId: string;
+      };
+      const requirement = await options.requirementService.approveDraft(
+        projectId,
+        requirementId,
+      );
+      return reply.send(toRequirementResponse(requirement));
+    },
+  );
 }

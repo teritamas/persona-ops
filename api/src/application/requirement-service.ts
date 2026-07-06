@@ -86,6 +86,25 @@ export class RequirementService {
     return requirement;
   }
 
+  async approveDraft(
+    projectId: string,
+    requirementId: string,
+  ): Promise<Requirement> {
+    const requirement = await this.getById(projectId, requirementId);
+    if (requirement.status === 'approved') {
+      return requirement;
+    }
+    const now = new Date();
+    const updated: Requirement = {
+      ...requirement,
+      status: 'approved',
+      approvedAt: now,
+      updatedAt: now,
+    };
+    await this.requirementRepository.save(updated);
+    return updated;
+  }
+
   private async validateReferences(
     projectId: string,
     sourceDocumentIds: string[],

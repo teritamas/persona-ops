@@ -30,8 +30,30 @@
                 <span class="rounded-full border px-2 py-0.5 text-xs font-bold bg-orange-50 text-orange-700 border-orange-200">
                   要件定義
                 </span>
+                <% if (selectedRequirement.status === 'approved') { %>
+                  <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-green-600" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+                    </svg>
+                    承認済み
+                  </span>
+                <% } else { %>
+                  <span class="rounded-full border px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+                    ドラフト
+                  </span>
+                <% } %>
               </div>
               <div class="flex items-center gap-2">
+                <% if (selectedRequirement.status === 'draft') { %>
+                  <button hx-patch="/<%= activeProject.id %>/action/requirements/<%= selectedRequirement.id %>/approve"
+                    hx-target="#requirement-dashboard" hx-swap="outerHTML"
+                    class="bg-green-600 hover:bg-green-750 border border-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
+                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"></path>
+                    </svg>
+                    <span>承認する</span>
+                  </button>
+                <% } %>
                 <button hx-get="/<%= activeProject.id %>/view/requirements/<%= selectedRequirement.id %>/edit"
                   hx-target="#requirement-detail-container" hx-swap="innerHTML"
                   class="bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">

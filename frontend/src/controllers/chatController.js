@@ -8,42 +8,7 @@ marked.use({
     }
   }
 });
-const SystemActionRegistry = [
-  {
-    tag: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
-    systemMessageText: '要件定義を作成しました'
-  },
-  {
-    tag: '[SYSTEM_ACTION: PERSONAS_SAVED]',
-    systemMessageText: 'ペルソナを作成しました'
-  },
-  {
-    tag: '[SYSTEM_ACTION: PROJECT_NAME_UPDATED]',
-    systemMessageText: 'プロジェクト名を更新しました'
-  }
-];
 
-function extractSystemActions(text) {
-  let cleanedText = text;
-  const systemMessages = [];
-
-  SystemActionRegistry.forEach((action, idx) => {
-    if (cleanedText.includes(action.tag)) {
-      cleanedText = cleanedText.replaceAll(action.tag, '');
-      systemMessages.push({
-        id: 'msg_' + (Date.now() + 2 + idx),
-        role: 'system',
-        text: action.systemMessageText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      });
-    }
-  });
-
-  return {
-    cleanedText: cleanedText.trim(),
-    systemMessages
-  };
-}
 exports.getChatMenu = (req, res) => {
   const { activeChat } = chatService.getActiveChatContext(req.activeProject);
 
@@ -165,7 +130,7 @@ exports.streamChat = async (req, res) => {
       res.write(value);
     }
 
-    const { cleanedText, systemMessages } = extractSystemActions(fullText);
+    const { cleanedText, systemMessages } = chatService.processSystemActions(fullText, req.activeProject);
 
     const agentMsg = {
       id: 'msg_' + (Date.now() + 1),

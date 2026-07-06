@@ -11,5 +11,9 @@ router.get(
 router.get('/view/requirements/:requirementId', requirementController.getRequirementsDashboard);
 router.post('/action/requirements/save', requirementController.saveRequirement);
 router.delete('/action/requirements/:requirementId', requirementController.deleteRequirement);
+router.patch(
+  '/action/requirements/:requirementId/approve',
+  requirementController.approveRequirement,
+);
 
 module.exports = router;

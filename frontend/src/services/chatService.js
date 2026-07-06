@@ -112,6 +112,30 @@ class ChatService {
     });
   }
 
+  processSystemActions(text, activeProject) {
+    const actionRegistry = require('./chat/actionRegistry');
+    let cleanedText = text;
+    const systemMessages = [];
+
+    actionRegistry.actions.forEach((action, idx) => {
+      if (cleanedText.includes(action.tag)) {
+        cleanedText = cleanedText.replaceAll(action.tag, '');
+        const messagePayload = action.execute(activeProject);
+
+        systemMessages.push({
+          id: 'msg_' + (Date.now() + 2 + idx),
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          ...messagePayload
+        });
+      }
+    });
+
+    return {
+      cleanedText: cleanedText.trim(),
+      systemMessages
+    };
+  }
+
   async createChat(projectId, request) {
     const response = await this.requestPrivateApi(
       projectPath(projectId, '/chats'),

@@ -1,9 +1,16 @@
+export interface ProposalData {
+  buttonText: string;
+  inputText: string;
+  style?: string;
+}
+
 export interface Message {
   id: string;
-  role: 'user' | 'agent' | 'persona' | 'system';
+  role: 'user' | 'agent' | 'persona' | 'system' | 'proposal';
   text: string;
   time: string;
   isSystem?: boolean;
+  proposal?: ProposalData;
 }
 
 export interface Chat {
