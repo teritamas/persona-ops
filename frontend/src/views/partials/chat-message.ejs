@@ -11,7 +11,8 @@
     if (typeof activeProject !== 'undefined' && activeProject && activeProject.activeChat && activeProject.activeChat.type === 'persona') {
       const p = activeProject.personas.find(p => p.id === activeProject.activeChat.personaId);
       if (p) {
-        avatarHtml = `<img src="https://api.dicebear.com/7.x/notionists/svg?seed=${p.avatarSeed}&backgroundColor=f8fafc" class="w-full h-full object-cover scale-110" />`;
+        const style = (p.avatarSeed && p.avatarSeed.toLowerCase().includes('female')) ? 'lorelei' : 'notionists';
+        avatarHtml = `<img src="https://api.dicebear.com/7.x/${style}/svg?seed=${p.avatarSeed}&backgroundColor=f8fafc" class="w-full h-full object-cover scale-110" />`;
         avatarContainerClass = 'bg-slate-100 border-2 border-orange-200 overflow-hidden';
       }
     }
@@ -45,7 +46,7 @@
   </div>
 </div>
 <% } else if (msg.role === 'proposal') { %>
-<div class="flex w-full justify-center mb-3 animate-fade-in proposal-btn-container">
+<div class="flex w-full justify-start mb-3 animate-fade-in proposal-btn-container">
   <% if (typeof isResolved !== 'undefined' && isResolved) { %>
     <% if (isNo) { %>
       <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
@@ -81,8 +82,7 @@
         <button type="button" 
           onclick="submitProposal(this)" 
           data-input-text="<%= msg.proposal.inputText %>" 
-          style="display: flex; justify-content: space-between; align-items: center;"
-          class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-orange-50/50 hover:bg-orange-50 text-orange-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-between group">
+          class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-orange-50/50 hover:bg-orange-50 text-orange-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-start text-left gap-2 group">
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
             <span><%= msg.proposal.buttonText %></span>
@@ -97,8 +97,7 @@
           <button type="button" 
             onclick="submitProposal2(this)" 
             data-input-text="<%= msg.proposal.inputText2 %>" 
-            style="display: flex; justify-content: space-between; align-items: center;"
-            class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-blue-50/50 hover:bg-blue-50 text-blue-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-between group">
+            class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-blue-50/50 hover:bg-blue-50 text-blue-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-start text-left gap-2 group">
             <div class="flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
               <span><%= msg.proposal.buttonText2 %></span>

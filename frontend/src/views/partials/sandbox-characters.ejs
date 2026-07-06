@@ -100,7 +100,7 @@
                       <div
                         class="w-16 h-16 bg-slate-50 rounded-full border-[4px] shadow-lg overflow-hidden relative z-10 flex items-center justify-center transition-all duration-300 <%= isSelected ? 'border-orange-400 shadow-orange-500/50 shadow-xl' : 'border-white group-hover:border-orange-200 group-hover:shadow-orange-500/30' %>">
                         <img
-                          src="https://api.dicebear.com/7.x/notionists/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc"
+                          src="https://api.dicebear.com/7.x/<%= (p.avatarSeed && p.avatarSeed.toLowerCase().includes('female')) ? 'lorelei' : 'notionists' %>/svg?seed=<%= p.avatarSeed %>&backgroundColor=f8fafc"
                           alt="avatar" class="w-full h-full object-cover scale-110" />
                       </div>
                 </div>
@@ -186,7 +186,7 @@
                               </svg>
                             </span>
                             <span class="absolute top-full left-1/2 -translate-x-1/2 mt-1.5 opacity-0 invisible group-hover/reqstatus:opacity-100 group-hover/reqstatus:visible bg-slate-800 text-white text-[9px] px-2 py-0.5 rounded-md whitespace-nowrap z-30 shadow-md transition-all duration-200 pointer-events-none">
-                              承認することで開発者がMCPから参照できる様になります
+                              承認することで開発者がMCPから参照できるようになります
                             </span>
                           </div>
                         <% } %>
