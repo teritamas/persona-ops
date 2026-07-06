@@ -125,6 +125,7 @@ class ChatService {
         systemMessages.push({
           id: 'msg_' + (Date.now() + 2 + idx),
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          text: '',
           ...messagePayload
         });
       }

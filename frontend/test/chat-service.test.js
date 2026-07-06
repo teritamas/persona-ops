@@ -48,3 +48,18 @@ test('既存のActive Chatがある場合はAPI更新せず再利用する', asy
   assert.equal(context.activeChat.id, 'chat-1');
   assert.equal(requestCount, 0);
 });
+
+test('processSystemActionsは提案アクションメッセージにデフォルトで空文字のtextを設定する', () => {
+  const service = new ChatService();
+  const activeProject = { id: 'project-1', requirements: [] };
+  const text = '[SYSTEM_ACTION: PROPOSE_SIMULATION]';
+
+  const { cleanedText, systemMessages } = service.processSystemActions(text, activeProject);
+
+  assert.equal(cleanedText, '');
+  assert.equal(systemMessages.length, 1);
+  assert.equal(systemMessages[0].role, 'proposal');
+  assert.equal(systemMessages[0].text, ''); // Verify it defaults to empty string
+  assert.equal(typeof systemMessages[0].proposal, 'object');
+});
+
