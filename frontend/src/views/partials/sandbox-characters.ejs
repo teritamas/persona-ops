@@ -1,6 +1,7 @@
 <% 
   const selectedId = selectedSimulation?.id; 
-  const isPolling = selectedSimulation && (selectedSimulation.status === 'running' || selectedSimulation.status === 'queued'); 
+  const isDummy = selectedSimulation && selectedSimulation.id === 'dummy';
+  const isPolling = selectedSimulation && !isDummy && (selectedSimulation.status === 'running' || selectedSimulation.status === 'queued'); 
   const triggerList = ['refreshSandbox from:body'];
   if (isPolling) {
     // 3秒ごとの定期実行を廃止し、自律的な連続リクエスト（ロングポーリング）を設定
@@ -145,7 +146,7 @@
                     matchingSim = reqSimulations[0] || null;
                   }
 
-                  const isThisRunning = isPolling && isThisVersionSelected && selectedSimulation && ['running', 'queued'].includes(selectedSimulation.status);
+                  const isThisRunning = (isPolling || isDummy) && isThisVersionSelected && selectedSimulation && ['running', 'queued'].includes(selectedSimulation.status);
 
                   let cardBorderClass = 'border-white hover:shadow-[0_15px_40px_rgba(0,0,0,0.08)] bg-white/95';
                   if (isThisRunning) {

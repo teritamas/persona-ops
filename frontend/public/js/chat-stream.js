@@ -19,7 +19,7 @@ const SystemActionRegistry = [
       if (reqBadge) reqBadge.classList.remove('hidden');
       if (typeof htmx !== 'undefined') {
         htmx.trigger(document.body, 'refreshSidebar');
-        htmx.trigger(document.body, 'refreshSandbox');
+        // refreshSandbox is handled by the timeout at the end of the stream
       }
     }
   },
@@ -29,9 +29,7 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      if (typeof htmx !== 'undefined') {
-        htmx.trigger(document.body, 'refreshSandbox');
-      }
+      // refreshSandbox is handled by the timeout at the end of the stream
     }
   },
   {
@@ -403,6 +401,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             htmx.ajax('GET', `/${projectId}/view/chat?t=${t}`, { target: '#left-panel-content', swap: 'innerHTML' });
             htmx.ajax('GET', `/${projectId}/view/simulation-square?t=${t}`, { target: '#sandbox-characters', swap: 'outerHTML' });
             htmx.ajax('GET', `/${projectId}/view/topnav?t=${t}`, { target: '#topnav-header', swap: 'outerHTML' });
+            htmx.trigger(document.body, 'refreshRequirementDashboard');
           }
         }, 1000);
       }
