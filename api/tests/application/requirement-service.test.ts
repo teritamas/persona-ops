@@ -288,7 +288,7 @@ describe('要件サービス', () => {
       description: '初期説明',
       acceptanceCriteria: [],
     });
-    const v2 = await service.saveDraft('project-1', {
+    await service.saveDraft('project-1', {
       id: v1.id,
       title: '要件v2',
       description: '更新された説明',
