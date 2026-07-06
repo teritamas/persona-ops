@@ -83,6 +83,50 @@ globalThis.submitSuggestion = function submitSuggestion(element) {
   }
 };
 
+globalThis.submitProposal = function submitProposal(button) {
+  if (button.disabled) return;
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  const text = button.getAttribute('data-input-text');
+  const input = document.getElementById('inputText');
+  if (input && text) {
+    input.value = text;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = button.closest('.proposal-btn-container');
+      if (container) {
+        container.remove();
+      }
+    }
+  }
+};
+
+globalThis.submitProposalNo = function submitProposalNo(textarea) {
+  const text = textarea.value.trim();
+  if (!text) return;
+
+  textarea.disabled = true;
+  const button = textarea.nextElementSibling;
+  if (button) button.disabled = true;
+
+  const input = document.getElementById('inputText');
+  if (input) {
+    input.value = `いいえ。${text}`;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = textarea.closest('.proposal-btn-container');
+      if (container) {
+        container.remove();
+      }
+    }
+  }
+};
+
 // チャットウィンドウを最下部までスクロールする
 function scrollToBottom() {
   const scrollContainer = document.getElementById('chat-messages-scroll');
