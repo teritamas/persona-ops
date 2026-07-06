@@ -134,6 +134,13 @@ class ChatService {
       }
     });
 
+    // system 判定のメッセージが proposal より先になるようにソート
+    systemMessages.sort((a, b) => {
+      if (a.role === 'system' && b.role === 'proposal') return -1;
+      if (a.role === 'proposal' && b.role === 'system') return 1;
+      return 0;
+    });
+
     return {
       cleanedText: cleanedText.trim(),
       systemMessages

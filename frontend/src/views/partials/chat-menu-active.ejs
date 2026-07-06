@@ -32,8 +32,20 @@
         </div>
       <% } else { %>
         <div class="text-center text-xs text-slate-400 font-medium my-4 shrink-0">Today</div>
-        <% (activeChat.messages || []).forEach(msg => { %>
-          <%- include('chat-message', { msg, activeProject }) %>
+        <% (activeChat.messages || []).forEach((msg, index) => { 
+             const isLast = index === activeChat.messages.length - 1;
+             const isResolved = msg.role === 'proposal' && !isLast;
+             let isNo = false;
+             let feedbackText = '';
+             if (isResolved) {
+               const nextMsg = activeChat.messages[index + 1];
+               if (nextMsg && nextMsg.role === 'user' && nextMsg.text && nextMsg.text.startsWith('いいえ。')) {
+                 isNo = true;
+                 feedbackText = nextMsg.text.substring(4);
+               }
+             }
+        %>
+          <%- include('chat-message', { msg, activeProject, isResolved, isNo, feedbackText }) %>
         <% }) %>
       <% } %>
     </div>

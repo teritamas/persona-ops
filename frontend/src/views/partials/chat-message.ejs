@@ -32,51 +32,78 @@
 </div>
 <% } else if (msg.role === 'proposal') { %>
 <div class="flex w-full justify-center mb-3 animate-fade-in proposal-btn-container">
-  <div class="w-full max-w-[85%] bg-white rounded-3xl border-2 border-slate-100 p-4 shadow-[0_10px_35px_rgba(0,0,0,0.05)] hover:border-orange-200 transition-all duration-300">
-    <div class="flex items-center gap-2 mb-3 pb-2.5 border-b border-slate-50">
-      <div class="w-7 h-7 rounded-xl bg-orange-100 flex items-center justify-center">
-        <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"></path>
-        </svg>
-      </div>
-      <span class="text-xs font-black text-slate-700">AIからの提案アクション</span>
-    </div>
-    
-    <div class="flex flex-col gap-2">
-      <!-- はいボタン -->
-      <button type="button" 
-        onclick="submitProposal(this)" 
-        data-input-text="<%= msg.proposal.inputText %>" 
-        class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-orange-50/50 hover:bg-orange-50 text-orange-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-between group">
-        <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
-          <span>はい （<%= msg.proposal.buttonText %>）</span>
+  <% if (typeof isResolved !== 'undefined' && isResolved) { %>
+    <% if (isNo) { %>
+      <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+        <div class="flex items-center justify-between">
+          <span class="flex items-center gap-1.5 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            AIからの提案アクション：選択結果「いいえ」
+          </span>
+          <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">完了</span>
         </div>
-        <svg class="w-3.5 h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
-        </svg>
-      </button>
-
-      <!-- いいえフォーム -->
-      <div class="relative w-full">
-        <textarea 
-          placeholder="いいえ（修正指示などを入力して送信...）"
-          rows="1"
-          class="w-full bg-slate-50 text-slate-700 text-xs py-2.5 pl-3 pr-10 rounded-xl border border-slate-100 focus:outline-none focus:border-orange-300 focus:bg-white resize-none overflow-hidden min-h-[38px] max-h-[100px]"
-          oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';"
-          onkeydown="if(event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); submitProposalNo(this); }"
-        ></textarea>
+        <% if (feedbackText) { %>
+          <div class="text-[11px] bg-white border border-slate-100 p-2 rounded-lg text-slate-600 mt-1 italic">
+            フィードバック: "<%= feedbackText %>"
+          </div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex items-center justify-between shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+        <span class="flex items-center gap-1.5 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+          AIからの提案アクション：選択結果「はい （<%= msg.proposal.buttonText %>）」
+        </span>
+        <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">完了</span>
+      </div>
+    <% } %>
+  <% } else { %>
+    <div class="w-full max-w-[85%] bg-white rounded-3xl border-2 border-slate-100 p-4 shadow-[0_10px_35px_rgba(0,0,0,0.05)] hover:border-orange-200 transition-all duration-300">
+      <div class="flex items-center gap-2 mb-3 pb-2.5 border-b border-slate-50">
+        <div class="w-7 h-7 rounded-xl bg-orange-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z"></path>
+          </svg>
+        </div>
+        <span class="text-xs font-black text-slate-700">AIからの提案アクション</span>
+      </div>
+      
+      <div class="flex flex-col gap-2">
+        <!-- はいボタン -->
         <button type="button" 
-          onclick="submitProposalNo(this.previousElementSibling)"
-          class="absolute right-2 top-1.5 p-1.5 rounded-lg bg-slate-200 text-slate-500 hover:bg-orange-500 hover:text-white transition-colors"
-          title="送信する">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path>
+          onclick="submitProposal(this)" 
+          data-input-text="<%= msg.proposal.inputText %>" 
+          class="w-full py-2.5 px-4 rounded-xl border border-slate-100 bg-orange-50/50 hover:bg-orange-50 text-orange-700 font-bold text-xs transition-all active:scale-98 flex items-center justify-between group">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-orange-500 shrink-0"></span>
+            <span>はい （<%= msg.proposal.buttonText %>）</span>
+          </div>
+          <svg class="w-3.5 h-3.5 text-orange-400 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
           </svg>
         </button>
+
+        <!-- いいえフォーム -->
+        <div class="relative w-full">
+          <textarea 
+            placeholder="いいえ（修正指示などを入力して送信...）"
+            rows="1"
+            class="w-full bg-slate-50 text-slate-700 text-xs py-2.5 pl-3 pr-10 rounded-xl border border-slate-100 focus:outline-none focus:border-orange-300 focus:bg-white resize-none overflow-hidden min-h-[38px] max-h-[100px]"
+            oninput="this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px';"
+            onkeydown="if(event.key === 'Enter' && !event.shiftKey && !event.isComposing) { event.preventDefault(); submitProposalNo(this); }"
+          ></textarea>
+          <button type="button" 
+            onclick="submitProposalNo(this.previousElementSibling)"
+            class="absolute right-2 top-1.5 p-1.5 rounded-lg bg-slate-200 text-slate-500 hover:bg-orange-500 hover:text-white transition-colors"
+            title="送信する">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"></path>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
+  <% } %>
 </div>
 <% } else { %>
 <div class="flex w-full <%= isUser ? 'justify-end' : 'justify-start' %> mb-3">

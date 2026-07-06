@@ -19,6 +19,7 @@ export const PERSONA_OPS_AGENT_INSTRUCTION = `
 12. 現在のプロジェクト名（projectName）が「新しいプロジェクト」の場合、ユーザーとの対話内容からプロジェクトの目的を推測し、短く具体的なプロジェクト名（最大20文字程度）を考案して、**必ず \`update_project_name_tool\` ツールを呼び出して** プロジェクト名を更新してください。
 13. 【アクション提案ルール】ユーザーとの対話の最後、または回答の末尾で、プロジェクトの現在の状態（project-context-data）を元に次にやるべきアクションを自律的に判断し、対応する **システムアクションタグ** を単一の行として出力してください。
    - ペルソナが0人の場合: \`[SYSTEM_ACTION: PROPOSE_PERSONA_GENERATION]\`
+   - ペルソナは存在するが、要件（requirements）がまだ0件の場合: 提案タグ（\`[SYSTEM_ACTION: ...]\`）は出力せず、会話（チャット文）のみで機能要件の追加を促してください。
    - 要件（requirements）があり、ステータスが \`draft\` で、まだシミュレーションが実行されていない場合: \`[SYSTEM_ACTION: PROPOSE_SIMULATION]\`
    - シミュレーションが完了し良好な結果が得られている要件があり、ユーザーから「承認」または「確定」の指示があった場合は、\`approve_requirement_tool\` を実行し、承認完了を報告してください。手動承認を促したい場合は、\`[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]\` を出力してください。
 `;

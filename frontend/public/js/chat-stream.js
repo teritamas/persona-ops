@@ -89,6 +89,7 @@ globalThis.submitProposal = function submitProposal(button) {
   button.classList.add('opacity-50', 'cursor-not-allowed');
 
   const text = button.getAttribute('data-input-text');
+  const btnText = button.querySelector('span:not(.bg-orange-500)')?.innerText || button.innerText;
   const input = document.getElementById('inputText');
   if (input && text) {
     input.value = text;
@@ -98,7 +99,15 @@ globalThis.submitProposal = function submitProposal(button) {
       
       const container = button.closest('.proposal-btn-container');
       if (container) {
-        container.remove();
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex items-center justify-between shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="flex items-center gap-1.5 font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+              AIからの提案アクション：選択結果「はい （${btnText}）」
+            </span>
+            <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">送信済</span>
+          </div>
+        `;
       }
     }
   }
@@ -121,7 +130,20 @@ globalThis.submitProposalNo = function submitProposalNo(textarea) {
       
       const container = textarea.closest('.proposal-btn-container');
       if (container) {
-        container.remove();
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-1.5 font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                AIからの提案アクション：選択結果「いいえ」
+              </span>
+              <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">送信済</span>
+            </div>
+            <div class="text-[11px] bg-white border border-slate-100 p-2 rounded-lg text-slate-600 mt-1 italic">
+              フィードバック: "${text}"
+            </div>
+          </div>
+        `;
       }
     }
   }
