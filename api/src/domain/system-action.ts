@@ -9,6 +9,8 @@ export const SystemAction = {
   ProposeRequirementDefinition: 'PROPOSE_REQUIREMENT_DEFINITION',
   ProposeSimulation: 'PROPOSE_SIMULATION',
   ProposeRequirementApproval: 'PROPOSE_REQUIREMENT_APPROVAL',
+  ProposePersonaApproval: 'PROPOSE_PERSONA_APPROVAL',
+  ProposeRequirementSave: 'PROPOSE_REQUIREMENT_SAVE',
 } as const;
 
 export type SystemActionType = (typeof SystemAction)[keyof typeof SystemAction];
@@ -24,4 +26,8 @@ export const SYSTEM_ACTION_TAGS: Record<SystemActionType, string> = {
   [SystemAction.ProposeSimulation]: '[SYSTEM_ACTION: PROPOSE_SIMULATION]',
   [SystemAction.ProposeRequirementApproval]:
     '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]',
+  [SystemAction.ProposePersonaApproval]:
+    '[SYSTEM_ACTION: PROPOSE_PERSONA_APPROVAL]',
+  [SystemAction.ProposeRequirementSave]:
+    '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_SAVE]',
 };

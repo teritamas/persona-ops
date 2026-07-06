@@ -2,12 +2,14 @@ module.exports = {
   tag: '[SYSTEM_ACTION: PROPOSE_REQUIREMENT_APPROVAL]',
   execute: (activeProject) => {
     const draft = activeProject?.requirements?.find(r => r.status === 'draft');
-    const requirementTitle = draft ? `「${draft.title}」を` : '要件を';
+    const requirementTitle = draft ? `「${draft.title}」の` : '';
     return {
       role: 'proposal',
       proposal: {
-        buttonText: `${requirementTitle}承認（確定）する`,
-        inputText: `${requirementTitle}要件定義を承認状態に確定してください。`,
+        buttonText: `この内容で要件を承認する`,
+        inputText: `「${draft?.title || ''}」の要件を承認する`,
+        buttonText2: 'ドラフトを修正する',
+        inputText2: 'ドラフトを修正します。',
         style: 'blue'
       }
     };

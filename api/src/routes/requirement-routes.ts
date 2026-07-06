@@ -200,4 +200,51 @@ export async function requirementRoutes(
       return reply.send(toRequirementResponse(requirement));
     },
   );
+
+  app.get(
+    '/api/v1/projects/:projectId/requirements/:requirementId/versions',
+    { schema: { params: requirementParamsSchema } },
+    async (request, reply) => {
+      const { projectId, requirementId } = request.params as {
+        projectId: string;
+        requirementId: string;
+      };
+      const versions = await options.requirementService.getVersions(
+        projectId,
+        requirementId,
+      );
+      return reply.send(versions.map(toRequirementResponse));
+    },
+  );
+
+  app.post(
+    '/api/v1/projects/:projectId/requirements/:requirementId/versions/:version/restore',
+    {
+      schema: {
+        params: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['projectId', 'requirementId', 'version'],
+          properties: {
+            projectId: { type: 'string', minLength: 1, maxLength: 128 },
+            requirementId: { type: 'string', minLength: 1, maxLength: 128 },
+            version: { type: 'string', pattern: '^[0-9]+$' },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { projectId, requirementId, version } = request.params as {
+        projectId: string;
+        requirementId: string;
+        version: string;
+      };
+      const requirement = await options.requirementService.restoreVersion(
+        projectId,
+        requirementId,
+        Number(version),
+      );
+      return reply.send(toRequirementResponse(requirement));
+    },
+  );
 }

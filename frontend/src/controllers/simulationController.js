@@ -25,44 +25,43 @@ function getHiddenSandboxRequirements(req) {
   return [];
 }
 
-exports.getSimulationDashboard = async (req, res) => {
-  const selectedSimulationId = req.params.simulationId;
-  if (
-    selectedSimulationId &&
-    !SIMULATION_ID_PATTERN.test(selectedSimulationId)
-  ) {
-    return res.status(400).render('partials/simulation-dashboard-error', {
-      message: 'シミュレーションIDが不正です。',
-    });
-  }
 
-  try {
-    const hiddenSimulations = getHiddenSimulations(req);
-    const context =
-      await simulationService.getDashboard(req.activeProject, selectedSimulationId, hiddenSimulations);
-    return res.render('partials/simulation-dashboard', context);
-  } catch (error) {
-    console.error('Failed to render simulation dashboard', error);
-    const statusCode = error.code === 'NOT_FOUND' ? 404 : 502;
-    return res.status(statusCode).render('partials/simulation-dashboard-error', {
-      message: error.message,
-    });
-  }
-};
 
 exports.getSimulationSquare = async (req, res) => {
   const selectedSimulationId = req.query.simulationId;
+  const targetRequirementId = req.query.requirementId;
+  const targetVersion = req.query.version ? Number(req.query.version) : null;
+
   if (
     selectedSimulationId &&
     !SIMULATION_ID_PATTERN.test(selectedSimulationId)
   ) {
     return res.status(400).send('Invalid simulation ID');
   }
+  if (
+    targetRequirementId &&
+    !SIMULATION_ID_PATTERN.test(targetRequirementId)
+  ) {
+    return res.status(400).send('Invalid requirement ID');
+  }
 
   try {
     const hiddenSimulations = getHiddenSimulations(req);
     const hiddenRequirements = getHiddenSandboxRequirements(req);
-    const { selectedSimulation, simulations, requirements } = await simulationService.getSandboxContext(req.activeProject, selectedSimulationId, hiddenSimulations, hiddenRequirements);
+    const {
+      selectedSimulation,
+      simulations,
+      requirements,
+      selectedRequirementId,
+      selectedRequirementVersion,
+    } = await simulationService.getSandboxContext(
+      req.activeProject,
+      selectedSimulationId,
+      hiddenSimulations,
+      hiddenRequirements,
+      targetRequirementId,
+      targetVersion
+    );
     const selectedPersonaId = req.cookies.selectedPersonaId || null;
 
     return res.render('partials/sandbox-characters-with-oob', {
@@ -71,6 +70,8 @@ exports.getSimulationSquare = async (req, res) => {
       selectedSimulation,
       requirements,
       simulations,
+      selectedRequirementId,
+      selectedRequirementVersion,
     });
   } catch (error) {
     console.error('Failed to render simulation square', error);
@@ -80,37 +81,22 @@ exports.getSimulationSquare = async (req, res) => {
 
 exports.resetReactions = async (req, res) => {
   const requirements = await requirementService.fetchRequirements(req.activeProject.id);
+  const requirementsWithVersions = await Promise.all(
+    requirements.map(async (reqObj) => {
+      const versions = await requirementService.fetchVersions(req.activeProject.id, reqObj.id);
+      return { ...reqObj, versions: versions || [] };
+    })
+  );
   return res.render('partials/sandbox-characters-with-oob', {
     selectedSimulation: { id: 'dummy', status: 'running', reactions: [] },
-    requirements,
+    requirements: requirementsWithVersions,
     simulations: [],
+    selectedRequirementId: null,
+    selectedRequirementVersion: null,
   });
 };
 
-exports.hideSimulation = async (req, res) => {
-  if (!req.activeProject) {
-    return res.status(404).send('Project not found');
-  }
-  const { simulationId } = req.params;
-  
-  // Cookieに追加して非表示にする
-  const hiddenSimulations = getHiddenSimulations(req);
-  if (!hiddenSimulations.includes(simulationId)) {
-    hiddenSimulations.push(simulationId);
-    res.cookie('hidden_simulations', JSON.stringify(hiddenSimulations), { maxAge: 30 * 24 * 60 * 60 * 1000 });
-  }
 
-  // 再取得して再描画
-  try {
-    const context = await simulationService.getDashboard(req.activeProject, undefined, hiddenSimulations);
-    return res.render('partials/simulation-dashboard', context);
-  } catch (error) {
-    console.error('Failed to reload dashboard after hide', error);
-    return res.status(500).render('partials/simulation-dashboard-error', {
-      message: 'シミュレーション一覧の再取得に失敗しました。',
-    });
-  }
-};
 
 exports.runSimulation = async (req, res) => {
   if (!req.activeProject) {
@@ -136,7 +122,17 @@ exports.runSimulation = async (req, res) => {
 
     // 新規シミュレーションIDを指定して箱庭のコンテキストを取得
     const hiddenRequirements = getHiddenSandboxRequirements(req);
-    const { simulations, requirements } = await simulationService.getSandboxContext(req.activeProject, simulation.id, hiddenSimulations, hiddenRequirements);
+    const {
+      simulations,
+      requirements,
+      selectedRequirementId,
+      selectedRequirementVersion,
+    } = await simulationService.getSandboxContext(
+      req.activeProject,
+      simulation.id,
+      hiddenSimulations,
+      hiddenRequirements
+    );
     const selectedPersonaId = req.cookies.selectedPersonaId || null;
 
     return res.render('partials/sandbox-characters-with-oob', {
@@ -145,6 +141,8 @@ exports.runSimulation = async (req, res) => {
       selectedSimulation: simulation,
       requirements,
       simulations,
+      selectedRequirementId,
+      selectedRequirementVersion,
     });
   } catch (error) {
     console.error('Failed to run simulation', error);
@@ -167,7 +165,18 @@ exports.hideSandboxRequirement = async (req, res) => {
   try {
     const hiddenSimulations = getHiddenSimulations(req);
     const selectedSimulationId = req.query.simulationId;
-    const { selectedSimulation, simulations, requirements } = await simulationService.getSandboxContext(req.activeProject, selectedSimulationId, hiddenSimulations, hiddenRequirements);
+    const {
+      selectedSimulation,
+      simulations,
+      requirements,
+      selectedRequirementId,
+      selectedRequirementVersion,
+    } = await simulationService.getSandboxContext(
+      req.activeProject,
+      selectedSimulationId,
+      hiddenSimulations,
+      hiddenRequirements
+    );
     const selectedPersonaId = req.cookies.selectedPersonaId || null;
 
     return res.render('partials/sandbox-characters', {
@@ -176,6 +185,8 @@ exports.hideSandboxRequirement = async (req, res) => {
       selectedSimulation,
       requirements,
       simulations,
+      selectedRequirementId,
+      selectedRequirementVersion,
     });
   } catch (error) {
     console.error('Failed to hide requirement from sandbox', error);

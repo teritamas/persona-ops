@@ -2,12 +2,12 @@ module.exports = {
   tag: '[SYSTEM_ACTION: PROPOSE_SIMULATION]',
   execute: (activeProject) => {
     const draft = activeProject?.requirements?.find(r => r.status === 'draft');
-    const requirementTitle = draft ? `「${draft.title}」の` : '新機能要件の';
+    const requirementTitle = draft ? `「${draft.title}」` : '新機能';
     return {
       role: 'proposal',
       proposal: {
-        buttonText: `${requirementTitle}シミュレーションを実行する`,
-        inputText: `${requirementTitle}ペルソナシミュレーションを開始してください。`,
+        buttonText: `${requirementTitle}の機能のシミュレーションを行う`,
+        inputText: `${requirementTitle}の機能のシミュレーションを実行してください。`,
         style: 'green'
       }
     };

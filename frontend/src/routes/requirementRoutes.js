@@ -15,5 +15,17 @@ router.patch(
   '/action/requirements/:requirementId/approve',
   requirementController.approveRequirement,
 );
+router.delete(
+  '/action/requirements/:requirementId',
+  requirementController.deleteRequirement,
+);
+router.post(
+  '/action/requirements/:requirementId/versions/:version/restore',
+  requirementController.restoreRequirementVersion,
+);
+router.post(
+  '/action/requirements/:requirementId/simulate',
+  requirementController.runRequirementSimulation,
+);
 
 module.exports = router;

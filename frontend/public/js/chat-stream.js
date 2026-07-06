@@ -102,7 +102,35 @@ globalThis.submitProposal = function submitProposal(button) {
         container.innerHTML = `
           <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
             <span class="font-medium text-slate-600">
-              選択結果：はい （${btnText}）
+              選択結果：${btnText}
+            </span>
+          </div>
+        `;
+      }
+    }
+  }
+};
+
+globalThis.submitProposal2 = function submitProposal2(button) {
+  if (button.disabled) return;
+  button.disabled = true;
+  button.classList.add('opacity-50', 'cursor-not-allowed');
+
+  const text = button.getAttribute('data-input-text');
+  const btnText = button.querySelector('span:not(.bg-blue-500)')?.innerText || button.innerText;
+  const input = document.getElementById('inputText');
+  if (input && text) {
+    input.value = text;
+    const form = input.closest('form');
+    if (form) {
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      
+      const container = button.closest('.proposal-btn-container');
+      if (container) {
+        container.innerHTML = `
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="font-medium text-slate-600">
+              選択結果：${btnText}
             </span>
           </div>
         `;
@@ -347,8 +375,13 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             </div>
           `;
           const chatContainer = document.getElementById('chat-messages-container');
-          if (chatContainer) {
+          const agentBubble = document.getElementById(agentMsgId);
+          if (agentBubble) {
+            agentBubble.insertAdjacentHTML('beforebegin', systemHtml);
+          } else if (chatContainer) {
             chatContainer.insertAdjacentHTML('beforeend', systemHtml);
+          }
+          if (chatContainer) {
             const scrollParent = chatContainer.parentElement;
             if (scrollParent) {
               scrollParent.scrollTop = scrollParent.scrollHeight;

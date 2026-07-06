@@ -25,12 +25,18 @@ export function requirementTools(
       try {
         const requirements =
           await requirementApiClient.listRequirements(projectId);
-        log('list_requirements returned count:', requirements.length);
-        const text = requirements
+        const approvedRequirements = requirements.filter((r) => r.status === 'approved');
+        log('list_requirements returned count:', approvedRequirements.length);
+        const text = approvedRequirements
           .map((r) => `- ${r.title} (ID: ${r.id}, Status: ${r.status})`)
           .join('\n');
         return {
-          content: [{ type: 'text', text: text || 'No requirements found.' }],
+          content: [
+            {
+              type: 'text',
+              text: text || 'No approved requirements found.',
+            },
+          ],
         };
       } catch (e: unknown) {
         const errorMessage = e instanceof Error ? e.message : String(e);
@@ -66,6 +72,17 @@ export function requirementTools(
             requirementId,
           ),
         ]);
+        if (req.status !== 'approved') {
+          return {
+            content: [
+              {
+                type: 'text',
+                text: 'Error: Access denied. Only approved requirements can be retrieved.',
+              },
+            ],
+            isError: true,
+          };
+        }
         log(
           'get_requirement_with_simulations fetched requirement:',
           req.title,

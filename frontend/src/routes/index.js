@@ -31,6 +31,12 @@ projectSpecificRouter.use('/', requirementRoutes);
 // プロジェクトID直下のルート（例: GET /:projectId）でダッシュボードを表示
 const projectController = require('../controllers/projectController');
 projectSpecificRouter.get('/view/topnav', projectController.getTopNav);
+projectSpecificRouter.get('/view/sidebar', projectController.getSidebar);
+projectSpecificRouter.get('/requirements/edit', projectController.getDashboard);
+projectSpecificRouter.get('/requirements/:requirementId/edit', projectController.getDashboard);
+projectSpecificRouter.get('/requirements/:requirementId', projectController.getDashboard);
+projectSpecificRouter.get('/requirements', projectController.getDashboard);
+projectSpecificRouter.get('/resource', projectController.getDashboard);
 projectSpecificRouter.get('/', projectController.getDashboard);
 
 router.use('/:projectId', projectSpecificRouter);
