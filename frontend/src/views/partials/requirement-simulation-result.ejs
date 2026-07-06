@@ -61,7 +61,7 @@
                 <!-- Avatar -->
                 <div class="flex flex-col items-center shrink-0 w-12 relative">
                   <div class="w-10 h-10 rounded-full border-2 border-white shadow-sm bg-white overflow-hidden flex items-center justify-center relative z-10 group-hover/item:scale-110 transition-transform duration-300">
-                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=<%= reaction.personaSnapshot.avatarSeed || reaction.personaSnapshot.id %>&backgroundColor=transparent" class="w-9 h-9 object-contain" alt="" />
+                    <img src="https://api.dicebear.com/7.x/<%= (reaction.personaSnapshot.avatarSeed && reaction.personaSnapshot.avatarSeed.toLowerCase().includes('female')) ? 'lorelei' : 'notionists' %>/svg?seed=<%= reaction.personaSnapshot.avatarSeed || reaction.personaSnapshot.id %>&backgroundColor=transparent" class="w-9 h-9 object-contain" alt="" />
                   </div>
                   <span class="text-[9px] font-black text-slate-500 mt-1.5 truncate w-full text-center group-hover/item:text-orange-600 transition-colors">
                     <%= reaction.personaSnapshot.name %>

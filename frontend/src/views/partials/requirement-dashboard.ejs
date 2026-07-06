@@ -92,7 +92,7 @@
                     </svg>
                     ドラフト
                   </span>
-                  <span class="text-[10px] text-slate-400 font-medium">承認することで開発者がMCPから参照できる様になります</span>
+                  <span class="text-[10px] text-slate-400 font-medium">承認することで開発者がMCPから参照できるようになります</span>
                 <% } %>
               </div>
               <div class="flex items-center gap-2">
@@ -156,11 +156,18 @@
                 <p class="mb-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider">参照資料</p>
                 <div class="flex flex-wrap gap-2">
                   <% selectedRequirement.sourceDocumentIds.forEach((documentId)=> { %>
+                    <% 
+                      let docName = documentId;
+                      if (typeof sourceDocuments !== 'undefined') {
+                        const doc = sourceDocuments.find(d => d.id === documentId);
+                        if (doc) docName = doc.reference;
+                      }
+                    %>
                     <span class="rounded-lg border border-blue-100 bg-blue-50 px-2.5 py-1 text-[10px] font-bold text-blue-700 flex items-center gap-1 shadow-sm">
                       <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
                       </svg>
-                      <%= documentId %>
+                      <%= docName %>
                     </span>
                   <% }) %>
                 </div>

@@ -1,4 +1,5 @@
 const defaultProjectService = require('../services/projectService');
+const sourceDocumentService = require('../services/sourceDocumentService');
 
 function createProjectContext(projectService = defaultProjectService) {
   return async (req, res, next) => {
@@ -31,6 +32,13 @@ function createProjectContext(projectService = defaultProjectService) {
       res.locals.projects = context.projects;
       res.locals.activeProjectId = context.activeProjectId;
       res.locals.selectedPersonaId = context.selectedPersonaId;
+
+      if (context.activeProject && context.activeProject.id) {
+        res.locals.sourceDocuments = await sourceDocumentService.fetchDocuments(context.activeProject.id);
+      } else {
+        res.locals.sourceDocuments = [];
+      }
+
 
       next();
     } catch (error) {
