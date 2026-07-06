@@ -8,6 +8,9 @@
 > コードレビューの前に、 ユーザー影響をレビューする。  
 > それがPersonaOpsです。
 
+[![Youtubeへのリンク](docs/img/thumbnail.png)](https://www.youtube.com/watch?v=B-cwPGsg22I)
+(クリックすると YouTube の動画に飛びます)
+
 プロダクトの概要や動作イメージは、下記のProtoPediaの記事を参照ください。
 
 - [PersonaOps | ProtoPedia](https://protopedia.net/prototype/8735)
@@ -86,6 +89,14 @@ sequenceDiagram
 
     Agent->>-Tasks: タスク完了
 ```
+
+### MCPを利用したCoding Agnetとの連携
+
+作成した要件をMCP経由で取得し、開発でそのまま利用することができます。
+
+![mcp_vscode](./docs/img/mcp_vscode.png)
+
+利用方法は[MCPのREADME.md](./mcp/README.md)を参照ください。
 
 ## 各種ドキュメント
 
