@@ -34,7 +34,7 @@ sequenceDiagram
     participant Tasks as Cloud Tasks
 
     %% ペルソナ生成フェーズ
-    Note over Client, DB: 1. 仮想ペルソナの自律生成
+    Note over Client, DB: 1. AIペルソナの自律生成
     Client->>+Agent: 資料やプロンプトを入力する
     Agent->>+Gemini: 資料のコンテキストを読み込み、<br/>プロジェクト固有のペルソナを生成
     Gemini->>-Agent: ペルソナ情報を返す
@@ -74,7 +74,7 @@ sequenceDiagram
     Tasks->>+Agent: タスクをトリガーし<br/>シミュレーション開始
 
     loop プロジェクトに含まれるペルソナの数だけ繰り返す
-        Agent->>DB: 対象の仮想ペルソナ情報を取得
+        Agent->>DB: 対象のAIペルソナ情報を取得
         DB->>Agent: ペルソナ情報と要件を返す
         Agent->>Agent: ペルソナ情報を読み込む
         Agent->>+Gemini: 要件を受け取り、<br/>当事者としての反応を生成

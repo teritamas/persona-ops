@@ -40,7 +40,7 @@ export class AdkPersonaSimulationAgent implements PersonaSimulationAgentPort {
     const runner = this.createRunner(
       new LlmAgent({
         name: 'persona_simulation_agent',
-        description: '仮想ペルソナとして新機能要件を評価するAgent',
+        description: 'AIペルソナとして新機能要件を評価するAgent',
         instruction: buildSimulationInstruction(input.persona),
         model: this.model,
         outputSchema: simulationReactionSchema,
