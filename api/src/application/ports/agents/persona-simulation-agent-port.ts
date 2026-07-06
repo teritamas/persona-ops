@@ -11,5 +11,6 @@ export interface PersonaSimulationAgentPort {
   simulate(input: {
     persona: PersonaSnapshot;
     requirement: RequirementSnapshot;
+    isDesignatedNegative?: boolean;
   }): Promise<SimulationAgentResult>;
 }
