@@ -4,7 +4,7 @@ module.exports = {
     role: 'proposal',
     proposal: {
       buttonText: 'ペルソナを自動生成する',
-      inputText: 'ドキュメント情報を元にペルソナを自動生成してください。',
+      inputText: '会話履歴からペルソナを生成してください。',
       style: 'orange'
     }
   })
