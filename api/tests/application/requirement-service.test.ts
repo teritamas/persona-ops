@@ -297,8 +297,8 @@ describe('要件サービス', () => {
 
     const versions = await service.getVersions('project-1', v1.id);
     expect(versions).toHaveLength(2);
-    expect(versions[0].version).toBe(2);
-    expect(versions[1].version).toBe(1);
+    expect(versions[0]?.version).toBe(2);
+    expect(versions[1]?.version).toBe(1);
 
     const restored = await service.restoreVersion('project-1', v1.id, 1);
     expect(restored.version).toBe(3);
