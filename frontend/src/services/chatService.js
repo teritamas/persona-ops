@@ -120,9 +120,11 @@ class ChatService {
     // 正規表現で [SYSTEM_ACTION: ...] タグを抽出
     const tags = text.match(/\[SYSTEM_ACTION: [A-Z_]+\]/g) || [];
     tags.forEach((tag, idx) => {
+      // 判定の成否に関わらず、見つかったタグはすべてテキストから除去する
+      cleanedText = cleanedText.replaceAll(tag, '');
+
       const action = actionRegistry.findByTag(tag);
       if (action) {
-        cleanedText = cleanedText.replaceAll(tag, '');
         const messagePayload = action.execute(activeProject);
 
         systemMessages.push({

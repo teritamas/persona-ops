@@ -50,8 +50,8 @@ function parseAndCleanSystemActions(text) {
     }
   });
 
-  // Clean up any PROPOSE actions so they don't show up in raw text during streaming
-  cleaned = cleaned.replace(/\[SYSTEM_ACTION:\s*PROPOSE_[A-Z_]+\]/g, '');
+  // 未定義のものも含め、すべての SYSTEM_ACTION タグを生テキストから削除
+  cleaned = cleaned.replace(/\[SYSTEM_ACTION:\s*[A-Z_]+\]/g, '');
 
   return {
     cleanedText: cleaned.trim(),
@@ -100,12 +100,10 @@ globalThis.submitProposal = function submitProposal(button) {
       const container = button.closest('.proposal-btn-container');
       if (container) {
         container.innerHTML = `
-          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex items-center justify-between shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
-            <span class="flex items-center gap-1.5 font-medium">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-              AIからの提案アクション：選択結果「はい （${btnText}）」
+          <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+            <span class="font-medium text-slate-600">
+              選択結果：はい （${btnText}）
             </span>
-            <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">送信済</span>
           </div>
         `;
       }
@@ -132,13 +130,9 @@ globalThis.submitProposalNo = function submitProposalNo(textarea) {
       if (container) {
         container.innerHTML = `
           <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
-            <div class="flex items-center justify-between">
-              <span class="flex items-center gap-1.5 font-medium">
-                <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                AIからの提案アクション：選択結果「いいえ」
-              </span>
-              <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">送信済</span>
-            </div>
+            <span class="font-medium text-slate-600">
+              選択結果：いいえ
+            </span>
             <div class="text-[11px] bg-white border border-slate-100 p-2 rounded-lg text-slate-600 mt-1 italic">
               フィードバック: "${text}"
             </div>

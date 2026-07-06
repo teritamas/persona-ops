@@ -136,13 +136,16 @@ exports.streamChat = async (req, res) => {
 
     const { cleanedText, systemMessages } = chatService.processSystemActions(fullText, req.activeProject);
 
+    const systemEvents = systemMessages.filter(m => m.role === 'system');
+    const proposals = systemMessages.filter(m => m.role === 'proposal');
+
     const agentMsg = {
       id: 'msg_' + (Date.now() + 1),
       role: 'agent',
       text: cleanedText,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
-    const messagesToAppend = [agentMsg, ...systemMessages];
+    const messagesToAppend = [...systemEvents, agentMsg, ...proposals];
 
     await chatService.appendMessages(
       req.activeProject.id,

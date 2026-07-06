@@ -35,13 +35,9 @@
   <% if (typeof isResolved !== 'undefined' && isResolved) { %>
     <% if (isNo) { %>
       <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex flex-col gap-1.5 shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
-        <div class="flex items-center justify-between">
-          <span class="flex items-center gap-1.5 font-medium">
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-            AIからの提案アクション：選択結果「いいえ」
-          </span>
-          <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">完了</span>
-        </div>
+        <span class="font-medium text-slate-600">
+          選択結果：いいえ
+        </span>
         <% if (feedbackText) { %>
           <div class="text-[11px] bg-white border border-slate-100 p-2 rounded-lg text-slate-600 mt-1 italic">
             フィードバック: "<%= feedbackText %>"
@@ -49,12 +45,10 @@
         <% } %>
       </div>
     <% } else { %>
-      <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs flex items-center justify-between shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
-        <span class="flex items-center gap-1.5 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-          AIからの提案アクション：選択結果「はい （<%= msg.proposal.buttonText %>）」
+      <div class="w-full max-w-[85%] bg-slate-50 rounded-2xl border border-slate-200 p-3 text-slate-500 text-xs shadow-[0_4px_10px_rgba(0,0,0,0.02)]">
+        <span class="font-medium text-slate-600">
+          選択結果：はい （<%= msg.proposal.buttonText %>）
         </span>
-        <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold">完了</span>
       </div>
     <% } %>
   <% } else { %>
