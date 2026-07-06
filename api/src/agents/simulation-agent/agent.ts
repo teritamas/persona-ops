@@ -41,7 +41,10 @@ export class AdkPersonaSimulationAgent implements PersonaSimulationAgentPort {
       new LlmAgent({
         name: 'persona_simulation_agent',
         description: 'AIペルソナとして新機能要件を評価するAgent',
-        instruction: buildSimulationInstruction(input.persona, input.isDesignatedNegative),
+        instruction: buildSimulationInstruction(
+          input.persona,
+          input.isDesignatedNegative,
+        ),
         model: this.model,
         outputSchema: simulationReactionSchema,
       }),

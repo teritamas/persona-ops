@@ -161,8 +161,13 @@ export class SimulationService {
       const batch = pending.slice(index, index + PERSONA_CONCURRENCY);
       await Promise.all(
         batch.map(async (persona) => {
-          const isDesignatedNegative = persona.id === designatedNegativePersonaId;
-          const reaction = await this.simulatePersona(simulation, persona, isDesignatedNegative);
+          const isDesignatedNegative =
+            persona.id === designatedNegativePersonaId;
+          const reaction = await this.simulatePersona(
+            simulation,
+            persona,
+            isDesignatedNegative,
+          );
           await this.simulationRepository.saveReaction(projectId, reaction);
         }),
       );
@@ -257,7 +262,11 @@ export class SimulationService {
     isDesignatedNegative: boolean = false,
   ): Promise<PersonaReaction> {
     try {
-      const result = await this.#simulateWithRetry(simulation, persona, isDesignatedNegative);
+      const result = await this.#simulateWithRetry(
+        simulation,
+        persona,
+        isDesignatedNegative,
+      );
       return {
         simulationId: simulation.id,
         personaId: persona.id,

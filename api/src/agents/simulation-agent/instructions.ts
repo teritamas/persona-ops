@@ -56,4 +56,3 @@ ${JSON.stringify(persona)}
 </persona-data>
 `;
 }
-
