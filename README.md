@@ -2,6 +2,7 @@
 
 [![API CI](https://github.com/teritamas/persona-ops/actions/workflows/api-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/api-ci.yml)
 [![CI](https://github.com/teritamas/persona-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/ci.yml)
+[![MCP CI](https://github.com/teritamas/persona-ops/actions/workflows/mcp-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/mcp-ci.yml)
 [![Terraform CI](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml/badge.svg)](https://github.com/teritamas/persona-ops/actions/workflows/terraform-ci.yml)
 
 > コードレビューの前に、 ユーザー影響をレビューする。  
@@ -9,7 +10,7 @@
 
 プロダクトの概要や動作イメージは、下記のProtoPediaの記事を参照ください。
 
-- [PersonaOps | ProtoPedia](https://protopedia.net/prototype/private/85a9a750-9b5c-4b16-97f3-616ae14f8122)
+- [PersonaOps | ProtoPedia](https://protopedia.net/prototype/8735)
 
 ## 全体構成
 
@@ -30,13 +31,13 @@ sequenceDiagram
     participant Client as Client<br/>(Web Browser)
     participant Agent as Persona Ops Agent<br/>(Cloud Run)
     participant Gemini as Vertex AI<br/>(Gemini API)
-    participant DB as Firestore Native
+    participant DB as DB<br/>(Firestore Native)
     participant Tasks as Cloud Tasks
 
     %% ペルソナ生成フェーズ
-    Note over Client, DB: 1. AIペルソナの自律生成
+    Note over Client, DB: 1. 仮想ペルソナの自律生成
     Client->>+Agent: 資料やプロンプトを入力する
-    Agent->>+Gemini: 資料のコンテキストを読み込み、<br/>プロジェクト固有のペルソナを生成
+    Agent->>+Gemini: 入力のコンテキストを読み込み、<br/>ペルソナを生成
     Gemini->>-Agent: ペルソナ情報を返す
     Agent->>+DB: 生成されたペルソナを保存
     DB->>-Agent: 保存完了
@@ -44,20 +45,22 @@ sequenceDiagram
 
     %% 要件定義フェーズ
     Note over Client, DB: 2. アイデアからの要件整理
-    Client->>Agent: 開発したい新機能のアイデアを<br/>チャットで入力
-    Agent->>+Gemini: プロジェクトの文脈とアイデアを元に<br/>機能要件を整理・構造化
-    Gemini->>-Agent: 整理された機能要件
-    Agent->>+DB: 要件をプロジェクトに保存
-    DB->>-Agent: 保存完了
-    Agent->>Client: 整理された要件を画面に提示
-    Client->>Client: 提示された要件を確認・必要に応じて修正
+　loop 要件が固まるまで繰り返す
+			Client->>Agent: 開発したい新機能のアイデアを<br/>チャットで入力
+			Agent->>+Gemini: プロジェクトの文脈とアイデアを元に<br/>機能要件を整理・構造化
+			Gemini->>-Agent: 整理された機能要件
+			Agent->>+DB: 要件をプロジェクトに保存
+			DB->>-Agent: 保存完了
+			Agent->>Client: 要件をユーザーに提示(HITL)
+			Client->>Client: 要件を確認・必要に応じて修正、問題がなければ保存
+   end
 
     %% シミュレーション実行への移行
     Note over Client, DB: 3. シミュレーション開始
     Client->>Agent: 要件を指定し、<br/>シミュレーション開始をリクエスト
     Agent->>Tasks: タスクを登録
-    Note over Agent, Tasks: タスクの実行はバックグラウンドで実行「2.シミュレーションの実行」へ
-    Agent->>-Client: シミュレーション開始を通知
+    Note over Agent, Tasks: タスクの実行はバックグラウンドで実行「機能2」へ進む
+    Agent->>-Client: シミュレーション開始をユーザーに通知
 ```
 
 ### Simulation Agent: シミュレーションの実行
@@ -67,19 +70,18 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant Tasks as Cloud Tasks
-    participant Agent as Simulation Agent<br/>(Cloud Run)
-    participant DB as Firestore Native
+    participant Agent as シミュレーションエージェント<br/>(Cloud Run)
+    participant DB as DB<br/>(Firestore Native)
     participant Gemini as Vertex AI<br/>(Gemini API)
 
     Tasks->>+Agent: タスクをトリガーし<br/>シミュレーション開始
 
-    loop プロジェクトに含まれるペルソナの数だけ繰り返す
-        Agent->>DB: 対象のAIペルソナ情報を取得
-        DB->>Agent: ペルソナ情報と要件を返す
-        Agent->>Agent: ペルソナ情報を読み込む
-        Agent->>+Gemini: 要件を受け取り、<br/>当事者としての反応を生成
-        Gemini->>-Agent: フィードバック結果を返す
-        Agent->>DB: シミュレーション結果を保存
+    loop プロジェクトに含まれるAIペルソナの数だけ繰り返す
+        Agent->>+DB: 対象のAIペルソナを取得
+        DB->>-Agent: AIペルソナの情報返す
+        Agent->>+Gemini: 要件をAIペルソナにリクエスト<br/>AIペルソナの反応を生成
+        Gemini->>-Agent: AIペルソナの反応を返す
+        Agent->>DB: 結果を保存
     end
 
     Agent->>-Tasks: タスク完了
@@ -108,7 +110,6 @@ sequenceDiagram
 - MCPサーバー
   - [README.md: MCPサーバーの起動方法や各種コマンドの説明](./mcp/README.md)
   - [AGENTS.md: MCPサーバーの設計思想、実装に関するルール](./mcp/AGENTS.md)
-
 - インフラストラクチャ
   - [README.md: GCPやterraformの初期構築手順や各種コマンドの説明](./infra/terraform/README.md)
   - [AGENTS.md: 設計思想、実装に関するルール](./infra/terraform/AGENTS.md)
