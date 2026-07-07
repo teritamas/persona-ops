@@ -159,10 +159,7 @@ export class SimulationService {
       const batch = pending.slice(index, index + PERSONA_CONCURRENCY);
       await Promise.all(
         batch.map(async (persona) => {
-          const reaction = await this.simulatePersona(
-            simulation,
-            persona,
-          );
+          const reaction = await this.simulatePersona(simulation, persona);
           await this.simulationRepository.saveReaction(projectId, reaction);
         }),
       );
@@ -254,10 +251,7 @@ export class SimulationService {
     persona: Simulation['personaSnapshots'][number],
   ): Promise<PersonaReaction> {
     try {
-      const result = await this.#simulateWithRetry(
-        simulation,
-        persona,
-      );
+      const result = await this.#simulateWithRetry(simulation, persona);
       return {
         simulationId: simulation.id,
         personaId: persona.id,
