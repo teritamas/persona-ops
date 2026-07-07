@@ -24,11 +24,11 @@
                   <button 
                     type="button"
                     onclick="switchProject('<%= p.id %>')"
-                    class="flex-1 text-left px-4 py-2 text-sm flex items-center justify-between transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold' : 'text-slate-700' %>"
+                    class="flex-1 text-left px-4 py-2 text-sm flex items-center justify-start gap-2 transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold' : 'text-slate-700' %>"
                   >
                     <span class="truncate"><%= p.name %></span>
                     <% if(p.id === activeProjectId) { %>
-                      <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 shrink-0 ml-2" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                      <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
                     <% } %>
                   </button>
                   <div class="flex items-center pr-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
