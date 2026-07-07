@@ -1,6 +1,35 @@
 const requirementService = require('../services/requirementService');
 const { simulationService } = require('../services/simulationService');
 
+function addHxTrigger(res, events) {
+  const existing = res.getHeader('HX-Trigger');
+  let currentEvents = {};
+  
+  if (existing) {
+    try {
+      currentEvents = JSON.parse(existing);
+    } catch {
+      if (typeof existing === 'string') {
+        existing.split(',').forEach(e => {
+          const trimmed = e.trim();
+          if (trimmed) currentEvents[trimmed] = true;
+        });
+      }
+    }
+  }
+
+  if (typeof events === 'string') {
+    events.split(',').forEach(e => {
+      const trimmed = e.trim();
+      if (trimmed) currentEvents[trimmed] = true;
+    });
+  } else if (typeof events === 'object' && events !== null) {
+    currentEvents = { ...currentEvents, ...events };
+  }
+
+  res.setHeader('HX-Trigger', JSON.stringify(currentEvents));
+}
+
 function unhideSimulationsForRequirement(req, res, requirementId, simulations) {
   if (!requirementId || !simulations) return;
   if (!req.cookies) return;
@@ -76,7 +105,7 @@ exports.getRequirementsDashboard = async (req, res) => {
 
       // If this is an HTMX request, trigger the sandbox to refresh so the unhidden requirement appears
       if (req.headers['hx-request']) {
-        res.setHeader('HX-Trigger', 'refreshSandbox');
+        addHxTrigger(res, { refreshSandbox: true });
       }
     } catch (err) {
       console.error('Failed to process requirement versions or simulations:', err);
@@ -136,7 +165,7 @@ exports.saveRequirement = async (req, res) => {
   }
 
   if (req.headers['hx-request']) {
-    res.setHeader('HX-Trigger', 'refreshSandbox, refreshSidebar');
+    addHxTrigger(res, { refreshSandbox: true, refreshSidebar: true });
     res.setHeader('HX-Push-Url', `/${req.activeProject.id}/requirements/${saved.id}`);
   }
 
@@ -181,7 +210,7 @@ exports.deleteRequirement = async (req, res) => {
   const selectedReq = requirements[0] || null;
 
   if (req.headers['hx-request']) {
-    res.setHeader('HX-Trigger', 'refreshSandbox, refreshSidebar');
+    addHxTrigger(res, { refreshSandbox: true, refreshSidebar: true });
     res.setHeader('HX-Push-Url', `/${req.activeProject.id}/requirements${selectedReq ? '/' + selectedReq.id : ''}`);
   }
 
@@ -219,7 +248,7 @@ exports.approveRequirement = async (req, res) => {
   }
 
   if (req.headers['hx-request']) {
-    res.setHeader('HX-Trigger', 'refreshSandbox, refreshChat');
+    addHxTrigger(res, { refreshSandbox: true, refreshChat: true });
   }
 
   req.params.requirementId = approved.id;
@@ -241,7 +270,7 @@ exports.restoreRequirementVersion = async (req, res) => {
   }
 
   if (req.headers['hx-request']) {
-    res.setHeader('HX-Trigger', 'refreshSandbox');
+    addHxTrigger(res, { refreshSandbox: true });
   }
 
   req.params.requirementId = restored.id;
@@ -286,10 +315,10 @@ exports.runRequirementSimulation = async (req, res) => {
     res.cookie('selectedSimulationId', simulation.id, { maxAge: 30 * 24 * 60 * 60 * 1000 });
 
     if (req.headers['hx-request']) {
-      res.setHeader('HX-Trigger', JSON.stringify({
+      addHxTrigger(res, {
         refreshSandbox: { simulationId: simulation.id },
         refreshChat: true
-      }));
+      });
     }
 
     return res.render('partials/requirement-dashboard', {

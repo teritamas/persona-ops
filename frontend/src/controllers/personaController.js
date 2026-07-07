@@ -15,7 +15,7 @@ exports.getPersonaDetail = async (req, res) => {
     return res.render('partials/persona-detail-empty');
   }
 
-  res.cookie('selectedPersonaId', personaId);
+  res.cookie('selectedPersonaId', personaId, { path: '/' });
 
   try {
     const { selectedSimulation, simulations, requirements } = await simulationService.getSandboxContext(req.activeProject, simulationId);
@@ -39,7 +39,7 @@ exports.closePersonaDetail = async (req, res) => {
   const { selectedPersonaId } = personaService.closePersonaDetail(req.activeProject);
   const simulationId = req.query.simulationId;
 
-  res.clearCookie('selectedPersonaId');
+  res.clearCookie('selectedPersonaId', { path: '/' });
 
   try {
     const { selectedSimulation, simulations, requirements } = await simulationService.getSandboxContext(req.activeProject, simulationId);

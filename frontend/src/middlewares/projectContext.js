@@ -17,7 +17,7 @@ function createProjectContext(projectService = defaultProjectService) {
           (persona) => persona.id === selectedPersonaId,
         );
         if (!hasPersona) {
-          res.clearCookie('selectedPersonaId');
+          res.clearCookie('selectedPersonaId', { path: '/' });
           selectedPersonaId = null;
           context.selectedPersonaId = null;
         }

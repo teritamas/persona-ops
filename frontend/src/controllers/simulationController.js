@@ -1,5 +1,4 @@
 const { simulationService } = require('../services/simulationService');
-const requirementService = require('../services/requirementService');
 
 const SIMULATION_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const FOLLOW_LATEST_SIMULATION_VALUE = '1';
@@ -28,6 +27,12 @@ function getHiddenSandboxRequirements(req) {
 
 function resolveSelectedSimulationId(req) {
   if (req.query.followLatest === FOLLOW_LATEST_SIMULATION_VALUE) {
+    return null;
+  }
+
+  // 明示的な要件IDとバージョンのターゲット指定がある場合は、
+  // 未シミュレーション版への切り替えを考慮し、古いCookieのIDを引き継がないようにする
+  if (req.query.requirementId && req.query.version) {
     return null;
   }
 
@@ -179,20 +184,40 @@ exports.getSimulationSquare = async (req, res) => {
 };
 
 exports.resetReactions = async (req, res) => {
-  const requirements = await requirementService.fetchRequirements(req.activeProject.id);
-  const requirementsWithVersions = await Promise.all(
-    requirements.map(async (reqObj) => {
-      const versions = await requirementService.fetchVersions(req.activeProject.id, reqObj.id);
-      return { ...reqObj, versions: versions || [] };
-    })
-  );
-  return res.render('partials/sandbox-characters-with-oob', {
-    selectedSimulation: { id: 'dummy', status: 'running', reactions: [] },
-    requirements: requirementsWithVersions,
-    simulations: [],
-    selectedRequirementId: null,
-    selectedRequirementVersion: null,
-  });
+  if (!req.activeProject) {
+    return res.status(404).send('Project not found');
+  }
+  try {
+    const hiddenSimulations = getHiddenSimulations(req);
+    const hiddenRequirements = getHiddenSandboxRequirements(req);
+
+    const {
+      simulations,
+      requirements,
+      selectedRequirementId,
+      selectedRequirementVersion,
+    } = await simulationService.getSandboxContext(
+      req.activeProject,
+      null,
+      hiddenSimulations,
+      hiddenRequirements
+    );
+
+    const selectedPersonaId = req.cookies.selectedPersonaId || null;
+
+    return res.render('partials/sandbox-characters-with-oob', {
+      activeProject: req.activeProject,
+      selectedPersonaId,
+      selectedSimulation: { id: 'dummy', status: 'running', reactions: [] },
+      requirements,
+      simulations,
+      selectedRequirementId,
+      selectedRequirementVersion,
+    });
+  } catch (error) {
+    console.error('Failed to reset reactions', error);
+    return res.status(500).send('Internal Server Error');
+  }
 };
 
 

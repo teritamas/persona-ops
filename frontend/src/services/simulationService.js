@@ -171,12 +171,34 @@ class SimulationService {
     let selectedRequirementId = null;
     let selectedRequirementVersion = null;
 
-    if (dashboard.selectedSimulation) {
-      selectedRequirementId = dashboard.selectedSimulation.requirementId;
-      selectedRequirementVersion = dashboard.selectedSimulation.requirementSnapshot?.version || dashboard.selectedSimulation.requirementVersion;
-    } else if (targetRequirementId && targetVersion) {
+    // 明示的なターゲット指定がある場合、それを最優先する
+    if (targetRequirementId && targetVersion) {
       selectedRequirementId = targetRequirementId;
       selectedRequirementVersion = Number(targetVersion);
+
+      // 指定された要件・バージョンに合致するシミュレーションがあるか探索
+      const matchingSimSummary = dashboard.simulations.find(s =>
+        s.requirementId === selectedRequirementId &&
+        (s.requirementSnapshot?.version === selectedRequirementVersion || s.requirementVersion === selectedRequirementVersion)
+      );
+
+      if (matchingSimSummary) {
+        // 合致するシミュレーションがあれば詳細を読み込んで割り当てる
+        const detailResponse = await this.requestPrivateApi(
+          `/api/v1/projects/${encodeURIComponent(activeProject.id)}/simulations/${encodeURIComponent(matchingSimSummary.id)}`,
+        );
+        if (detailResponse.ok && detailResponse.data) {
+          dashboard.selectedSimulation = presentSimulation(detailResponse.data);
+        } else {
+          dashboard.selectedSimulation = null;
+        }
+      } else {
+        // 合致するシミュレーションがなければシミュレーション未実行とする
+        dashboard.selectedSimulation = null;
+      }
+    } else if (dashboard.selectedSimulation) {
+      selectedRequirementId = dashboard.selectedSimulation.requirementId;
+      selectedRequirementVersion = dashboard.selectedSimulation.requirementSnapshot?.version || dashboard.selectedSimulation.requirementVersion;
     }
 
     requirements = await Promise.all(
