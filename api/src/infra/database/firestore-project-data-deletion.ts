@@ -21,7 +21,15 @@ export class FirestoreProjectDataDeletion implements ProjectDataDeletionPort {
     ]);
 
     await this.deleteDocuments([...personas.docs, ...sourceDocuments.docs]);
-    await this.firestore.recursiveDelete(projectReference);
+    try {
+      await this.firestore.recursiveDelete(projectReference);
+    } catch (error) {
+      console.warn(
+        `[FirestoreProjectDataDeletion] recursiveDelete failed for project ${projectId}, falling back to direct document delete:`,
+        error,
+      );
+      await projectReference.delete();
+    }
   }
 
   private async deleteDocuments(

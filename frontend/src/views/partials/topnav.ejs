@@ -7,7 +7,7 @@
           <div><span class="text-slate-700">Persona</span><span class="text-orange-500">Ops</span></div>
         </a>
 
-        <div class="relative flex-1" id="project-menu-container">
+        <div class="relative" id="project-menu-container">
           <button 
             onclick="toggleProjectMenu()"
             class="flex items-center gap-1.5 hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-all active:scale-95 group"
@@ -16,7 +16,7 @@
             <svg class="w-[0.875rem] h-[0.875rem] text-slate-400 group-hover:text-slate-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"></path></svg>
           </button>
           
-          <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col">
+          <div id="project-dropdown" class="hidden absolute top-full left-0 mt-2 w-[480px] bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-2 animate-fade-in flex flex-col">
             <div class="px-4 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0">Projects</div>
             <div class="overflow-y-auto custom-scrollbar max-h-[17.5rem]">
               <% projects.forEach(function(p) { %>

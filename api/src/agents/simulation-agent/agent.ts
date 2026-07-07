@@ -43,7 +43,6 @@ export class AdkPersonaSimulationAgent implements PersonaSimulationAgentPort {
         description: 'AIペルソナとして新機能要件を評価するAgent',
         instruction: buildSimulationInstruction(
           input.persona,
-          input.isDesignatedNegative,
         ),
         model: this.model,
         outputSchema: simulationReactionSchema,

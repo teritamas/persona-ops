@@ -44,32 +44,6 @@ class ChatService {
     return response.ok ? response.data : null;
   }
 
-  async startPersonaChat(activeProject, personaId) {
-    const persona = activeProject.personas.find(
-      (candidate) => candidate.id === personaId,
-    );
-    if (!persona) {
-      return null;
-    }
-    const time = new Date().toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-    return this.createChat(activeProject.id, {
-      title: `${persona.name}との個別チャット`,
-      type: 'persona',
-      personaId: persona.id,
-      initialMessages: [
-        {
-          id: `msg_${Date.now()}`,
-          role: 'agent',
-          text: `こんにちは。${persona.role}の${persona.name}です。どのようなことについてお話ししましょうか？`,
-          time,
-        },
-      ],
-    });
-  }
-
   async ensureActiveChat(activeProject) {
     const activeChat = activeProject.chats.find(
       (chat) => chat.id === activeProject.activeChatId,

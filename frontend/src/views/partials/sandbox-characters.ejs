@@ -17,7 +17,7 @@
   }
   const pollingAttrs = `hx-get="/${activeProject.id}/view/simulation-square${queryParams}" hx-trigger="${triggerList.join(', ')}" hx-swap="outerHTML"`; 
 %>
-  <div id="sandbox-characters" class="relative w-full h-full max-w-5xl max-h-[800px] z-10" <%- pollingAttrs %>
+  <div id="sandbox-characters" class="relative w-full h-full z-10" <%- pollingAttrs %>
     <%= (typeof isOob !=='undefined' && isOob) ? 'hx-swap-oob="outerHTML"' : '' %>
       >
 
