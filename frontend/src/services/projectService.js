@@ -55,7 +55,7 @@ class ProjectService {
     try {
       const response = await this.requestPrivateApi(
         `/api/v1/projects/${encodeURIComponent(id)}`,
-        { method: 'DELETE' },
+        { method: 'DELETE', timeoutMs: 30000 },
       );
       return response.ok;
     } catch (err) {

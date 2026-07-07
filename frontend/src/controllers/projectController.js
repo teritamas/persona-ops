@@ -93,7 +93,10 @@ exports.renameProject = async (req, res) => {
 exports.deleteProject = async (req, res) => {
   const { projectId } = req.body;
   if (projectId) {
-    await projectService.deleteProject(projectId);
+    const success = await projectService.deleteProject(projectId);
+    if (!success) {
+      return res.status(500).send('Failed to delete project');
+    }
   }
   res.redirect('/');
 };

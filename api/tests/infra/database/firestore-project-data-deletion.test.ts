@@ -5,36 +5,113 @@ import { FirestoreProjectDataDeletion } from '../../../src/infra/database/firest
 
 describe('Firestoreプロジェクト関連データ削除', () => {
   it('Projectサブコレクションと関連トップレベルDocumentを削除する', async () => {
-    const deleteDocument = vi.fn(() => Promise.resolve());
-    const close = vi.fn(() => Promise.resolve());
-    const recursiveDelete = vi.fn(() => Promise.resolve());
-    const projectReference = { path: 'projects/project-1' };
-    const querySnapshot = {
-      docs: [{ ref: { path: 'related/1' } }],
-    };
+    const deleteFn = vi.fn(() => Promise.resolve());
+
+    const docMock = (path: string) => ({
+      ref: {
+        path,
+        delete: deleteFn,
+      },
+    });
+
     const firestore = {
-      collection: (name: string) => {
-        if (name === 'projects') {
-          return { doc: () => projectReference };
+      collection: (collectionName: string) => {
+        if (collectionName === 'projects') {
+          return {
+            doc: (projectId: string) => {
+              const projectRef = {
+                path: `projects/${projectId}`,
+                delete: deleteFn,
+                collection: (subName: string) => {
+                  return {
+                    get: () => {
+                      if (subName === 'requirements') {
+                        return Promise.resolve({
+                          docs: [
+                            {
+                              ref: {
+                                path: `projects/${projectId}/requirements/req-1`,
+                                delete: deleteFn,
+                                collection: () => ({
+                                  get: () =>
+                                    Promise.resolve({
+                                      docs: [
+                                        docMock(
+                                          `projects/${projectId}/requirements/req-1/versions/1`,
+                                        ),
+                                      ],
+                                    }),
+                                }),
+                              },
+                            },
+                          ],
+                        });
+                      }
+                      if (subName === 'simulations') {
+                        return Promise.resolve({
+                          docs: [
+                            {
+                              ref: {
+                                path: `projects/${projectId}/simulations/sim-1`,
+                                delete: deleteFn,
+                                collection: () => ({
+                                  get: () =>
+                                    Promise.resolve({
+                                      docs: [
+                                        docMock(
+                                          `projects/${projectId}/simulations/sim-1/reactions/p-1`,
+                                        ),
+                                      ],
+                                    }),
+                                }),
+                              },
+                            },
+                          ],
+                        });
+                      }
+                      return Promise.resolve({ docs: [] });
+                    },
+                  };
+                },
+              };
+              return projectRef;
+            },
+          };
         }
+
         return {
           where: () => ({
-            get: () => Promise.resolve(querySnapshot),
+            get: () => {
+              if (collectionName === 'personas') {
+                return Promise.resolve({
+                  docs: [docMock(`personas/p-1`)],
+                });
+              }
+              if (collectionName === 'sourceDocuments') {
+                return Promise.resolve({
+                  docs: [docMock(`sourceDocuments/doc-1`)],
+                });
+              }
+              return Promise.resolve({ docs: [] });
+            },
           }),
         };
       },
-      bulkWriter: () => ({
-        delete: deleteDocument,
-        close,
-      }),
-      recursiveDelete,
     } as unknown as Firestore;
+
     const deletion = new FirestoreProjectDataDeletion(firestore);
 
     await deletion.deleteProjectData('project-1');
 
-    expect(deleteDocument).toHaveBeenCalledTimes(2);
-    expect(close).toHaveBeenCalledOnce();
-    expect(recursiveDelete).toHaveBeenCalledWith(projectReference);
+    // Expected deletions:
+    // - 1 persona
+    // - 1 sourceDocument
+    // - 1 requirement version
+    // - 1 requirement
+    // - 1 simulation reaction
+    // - 1 simulation
+    // - 1 project document
+    // Total 7 calls
+    expect(deleteFn).toHaveBeenCalledTimes(7);
   });
 });

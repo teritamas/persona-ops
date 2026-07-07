@@ -39,20 +39,6 @@ exports.switchChat = async (req, res) => {
   return res.send();
 };
 
-exports.startPersonaChat = async (req, res) => {
-  if (!req.activeProject) {
-    return res.status(404).send('Project not found');
-  }
-
-  const updatedProject = await chatService.startPersonaChat(req.activeProject, req.params.personaId);
-  if (!updatedProject) {
-    return res.status(404).send('Persona not found');
-  }
-
-  res.set('HX-Redirect', `/${req.activeProject.id}`);
-  res.send('');
-};
-
 exports.streamChat = async (req, res) => {
   const { inputText } = req.body;
 
