@@ -2,6 +2,7 @@ const { simulationService } = require('../services/simulationService');
 const requirementService = require('../services/requirementService');
 
 const SIMULATION_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+const FOLLOW_LATEST_SIMULATION_VALUE = '1';
 
 function getHiddenSimulations(req) {
   if (req.cookies && req.cookies.hidden_simulations) {
@@ -25,14 +26,28 @@ function getHiddenSandboxRequirements(req) {
   return [];
 }
 
+function resolveSelectedSimulationId(req) {
+  if (req.query.followLatest === FOLLOW_LATEST_SIMULATION_VALUE) {
+    return null;
+  }
 
+  const selectedSimulationId = req.query.simulationId;
+  if (
+    !selectedSimulationId ||
+    selectedSimulationId === 'undefined' ||
+    selectedSimulationId === 'dummy'
+  ) {
+    return req.cookies.selectedSimulationId || null;
+  }
+
+  return selectedSimulationId;
+}
+
+exports.resolveSelectedSimulationId = resolveSelectedSimulationId;
 
 exports.getSimulationSquare = async (req, res) => {
   // クエリまたはクッキーから simulationId を解決
-  let selectedSimulationId = req.query.simulationId;
-  if (!selectedSimulationId || selectedSimulationId === 'undefined' || selectedSimulationId === 'dummy') {
-    selectedSimulationId = req.cookies.selectedSimulationId || null;
-  }
+  const selectedSimulationId = resolveSelectedSimulationId(req);
   const targetRequirementId = req.query.requirementId;
   const targetVersion = req.query.version ? Number(req.query.version) : null;
 

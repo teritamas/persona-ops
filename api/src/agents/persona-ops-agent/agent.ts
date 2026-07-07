@@ -1,10 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
 import { InMemoryRunner, LlmAgent, getFunctionCalls } from '@google/adk';
-import {
-  SystemAction,
-  SYSTEM_ACTION_TAGS,
-} from '../../domain/system-action.js';
 
 import type {
   PersonaOpsAgentInput,
@@ -22,6 +18,7 @@ import { createSavePersonasTool } from './tools/save-personas-tool.js';
 import { createSaveRequirementTool } from './tools/save-requirement-tool.js';
 import { createUpdateProjectNameTool } from './tools/update-project-name-tool.js';
 import type { SourceDocumentService } from '../../application/source-document/source-document-service.js';
+import { buildSystemActionTagsForExecutedTools } from './system-action-tags.js';
 
 export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
   constructor(
@@ -81,23 +78,9 @@ export class AdkPersonaOpsAgent implements PersonaOpsAgentPort {
       }
     }
 
-    if (executedTools.size > 0) {
-      const tags: string[] = [];
-      if (executedTools.has('save_personas_tool')) {
-        tags.push(SYSTEM_ACTION_TAGS[SystemAction.PersonasSaved]);
-      }
-      if (
-        executedTools.has('save_requirement_tool') ||
-        executedTools.has('approve_requirement_tool')
-      ) {
-        tags.push(SYSTEM_ACTION_TAGS[SystemAction.RequirementSaved]);
-      }
-      if (executedTools.has('update_project_name_tool')) {
-        tags.push(SYSTEM_ACTION_TAGS[SystemAction.ProjectNameUpdated]);
-      }
-      if (tags.length > 0) {
-        yield '\n' + tags.join('\n');
-      }
+    const tags = buildSystemActionTagsForExecutedTools(executedTools);
+    if (tags.length > 0) {
+      yield '\n' + tags.join('\n');
     }
   }
 

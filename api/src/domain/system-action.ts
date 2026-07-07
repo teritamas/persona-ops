@@ -4,6 +4,8 @@
 export const SystemAction = {
   PersonasSaved: 'PERSONAS_SAVED',
   RequirementSaved: 'REQUIREMENT_SAVED',
+  SimulationRequested: 'SIMULATION_REQUESTED',
+  RequirementApproved: 'REQUIREMENT_APPROVED',
   ProjectNameUpdated: 'PROJECT_NAME_UPDATED',
   ProposePersonaGeneration: 'PROPOSE_PERSONA_GENERATION',
   ProposeRequirementDefinition: 'PROPOSE_REQUIREMENT_DEFINITION',
@@ -18,6 +20,10 @@ export type SystemActionType = (typeof SystemAction)[keyof typeof SystemAction];
 export const SYSTEM_ACTION_TAGS: Record<SystemActionType, string> = {
   [SystemAction.PersonasSaved]: '[SYSTEM_ACTION: PERSONAS_SAVED]',
   [SystemAction.RequirementSaved]: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
+  [SystemAction.SimulationRequested]:
+    '[SYSTEM_ACTION: SIMULATION_REQUESTED]',
+  [SystemAction.RequirementApproved]:
+    '[SYSTEM_ACTION: REQUIREMENT_APPROVED]',
   [SystemAction.ProjectNameUpdated]: '[SYSTEM_ACTION: PROJECT_NAME_UPDATED]',
   [SystemAction.ProposePersonaGeneration]:
     '[SYSTEM_ACTION: PROPOSE_PERSONA_GENERATION]',

@@ -8,6 +8,78 @@ if (typeof window !== "undefined" && window.marked) {
   });
 }
 
+const STREAM_REFRESH_DEBOUNCE_MS = 150;
+let pendingUiRefresh = {};
+let uiRefreshTimerId = null;
+
+function getCurrentProjectId() {
+  if (window.currentProjectId) {
+    return window.currentProjectId;
+  }
+  return window.location.pathname.split('/')[1];
+}
+
+function refreshSimulationSquare(projectId, cacheBust, options = {}) {
+  const queryParams = new URLSearchParams({ t: String(cacheBust) });
+  if (options.followLatestSimulation) {
+    queryParams.set('followLatest', '1');
+  }
+
+  const path = `/${projectId}/view/simulation-square?${queryParams.toString()}`;
+  if (document.getElementById('sandbox-characters')) {
+    htmx.ajax('GET', path, { target: '#sandbox-characters', swap: 'outerHTML' });
+    return;
+  }
+  if (document.getElementById('simulation-playground')) {
+    htmx.ajax('GET', path, { target: '#simulation-playground', swap: 'innerHTML' });
+  }
+}
+
+function runUiRefresh(options) {
+  if (typeof htmx === 'undefined') return;
+  const projectId = getCurrentProjectId();
+  if (!projectId) return;
+
+  const cacheBust = Date.now();
+  if (options.sandbox) {
+    refreshSimulationSquare(projectId, cacheBust, {
+      followLatestSimulation: options.followLatestSimulation
+    });
+  }
+  if (options.sidebar) {
+    htmx.trigger(document.body, 'refreshSidebar');
+  }
+  if (options.requirementDashboard) {
+    htmx.trigger(document.body, 'refreshRequirementDashboard');
+  }
+  if (options.chat) {
+    htmx.trigger(document.body, 'refreshChat');
+  }
+  if (options.topnav) {
+    htmx.ajax('GET', `/${projectId}/view/topnav?t=${cacheBust}`, { target: '#topnav-header', swap: 'outerHTML' });
+  }
+}
+
+function scheduleUiRefresh(options) {
+  if (typeof htmx === 'undefined') return;
+  pendingUiRefresh = {
+    sandbox: Boolean(pendingUiRefresh.sandbox || options.sandbox),
+    sidebar: Boolean(pendingUiRefresh.sidebar || options.sidebar),
+    requirementDashboard: Boolean(pendingUiRefresh.requirementDashboard || options.requirementDashboard),
+    chat: Boolean(pendingUiRefresh.chat || options.chat),
+    topnav: Boolean(pendingUiRefresh.topnav || options.topnav),
+    followLatestSimulation: Boolean(pendingUiRefresh.followLatestSimulation || options.followLatestSimulation)
+  };
+
+  if (uiRefreshTimerId) return;
+  uiRefreshTimerId = setTimeout(() => {
+    const refreshOptions = pendingUiRefresh;
+    pendingUiRefresh = {};
+    uiRefreshTimerId = null;
+    runUiRefresh(refreshOptions);
+  }, STREAM_REFRESH_DEBOUNCE_MS);
+}
+
 const SystemActionRegistry = [
   {
     tag: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
@@ -17,10 +89,11 @@ const SystemActionRegistry = [
     onDetect: () => {
       const reqBadge = document.getElementById('requirement-notification-badge');
       if (reqBadge) reqBadge.classList.remove('hidden');
-      if (typeof htmx !== 'undefined') {
-        htmx.trigger(document.body, 'refreshSidebar');
-        // refreshSandbox is handled by the timeout at the end of the stream
-      }
+      scheduleUiRefresh({
+        sandbox: true,
+        sidebar: true,
+        requirementDashboard: true
+      });
     }
   },
   {
@@ -29,7 +102,32 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      // refreshSandbox is handled by the timeout at the end of the stream
+      scheduleUiRefresh({ sandbox: true });
+    }
+  },
+  {
+    tag: '[SYSTEM_ACTION: SIMULATION_REQUESTED]',
+    text: 'シミュレーションを開始しました',
+    color: 'text-emerald-500',
+    iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
+    onDetect: () => {
+      scheduleUiRefresh({
+        sandbox: true,
+        followLatestSimulation: true,
+        requirementDashboard: true
+      });
+    }
+  },
+  {
+    tag: '[SYSTEM_ACTION: REQUIREMENT_APPROVED]',
+    text: '要件が承認されました',
+    color: 'text-blue-500',
+    iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"></path></svg>`,
+    onDetect: () => {
+      scheduleUiRefresh({
+        sandbox: true,
+        requirementDashboard: true
+      });
     }
   },
   {
@@ -38,9 +136,7 @@ const SystemActionRegistry = [
     color: 'text-blue-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`,
     onDetect: () => {
-      if (typeof htmx !== 'undefined') {
-        htmx.trigger(document.body, 'refreshSidebar');
-      }
+      scheduleUiRefresh({ sidebar: true, topnav: true });
     }
   }
 ];
@@ -394,16 +490,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             }
           }
         });
-
-        setTimeout(() => {
-          if (typeof htmx !== 'undefined') {
-            const t = Date.now();
-            htmx.ajax('GET', `/${projectId}/view/chat?t=${t}`, { target: '#left-panel-content', swap: 'innerHTML' });
-            htmx.ajax('GET', `/${projectId}/view/simulation-square?t=${t}`, { target: '#sandbox-characters', swap: 'outerHTML' });
-            htmx.ajax('GET', `/${projectId}/view/topnav?t=${t}`, { target: '#topnav-header', swap: 'outerHTML' });
-            htmx.trigger(document.body, 'refreshRequirementDashboard');
-          }
-        }, 1000);
+        scheduleUiRefresh({ chat: true });
       }
     }, 20);
 

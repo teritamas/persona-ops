@@ -63,3 +63,22 @@ test('processSystemActionsは提案アクションメッセージにデフォル
   assert.equal(typeof systemMessages[0].proposal, 'object');
 });
 
+test('processSystemActionsはシミュレーション開始と承認完了をsystem messageに変換する', () => {
+  const service = new ChatService();
+  const activeProject = { id: 'project-1', requirements: [] };
+  const text = [
+    '[SYSTEM_ACTION: SIMULATION_REQUESTED]',
+    '[SYSTEM_ACTION: REQUIREMENT_APPROVED]',
+  ].join('\n');
+
+  const { cleanedText, systemMessages } = service.processSystemActions(text, activeProject);
+
+  assert.equal(cleanedText, '');
+  assert.deepEqual(
+    systemMessages.map((message) => ({ role: message.role, text: message.text })),
+    [
+      { role: 'system', text: 'シミュレーションを開始しました' },
+      { role: 'system', text: '要件が承認されました' },
+    ],
+  );
+});

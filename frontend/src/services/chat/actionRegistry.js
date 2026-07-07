@@ -1,5 +1,7 @@
 const personasSaved = require('./actions/personasSaved');
 const requirementSaved = require('./actions/requirementSaved');
+const simulationRequested = require('./actions/simulationRequested');
+const requirementApproved = require('./actions/requirementApproved');
 const projectNameUpdated = require('./actions/projectNameUpdated');
 const proposePersona = require('./actions/proposePersona');
 const proposePersonaApproval = require('./actions/proposePersonaApproval');
@@ -10,6 +12,8 @@ const proposeApproval = require('./actions/proposeApproval');
 const actions = [
   personasSaved,
   requirementSaved,
+  simulationRequested,
+  requirementApproved,
   projectNameUpdated,
   proposePersona,
   proposePersonaApproval,
