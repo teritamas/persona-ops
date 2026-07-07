@@ -223,8 +223,8 @@
       });
 
       document.body.addEventListener('htmx:afterSwap', function (evt) {
-        // ブラウザのレイアウト更新タイミングと同調させて確実にscrollTopを適用する
-        requestAnimationFrame(() => {
+        // 確実にレイアウト計算が完了した後にスクロール位置を適用するため、50msのディレイを置く
+        setTimeout(() => {
           scrollableIds.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -235,7 +235,7 @@
               }
             }
           });
-        });
+        }, 50);
       });
     })();
   </script>

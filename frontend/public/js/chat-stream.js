@@ -90,7 +90,6 @@ const SystemActionRegistry = [
       const reqBadge = document.getElementById('requirement-notification-badge');
       if (reqBadge) reqBadge.classList.remove('hidden');
       scheduleUiRefresh({
-        sandbox: true,
         sidebar: true,
         requirementDashboard: true
       });
@@ -102,7 +101,7 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      scheduleUiRefresh({ sandbox: true });
+      // ストリーム完了後の全体リフレッシュに集約するため、ここでは即時リフレッシュを行わない
     }
   },
   {
@@ -125,7 +124,6 @@ const SystemActionRegistry = [
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"></path></svg>`,
     onDetect: () => {
       scheduleUiRefresh({
-        sandbox: true,
         requirementDashboard: true
       });
     }
@@ -490,7 +488,16 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             }
           }
         });
-        scheduleUiRefresh({ chat: true });
+        // ストリーム完了後、APIのDB反映を待つため1秒後にUIを一括リフレッシュ
+        setTimeout(() => {
+          scheduleUiRefresh({
+            chat: true,
+            sandbox: true,
+            sidebar: true,
+            topnav: true,
+            requirementDashboard: true
+          });
+        }, 1000);
       }
     }, 20);
 
