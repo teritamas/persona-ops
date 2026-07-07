@@ -26,10 +26,12 @@
                     onclick="switchProject('<%= p.id %>')"
                     class="flex-1 text-left px-4 py-2 text-sm flex items-center justify-start gap-2 transition-all active:scale-95 <%= p.id === activeProjectId ? 'text-orange-600 font-bold' : 'text-slate-700' %> min-w-0"
                   >
-                    <span class="truncate max-w-[280px]"><%= p.name %></span>
-                    <% if(p.id === activeProjectId) { %>
-                      <svg class="w-[0.875rem] h-[0.875rem] text-orange-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
-                    <% } %>
+                    <div class="w-4 h-4 flex items-center justify-center shrink-0">
+                      <% if(p.id === activeProjectId) { %>
+                        <svg class="w-3.5 h-3.5 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+                      <% } %>
+                    </div>
+                    <span class="truncate max-w-[280px] flex-1"><%= p.name %></span>
                   </button>
                   <div class="flex items-center pr-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
                     <button onclick="renameProject(event, '<%= p.id %>', '<%= p.name %>')" type="button" class="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-md transition-colors" title="名前を変更">
