@@ -1,4 +1,4 @@
-import type { Firestore } from '@google-cloud/firestore';
+import type { DocumentReference, Firestore } from '@google-cloud/firestore';
 
 import type { ProjectDataDeletionPort } from '../../application/ports/infra/database/project-data-deletion-port.js';
 
@@ -25,7 +25,7 @@ export class FirestoreProjectDataDeletion implements ProjectDataDeletionPort {
     // 2. requirements サブコレクションとその versions サブコレクションの取得
     const requirementsRef = projectReference.collection('requirements');
     const requirementsSnapshot = await requirementsRef.get();
-    const requirementVersionRefs: any[] = [];
+    const requirementVersionRefs: DocumentReference[] = [];
     for (const reqDoc of requirementsSnapshot.docs) {
       const versionsSnapshot = await reqDoc.ref.collection('versions').get();
       versionsSnapshot.docs.forEach((verDoc) => {
@@ -36,7 +36,7 @@ export class FirestoreProjectDataDeletion implements ProjectDataDeletionPort {
     // 3. simulations サブコレクションとその reactions サブコレクションの取得
     const simulationsRef = projectReference.collection('simulations');
     const simulationsSnapshot = await simulationsRef.get();
-    const simulationReactionRefs: any[] = [];
+    const simulationReactionRefs: DocumentReference[] = [];
     for (const simDoc of simulationsSnapshot.docs) {
       const reactionsSnapshot = await simDoc.ref.collection('reactions').get();
       reactionsSnapshot.docs.forEach((reactDoc) => {
@@ -45,7 +45,7 @@ export class FirestoreProjectDataDeletion implements ProjectDataDeletionPort {
     }
 
     // 4. すべての削除対象ドキュメントの参照を収集
-    const allRefsToDelete = [
+    const allRefsToDelete: DocumentReference[] = [
       ...personasSnapshot.docs.map((doc) => doc.ref),
       ...sourceDocumentsSnapshot.docs.map((doc) => doc.ref),
       ...requirementVersionRefs,

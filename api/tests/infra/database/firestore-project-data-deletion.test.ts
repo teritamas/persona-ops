@@ -24,50 +24,52 @@ describe('Firestoreプロジェクト関連データ削除', () => {
                 delete: deleteFn,
                 collection: (subName: string) => {
                   return {
-                    get: async () => {
+                    get: () => {
                       if (subName === 'requirements') {
-                        return {
+                        return Promise.resolve({
                           docs: [
                             {
                               ref: {
                                 path: `projects/${projectId}/requirements/req-1`,
                                 delete: deleteFn,
                                 collection: () => ({
-                                  get: async () => ({
-                                    docs: [
-                                      docMock(
-                                        `projects/${projectId}/requirements/req-1/versions/1`,
-                                      ),
-                                    ],
-                                  }),
+                                  get: () =>
+                                    Promise.resolve({
+                                      docs: [
+                                        docMock(
+                                          `projects/${projectId}/requirements/req-1/versions/1`,
+                                        ),
+                                      ],
+                                    }),
                                 }),
                               },
                             },
                           ],
-                        };
+                        });
                       }
                       if (subName === 'simulations') {
-                        return {
+                        return Promise.resolve({
                           docs: [
                             {
                               ref: {
                                 path: `projects/${projectId}/simulations/sim-1`,
                                 delete: deleteFn,
                                 collection: () => ({
-                                  get: async () => ({
-                                    docs: [
-                                      docMock(
-                                        `projects/${projectId}/simulations/sim-1/reactions/p-1`,
-                                      ),
-                                    ],
-                                  }),
+                                  get: () =>
+                                    Promise.resolve({
+                                      docs: [
+                                        docMock(
+                                          `projects/${projectId}/simulations/sim-1/reactions/p-1`,
+                                        ),
+                                      ],
+                                    }),
                                 }),
                               },
                             },
                           ],
-                        };
+                        });
                       }
-                      return { docs: [] };
+                      return Promise.resolve({ docs: [] });
                     },
                   };
                 },
@@ -79,18 +81,18 @@ describe('Firestoreプロジェクト関連データ削除', () => {
 
         return {
           where: () => ({
-            get: async () => {
+            get: () => {
               if (collectionName === 'personas') {
-                return {
+                return Promise.resolve({
                   docs: [docMock(`personas/p-1`)],
-                };
+                });
               }
               if (collectionName === 'sourceDocuments') {
-                return {
+                return Promise.resolve({
                   docs: [docMock(`sourceDocuments/doc-1`)],
-                };
+                });
               }
-              return { docs: [] };
+              return Promise.resolve({ docs: [] });
             },
           }),
         };
