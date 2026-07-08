@@ -94,7 +94,15 @@ export class ProjectService {
   async deleteProject(id: string): Promise<void> {
     await this.requireProject(id);
     if (this.projectDataDeletion) {
-      await this.projectDataDeletion.deleteProjectData(id);
+      try {
+        await this.projectDataDeletion.deleteProjectData(id);
+      } catch (err) {
+        console.error(
+          `Failed to clean up project data for ${id}, deleting project document anyway`,
+          err,
+        );
+        await this.projectRepository.delete(id);
+      }
       return;
     }
     await this.projectRepository.delete(id);

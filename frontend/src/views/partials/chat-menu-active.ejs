@@ -100,3 +100,14 @@
     </form>
   </div>
 </div>
+
+<script>
+  (function () {
+    const scrollContainer = document.getElementById('chat-messages-scroll');
+    if (scrollContainer) {
+      setTimeout(() => {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }, 50);
+    }
+  })();
+</script>
