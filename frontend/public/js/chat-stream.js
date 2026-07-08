@@ -536,7 +536,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
         isStreamDone = true;
         break;
       }
-      chunk = decoder.decode(value, { stream: true });
+      const chunk = decoder.decode(value, { stream: true });
       incomingText += chunk;
     }
 
