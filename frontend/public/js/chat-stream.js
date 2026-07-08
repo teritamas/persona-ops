@@ -9,6 +9,8 @@ if (typeof window !== "undefined" && window.marked) {
 }
 
 const STREAM_REFRESH_DEBOUNCE_MS = 150;
+const POST_ACTION_REFRESH_DELAYS_MS = [0, 750, 2000];
+const CHAT_REFRESH_DELAY_MS = 500;
 let pendingUiRefresh = {};
 let uiRefreshTimerId = null;
 
@@ -32,6 +34,20 @@ function refreshSimulationSquare(projectId, cacheBust, options = {}) {
   }
   if (document.getElementById('simulation-playground')) {
     htmx.ajax('GET', path, { target: '#simulation-playground', swap: 'innerHTML' });
+  }
+}
+
+function showSimulationPlaygroundPanel() {
+  const playground = document.getElementById('simulation-playground');
+  const leftPanel = document.getElementById('left-panel-content');
+  if (playground) {
+    playground.classList.remove('hidden');
+    if (playground.style.display === 'none') {
+      playground.style.display = 'flex';
+    }
+  }
+  if (leftPanel) {
+    leftPanel.className = 'w-[400px] bg-white border-r border-slate-200 z-30 flex flex-col shrink-0 transition-all duration-700 ease-in-out';
   }
 }
 
@@ -80,6 +96,14 @@ function scheduleUiRefresh(options) {
   }, STREAM_REFRESH_DEBOUNCE_MS);
 }
 
+function schedulePostActionUiRefresh(options) {
+  POST_ACTION_REFRESH_DELAYS_MS.forEach(delay => {
+    setTimeout(() => {
+      scheduleUiRefresh(options);
+    }, delay);
+  });
+}
+
 const SystemActionRegistry = [
   {
     tag: '[SYSTEM_ACTION: REQUIREMENT_SAVED]',
@@ -89,7 +113,9 @@ const SystemActionRegistry = [
     onDetect: () => {
       const reqBadge = document.getElementById('requirement-notification-badge');
       if (reqBadge) reqBadge.classList.remove('hidden');
-      scheduleUiRefresh({
+      showSimulationPlaygroundPanel();
+      schedulePostActionUiRefresh({
+        sandbox: true,
         sidebar: true,
         requirementDashboard: true
       });
@@ -101,7 +127,13 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`,
     onDetect: () => {
-      // ストリーム完了後の全体リフレッシュに集約するため、ここでは即時リフレッシュを行わない
+      // 古い選択Cookieをクリアして確実に最新追加分を表示させる
+      document.cookie = 'selectedSimulationId=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+      showSimulationPlaygroundPanel();
+      schedulePostActionUiRefresh({
+        sandbox: true,
+        sidebar: true
+      });
     }
   },
   {
@@ -110,7 +142,8 @@ const SystemActionRegistry = [
     color: 'text-emerald-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`,
     onDetect: () => {
-      scheduleUiRefresh({
+      showSimulationPlaygroundPanel();
+      schedulePostActionUiRefresh({
         sandbox: true,
         followLatestSimulation: true,
         requirementDashboard: true
@@ -123,7 +156,8 @@ const SystemActionRegistry = [
     color: 'text-blue-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.5 12.75l6 6 9-13.5"></path></svg>`,
     onDetect: () => {
-      scheduleUiRefresh({
+      schedulePostActionUiRefresh({
+        sandbox: true,
         requirementDashboard: true
       });
     }
@@ -134,7 +168,7 @@ const SystemActionRegistry = [
     color: 'text-blue-500',
     iconSvg: `<svg class="w-3.5 h-3.5 mr-1.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>`,
     onDetect: () => {
-      scheduleUiRefresh({ sidebar: true, topnav: true });
+      schedulePostActionUiRefresh({ sidebar: true, topnav: true });
     }
   }
 ];
@@ -488,16 +522,11 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
             }
           }
         });
-        // ストリーム完了後、APIのDB反映を待つため1秒後にUIを一括リフレッシュ
+        // 永続化された提案ボタンやチャット履歴を取り込むため、チャットだけを再描画する。
+        // データ変更を伴うアクションは各 onDetect が対象UIを短時間だけ再取得する。
         setTimeout(() => {
-          scheduleUiRefresh({
-            chat: true,
-            sandbox: true,
-            sidebar: true,
-            topnav: true,
-            requirementDashboard: true
-          });
-        }, 1000);
+          scheduleUiRefresh({ chat: true });
+        }, CHAT_REFRESH_DELAY_MS);
       }
     }, 20);
 
@@ -507,7 +536,7 @@ globalThis.submitStreamChat = async function submitStreamChat(event) {
         isStreamDone = true;
         break;
       }
-      const chunk = decoder.decode(value, { stream: true });
+      chunk = decoder.decode(value, { stream: true });
       incomingText += chunk;
     }
 
